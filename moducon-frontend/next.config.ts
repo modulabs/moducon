@@ -20,6 +20,7 @@ const nextConfig: NextConfig = {
   },
   basePath: '',
   assetPrefix: '',
+  turbopack: {},
 };
 
 export default pwaConfig(nextConfig);
