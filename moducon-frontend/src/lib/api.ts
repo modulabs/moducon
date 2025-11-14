@@ -50,9 +50,9 @@ export const authAPI = {
     }),
 
   saveSignature: (signatureData: string) =>
-    apiCall<{ badgeUrl: string }>('/api/auth/signature', {
+    apiCall<{ signature_url: string }>('/api/auth/signature', {
       method: 'POST',
-      body: JSON.stringify({ signatureData }),
+      body: JSON.stringify({ signature_data: signatureData }),
     }),
 
   getMe: () => apiCall<User>('/api/auth/me'),

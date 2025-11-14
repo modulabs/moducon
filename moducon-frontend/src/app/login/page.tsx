@@ -33,7 +33,13 @@ export default function LoginPage() {
       setError('');
       const result = await authAPI.login(data.name, data.phone_last4);
       login(result.token, result.user);
-      router.push('/home');
+
+      // Check if signature is required
+      if (!result.user.has_signature) {
+        router.push('/signature');
+      } else {
+        router.push('/home');
+      }
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : '로그인에 실패했습니다';
       setError(errorMessage);
