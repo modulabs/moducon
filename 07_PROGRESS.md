@@ -108,30 +108,51 @@
    - 워크플로우 트리거: `git push`
    - URL 확인: https://moducon.vibemakers.kr
 
-### Phase 4: 백엔드 개발 (예상 2-3주)
-**담당자**: 백엔드 개발자
-**필독 문서**: `01_PRD.md`, `05_API_SPEC.md`, `06_DB_DESIGN.md`
+### Phase 4: 백엔드 개발 (예상 2시간 20분 → 2-3주 전체)
+**담당자**: hands-on worker
+**필독 문서**: `41_BACKEND_DEV_PLAN.md`, `42_BACKEND_IMPLEMENTATION_GUIDE.md`
+**상태**: 📋 기획 완료, 구현 대기
 
-#### MVP 개발 범위
-1. **인증 시스템** (3-4일)
-   - POST `/api/auth/login`
-   - POST `/api/auth/signature`
-   - GET `/api/auth/me`
-   - JWT 미들웨어
+#### Phase 4.1: MVP 백엔드 (로컬 개발) - 예상 2시간 20분
+**목표**: 로그인 기능 테스트 가능한 백엔드 구축
+**브랜치**: `backend-dev` (GitHub 푸시 금지)
 
-2. **세션 관리** (3-4일)
+1. **프로젝트 초기화** (30분)
+   - Node.js + Express + TypeScript 설정
+   - Prisma ORM 설정
+   - PostgreSQL 데이터베이스 생성
+
+2. **데이터베이스 설정** (20분)
+   - Prisma 스키마 작성 (users, auth_sessions, signatures)
+   - 마이그레이션 실행
+   - 테스트 사용자 시드 (조해창, 4511)
+
+3. **인증 API 구현** (1시간)
+   - POST `/api/auth/login` - 이름 + 전화번호 로그인
+   - POST `/api/auth/signature` - 디지털 서명 저장
+   - GET `/api/auth/me` - 사용자 정보 조회
+   - POST `/api/auth/reset-login` - 로그인 리셋 (테스트용)
+   - JWT 인증 미들웨어
+
+4. **테스트** (30분)
+   - API 테스트 (curl/Postman)
+   - 프론트엔드 연동 테스트
+   - CORS 검증
+
+#### Phase 4.2: 백엔드 확장 (향후)
+1. **세션 관리** (3-4일)
    - GET `/api/sessions`
    - GET `/api/sessions/:id`
    - POST `/api/sessions/:id/checkin`
 
-3. **부스 시스템** (2-3일)
+2. **부스 시스템** (2-3일)
    - GET `/api/booths`
    - GET `/api/booths/:id`
    - POST `/api/booths/:id/visit`
 
-4. **인프라** (2-3일)
-   - PostgreSQL 연결 (16개 테이블)
-   - CORS 설정
+3. **인프라** (2-3일)
+   - Docker 컨테이너화
+   - 프로덕션 PostgreSQL 설정
    - 프로덕션 배포
 
 ## 📊 프로젝트 진행률
@@ -146,15 +167,17 @@
 | **인프라** | 90% | 🚧 | GitHub Secrets 설정 대기 |
 | **백엔드** | 0% | ⏳ | REST API 개발 필요 |
 
-## 📝 문서 목록 (40개, ~555KB)
+## 📝 문서 목록 (42개, ~650KB)
 
-### 기획 문서 (6개)
+### 기획 문서 (8개)
 1. `01_PRD.md` (58KB) - 제품 요구사항 명세서
 2. `02_dev_plan.md` (18KB) - 개발 계획 및 아키텍처
 3. `05_API_SPEC.md` (31KB) - REST API 명세서
 4. `06_DB_DESIGN.md` (27KB) - 데이터베이스 설계
 5. `08_IMPLEMENTATION_GUIDE.md` (22KB) - 구현 가이드
 6. `09_HANDOFF_SUMMARY.md` (8KB) - 인계 요약서
+7. `41_BACKEND_DEV_PLAN.md` (45KB) - 백엔드 개발 계획서
+8. `42_BACKEND_IMPLEMENTATION_GUIDE.md` (50KB) - 백엔드 구현 가이드
 
 ### 개발 로그 (7개)
 7. `10_PLANNER_HANDOFF.md` - Technical Lead 인계
@@ -327,6 +350,10 @@
 | 2025-01-14 | - | ✅ **문서 정합성 재확인** (PRD 8/8, API 9/9, 100%) | reviewer |
 | 2025-01-14 | - | 📄 **39_REVIEWER_FINAL_REPORT.md 작성** (최종 검증 보고서) | reviewer |
 | 2025-01-14 | - | 🏆 **프로덕션 배포 최종 승인** (done) | reviewer |
+| 2025-01-14 | - | 📋 **백엔드 개발 계획 수립 시작** | planner |
+| 2025-01-14 | - | 📄 **41_BACKEND_DEV_PLAN.md 작성** (기술 스택, DB 설계, API 명세) | planner |
+| 2025-01-14 | - | 📄 **42_BACKEND_IMPLEMENTATION_GUIDE.md 작성** (단계별 구현 가이드) | planner |
+| 2025-01-14 | - | ✅ **백엔드 기획 완료** (로컬 PostgreSQL + Express + Prisma) | planner |
 
 ## 📊 전체 진행률
 
