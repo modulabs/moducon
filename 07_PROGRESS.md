@@ -9,7 +9,7 @@
 
 ### Phase 0: 기획 & 설계
 - [x] PRD (Product Requirements Document) 작성 완료
-  - 파일: `PRD.md`
+  - 파일: `01_PRD.md`
   - 버전: 1.3
   - 상태: ✅ 아키텍처 확정 (GitHub Pages + 기존 백엔드)
   - 주요 내용: 제품 개요, 기능 명세, 기술 요구사항, 성공 지표
@@ -19,33 +19,49 @@
   - 상태: ✅ 구현 가이드 및 배포 매뉴얼 완성
   - 주요 내용: 프로젝트 구조, 핵심 구현 사항, 배포 가이드
 
-### Phase 1: 문서 체계화 (진행 중)
+### Phase 1: 문서 체계화 (완료)
 - [x] PROGRESS.md 생성 및 초기화
-- [ ] 01_PRD.md 정리 (기존 PRD.md 기반)
-- [ ] 02_dev_plan.md 작성
-- [ ] 05_API_SPEC.md 작성
-- [ ] 06_DB_DESIGN.md 작성
+- [x] 01_PRD.md 정리 (기존 PRD.md 유지)
+- [x] 02_dev_plan.md 작성 완료
+  - 기술 스택 선정 및 근거
+  - 시스템 아키텍처 (GitHub Pages + 기존 백엔드)
+  - 개발 단계별 계획
+  - 디렉토리 구조 설계
+- [x] 05_API_SPEC.md 작성 완료
+  - REST API 엔드포인트 상세 명세
+  - 인증, 사용자, 세션, 부스, 페이퍼샵 등 전체 API
+  - WebSocket 이벤트 정의
+- [x] 06_DB_DESIGN.md 작성 완료
+  - 16개 테이블 스키마 정의
+  - ERD 및 관계 설명
+  - 인덱싱 전략 및 성능 최적화
+  - 뷰 및 백업 전략
 
 ## 🎯 현재 작업 중
 
-**작업**: 프로젝트 기획 문서 체계화
+**작업**: 문서 체계화 완료 → Git Commit 준비 중
 **담당자**: Technical Lead (planner)
-**상태**: 07_PROGRESS.md 생성 완료 → 문서 정리 진행 중
+**상태**: 모든 기획 문서 작성 완료
 
 ## 📅 다음 단계
 
-### 즉시 진행
-1. **01_PRD.md 정리**: 기존 PRD.md를 01_PRD.md로 이동 및 정리
-2. **02_dev_plan.md 작성**:
-   - 기술 스택 선정 및 근거
-   - 시스템 아키텍처 (GitHub Pages + 기존 백엔드)
-   - 개발 단계별 계획
-   - 디렉토리 구조 설계
+### 즉시 진행 (hands-on worker)
+1. **프론트엔드 프로젝트 초기화**:
+   - Next.js 프로젝트 생성
+   - 필수 패키지 설치
+   - next.config.js 설정 (Static Export)
+   - 디렉토리 구조 생성
 
-### 후속 작업
-3. **05_API_SPEC.md 작성**: 백엔드 API 엔드포인트 상세 명세
-4. **06_DB_DESIGN.md 작성**: 데이터베이스 스키마 및 ERD
-5. **Git Commit**: 모든 문서 작성 완료 후 커밋
+2. **백엔드 API 구현 시작** (기존 서버):
+   - CORS 설정 추가
+   - JWT 인증 미들웨어
+   - 인증 API 엔드포인트 (로그인, 서명)
+   - Database 연결 및 테스트
+
+3. **GitHub Pages 배포 테스트**:
+   - Repository 생성
+   - GitHub Actions 워크플로우 설정
+   - 커스텀 도메인 설정 (moducon.vibemakers.kr)
 
 ## 🔄 변경 이력
 
@@ -57,15 +73,18 @@
 | 2025-01-13 | 1.3 | 로그인 플로우 수정 (현장 QR → 로그인 → 서명) | Planning Team |
 | 2025-01-14 | - | Implementation Guide 작성 완료 | Planning Team |
 | 2025-01-14 | - | PROGRESS.md 생성 및 문서 체계화 시작 | Technical Lead |
+| 2025-01-14 | - | 02_dev_plan.md 작성 완료 (기술 스택, 아키텍처, 개발 계획) | Technical Lead |
+| 2025-01-14 | - | 06_DB_DESIGN.md 작성 완료 (16개 테이블, ERD, 인덱싱) | Technical Lead |
+| 2025-01-14 | - | 문서 체계화 완료 (Planning Complete) | Technical Lead |
 
 ## 📊 전체 진행률
 
 ### 문서화
 - [x] PRD (100%)
 - [x] Implementation Guide (100%)
-- [ ] 개발 계획서 (0%)
-- [ ] API 명세서 (0%)
-- [ ] DB 설계서 (0%)
+- [x] 개발 계획서 (100%)
+- [x] API 명세서 (100%)
+- [x] DB 설계서 (100%)
 
 ### 개발
 - [ ] MVP 개발 (0%)
@@ -78,10 +97,13 @@
 
 ### Phase 0: 기획 & 설계 (2주) - ✅ 완료
 - [x] PRD 작성
+- [x] 개발 계획서 작성
+- [x] API 명세서 작성
+- [x] DB 설계서 작성
 - [x] 기술 스택 확정
-- [ ] 디자인 시스템 정의
-- [ ] UI/UX 와이어프레임
-- [ ] 개발 환경 세팅
+- [ ] 디자인 시스템 정의 (다음 단계)
+- [ ] UI/UX 와이어프레임 (다음 단계)
+- [ ] 개발 환경 세팅 (hands-on worker)
 
 ### Phase 1: MVP 개발 (6주) - 📅 예정 (2월 ~ 3월)
 - [ ] 인증 시스템
