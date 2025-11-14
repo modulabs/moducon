@@ -1,12 +1,4 @@
 import type { NextConfig } from "next";
-import withPWA from 'next-pwa';
-
-const pwaConfig = withPWA({
-  dest: 'public',
-  disable: process.env.NODE_ENV === 'development',
-  register: true,
-  skipWaiting: true,
-});
 
 const nextConfig: NextConfig = {
   output: 'export',
@@ -20,7 +12,9 @@ const nextConfig: NextConfig = {
   },
   basePath: '',
   assetPrefix: '',
-  turbopack: {},
+  turbopack: {
+    root: process.cwd(),
+  },
 };
 
-export default pwaConfig(nextConfig);
+export default nextConfig;
