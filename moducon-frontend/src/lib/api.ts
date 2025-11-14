@@ -1,6 +1,13 @@
 import type { User, Session, Booth } from '@/types';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL;
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ||
+  (process.env.NODE_ENV === 'development'
+    ? 'http://localhost:3001'
+    : '');
+
+if (!API_BASE && process.env.NODE_ENV === 'production') {
+  console.error('❌ NEXT_PUBLIC_API_URL is required in production');
+}
 
 export async function apiCall<T>(
   endpoint: string,
@@ -22,7 +29,13 @@ export async function apiCall<T>(
   const data = await response.json();
 
   if (!response.ok) {
-    throw new Error(data.error?.message || 'API Error');
+    const errorMessage = data.error?.message || `API Error (${response.status})`;
+    console.error('[API Error]', {
+      url: `${API_BASE}${endpoint}`,
+      status: response.status,
+      error: data.error,
+    });
+    throw new Error(errorMessage);
   }
 
   return data.data;
