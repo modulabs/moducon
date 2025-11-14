@@ -39,9 +39,9 @@
 
 ## 🎯 현재 작업 중
 
-**작업**: 프론트엔드 MVP 구현 (Step 1-3 완료, 최종 QA 승인)
-**담당자**: hands-on worker (다음: Step 4-7)
-**상태**: ✅ 프로젝트 초기화 완료 및 최종 승인
+**작업**: 프론트엔드 MVP 구현 (Step 1-7 완료)
+**담당자**: hands-on worker
+**상태**: ⚠️ 조건부 승인 (GitHub Actions 워크플로우 수정 필요)
 
 ## 📅 다음 단계
 
@@ -93,6 +93,10 @@
 | 2025-01-14 | - | next-pwa TypeScript 타입 선언 추가 | reviewer |
 | 2025-01-14 | - | 최종 QA 검증 완료 (빌드/린트/보안/성능) | reviewer |
 | 2025-01-14 | - | 16_FINAL_QA_REPORT.md 작성 (최종 승인) | reviewer |
+| 2025-01-14 | - | Step 4-7 구현 완료 (Header, QRScanner, 로그인, 홈) | hands-on worker |
+| 2025-01-14 | - | 프로덕션 빌드 성공 (6.7초, 6개 페이지) | hands-on worker |
+| 2025-01-14 | - | 18_FINAL_QA_REPORT.md 작성 (조건부 승인 88/100) | reviewer |
+| 2025-01-14 | - | ⚠️ Critical 이슈 발견: GitHub Actions 워크플로우 비어있음 | reviewer |
 
 ## 📊 전체 진행률
 
@@ -104,13 +108,19 @@
 - [x] DB 설계서 (100%)
 
 ### 개발
-- [~] MVP 개발 (20% - 프로젝트 초기화 완료)
+- [~] MVP 개발 (60% - Step 1-7 완료, 조건부 승인)
   - [x] Next.js 프로젝트 생성
   - [x] 필수 패키지 설치
   - [x] 프로젝트 설정 (next.config.ts, 환경변수, PWA)
   - [x] 타입 정의 (types/index.ts)
   - [x] API 클라이언트 (lib/api.ts)
   - [x] 인증 스토어 (store/authStore.ts)
+  - [x] Header 컴포넌트 구현
+  - [x] QRScanner 컴포넌트 구현
+  - [x] 로그인 페이지 구현
+  - [x] 홈 대시보드 구현
+  - [x] 프로덕션 빌드 성공 (6.7초)
+  - [ ] ⚠️ GitHub Actions 워크플로우 작성 (Critical)
 - [ ] 고도화 (0%)
 - [ ] PWA & 최적화 (0%)
 - [ ] 관리자 도구 (0%)
@@ -171,7 +181,11 @@
 ## 🚨 이슈 및 리스크
 
 ### 현재 이슈
-- 없음
+1. **🚨 Critical**: GitHub Actions 워크플로우 파일 비어있음 (`.github/workflows/deploy.yml`)
+   - **영향**: 자동 배포 불가, CI/CD 파이프라인 작동 안 함
+   - **조치 필요**: 워크플로우 파일 작성 (예상 30분)
+   - **담당자**: hands-on worker
+   - **우선순위**: 최우선
 
 ### 식별된 리스크
 1. **대규모 동시 접속** (High): 서버 스케일링 계획 필요
