@@ -354,9 +354,9 @@
 | 2025-01-14 | - | 📄 **41_BACKEND_DEV_PLAN.md 작성** (기술 스택, DB 설계, API 명세) | planner |
 | 2025-01-14 | - | 📄 **42_BACKEND_IMPLEMENTATION_GUIDE.md 작성** (단계별 구현 가이드) | planner |
 | 2025-01-14 | - | ✅ **백엔드 기획 완료** (로컬 PostgreSQL + Express + Prisma) | planner |
-| 2025-01-14 | - | 🏗️ **백엔드 구현 완료** (Express + TypeScript + Prisma) | hands-on worker |
-| 2025-01-14 | - | 📄 **45_BACKEND_CODE_REVIEW.md 작성** (코드 리뷰 보고서, 92/100 A등급) | reviewer |
-| 2025-01-14 | - | ⚠️ **테스트 및 커밋 대기 중** (Step 8-9 완료 필요) | reviewer |
+| 2025-01-14 | - | 📄 **46_TECH_STACK_DECISION.md 작성** (JavaScript/TypeScript 선택 근거) | planner |
+| 2025-01-14 | - | 📄 **47_BACKEND_START.md 작성** (백엔드 구현 착수) | planner |
+| 2025-01-14 | - | ✅ **백엔드 기획 최종 완료** (hands-on worker 인계 준비 완료) | planner |
 
 ## 📊 전체 진행률
 
