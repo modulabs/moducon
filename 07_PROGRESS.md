@@ -97,6 +97,8 @@
 | 2025-01-14 | - | 프로덕션 빌드 성공 (6.7초, 6개 페이지) | hands-on worker |
 | 2025-01-14 | - | 18_FINAL_QA_REPORT.md 작성 (조건부 승인 88/100) | reviewer |
 | 2025-01-14 | - | ⚠️ Critical 이슈 발견: GitHub Actions 워크플로우 비어있음 | reviewer |
+| 2025-01-14 | - | GitHub Actions 워크플로우 업데이트 (v3→v4, Node 18→20) | hands-on worker |
+| 2025-01-14 | - | 20_GITHUB_ACTIONS_SETUP.md 작성 (배포 설정 가이드) | hands-on worker |
 
 ## 📊 전체 진행률
 
@@ -120,7 +122,7 @@
   - [x] 로그인 페이지 구현
   - [x] 홈 대시보드 구현
   - [x] 프로덕션 빌드 성공 (6.7초)
-  - [ ] ⚠️ GitHub Actions 워크플로우 작성 (Critical)
+  - [x] ✅ GitHub Actions 워크플로우 업데이트 완료
 - [ ] 고도화 (0%)
 - [ ] PWA & 최적화 (0%)
 - [ ] 관리자 도구 (0%)
@@ -181,11 +183,10 @@
 ## 🚨 이슈 및 리스크
 
 ### 현재 이슈
-1. **🚨 Critical**: GitHub Actions 워크플로우 파일 비어있음 (`.github/workflows/deploy.yml`)
-   - **영향**: 자동 배포 불가, CI/CD 파이프라인 작동 안 함
-   - **조치 필요**: 워크플로우 파일 작성 (예상 30분)
-   - **담당자**: hands-on worker
-   - **우선순위**: 최우선
+1. ✅ **해결됨**: GitHub Actions 워크플로우 업데이트 완료
+   - **조치 완료**: Actions v4, Node 20, Deploy v4로 업데이트
+   - **문서**: `20_GITHUB_ACTIONS_SETUP.md` 참고
+   - **다음 단계**: GitHub Secrets 설정 필요 (DevOps 담당)
 
 ### 식별된 리스크
 1. **대규모 동시 접속** (High): 서버 스케일링 계획 필요
