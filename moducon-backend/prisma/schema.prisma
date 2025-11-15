@@ -1,0 +1,53 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String    @id @default(uuid()) @db.Uuid
+  name              String    @db.VarChar(100)
+  phoneLast4        String    @map("phone_last4") @db.VarChar(4)
+  email             String?   @db.VarChar(255)
+  organization      String?   @db.VarChar(255)
+  signatureUrl      String?   @map("signature_url") @db.Text
+  registrationType  String    @default("pre_registered") @map("registration_type") @db.VarChar(20)
+  registeredAt      DateTime  @default(now()) @map("registered_at") @db.Timestamptz
+  lastLogin         DateTime? @map("last_login") @db.Timestamptz
+  isActive          Boolean   @default(true) @map("is_active")
+
+  authSessions      AuthSession[]
+  signatures        Signature[]
+
+  @@unique([name, phoneLast4], name: "unique_user")
+  @@index([name, phoneLast4], name: "idx_users_name_phone")
+  @@map("users")
+}
+
+model AuthSession {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  token     String    @unique @db.Text
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  expiresAt DateTime  @map("expires_at") @db.Timestamptz
+  isRevoked Boolean   @default(false) @map("is_revoked")
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token], name: "idx_auth_token")
+  @@map("auth_sessions")
+}
+
+model Signature {
+  id            String   @id @default(uuid()) @db.Uuid
+  userId        String   @unique @map("user_id") @db.Uuid
+  signatureData String   @map("signature_data") @db.Text
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("signatures")
+}
