@@ -27,7 +27,8 @@ export default function AdminPage() {
   const fetchParticipants = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:3001/api/admin/participants');
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      const response = await fetch(`${API_URL}/api/admin/participants`);
       const result = await response.json();
 
       if (result.success) {

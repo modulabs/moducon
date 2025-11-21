@@ -1,7 +1,11 @@
 import { Router } from 'express';
 import * as adminController from '../controllers/adminController';
+import { adminAuth } from '../middleware/adminAuth';
 
 const router = Router();
+
+// 모든 관리자 라우트에 인증 미들웨어 적용
+router.use(adminAuth);
 
 /**
  * GET /api/admin/participants
