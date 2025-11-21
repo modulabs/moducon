@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Header } from '@/components/layout/Header';
 
 interface Participant {
@@ -14,6 +15,7 @@ interface Participant {
 }
 
 export default function AdminPage() {
+  const router = useRouter();
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -21,15 +23,36 @@ export default function AdminPage() {
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
+    // 인증 체크
+    const token = localStorage.getItem('admin_token');
+    if (!token) {
+      router.push('/admin/login');
+      return;
+    }
+
     fetchParticipants();
-  }, []);
+  }, [router]);
 
   const fetchParticipants = async () => {
     try {
       setLoading(true);
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-      const response = await fetch(`${API_URL}/api/admin/participants`);
+      const token = localStorage.getItem('admin_token');
+
+      const response = await fetch(`${API_URL}/api/admin/participants`, {
+        headers: {
+          'x-admin-token': token || '',
+        },
+      });
+
       const result = await response.json();
+
+      if (response.status === 401) {
+        // 토큰 만료 또는 무효
+        localStorage.removeItem('admin_token');
+        router.push('/admin/login');
+        return;
+      }
 
       if (result.success) {
         setParticipants(result.data.participants);
@@ -43,6 +66,11 @@ export default function AdminPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('admin_token');
+    router.push('/admin/login');
   };
 
   const filteredParticipants = participants.filter(
@@ -61,28 +89,36 @@ export default function AdminPage() {
       <Header />
 
       <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            관리자 대시보드
-          </h1>
-          <p className="text-gray-600">참가자 목록 및 서명 관리</p>
+        <div className="mb-8 flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              관리자 대시보드
+            </h1>
+            <p className="text-gray-600">참가자 목록 및 서명 관리</p>
+          </div>
+          <button
+            onClick={handleLogout}
+            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+          >
+            로그아웃
+          </button>
         </div>
 
-        {/* 통계 */}
+        {/* 통계 - 공공문서 스타일 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <div className="bg-white p-6 rounded-lg shadow">
+          <div className="bg-white p-6 rounded border border-gray-300">
             <div className="text-sm text-gray-600 mb-1">전체 참가자</div>
-            <div className="text-3xl font-bold text-blue-600">{stats.total}</div>
+            <div className="text-3xl font-bold text-gray-900">{stats.total}</div>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow">
+          <div className="bg-white p-6 rounded border border-gray-300">
             <div className="text-sm text-gray-600 mb-1">서명 완료</div>
-            <div className="text-3xl font-bold text-green-600">
+            <div className="text-3xl font-bold text-gray-900">
               {stats.withSignature}
             </div>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow">
+          <div className="bg-white p-6 rounded border border-gray-300">
             <div className="text-sm text-gray-600 mb-1">로그인 기록</div>
-            <div className="text-3xl font-bold text-purple-600">
+            <div className="text-3xl font-bold text-gray-900">
               {stats.withLogin}
             </div>
           </div>
@@ -95,33 +131,33 @@ export default function AdminPage() {
             placeholder="이름 또는 전화번호로 검색..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-4 py-3 border border-gray-300 rounded focus:ring-2 focus:ring-gray-400 focus:border-transparent text-gray-900"
           />
         </div>
 
-        {/* 참가자 목록 */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
+        {/* 참가자 목록 - 공공문서 스타일 */}
+        <div className="bg-white rounded border border-gray-300 overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full">
+              <thead className="bg-gray-50 border-b border-gray-300">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                     이름
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                     전화번호 뒷자리
                   </th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    서명 여부
+                  <th className="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    서명
                   </th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    로그인 기록
+                  <th className="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    최근 로그인
                   </th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
                     등록일시
                   </th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    액션
+                  <th className="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    상세
                   </th>
                 </tr>
               </thead>
@@ -150,34 +186,28 @@ export default function AdminPage() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         {participant.name}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                         *{participant.phone_last4}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-center">
                         {participant.has_signature ? (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                            ✅ 완료
-                          </span>
+                          <span className="text-sm text-gray-700">완료</span>
                         ) : (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                            ❌ 미완료
-                          </span>
+                          <span className="text-sm text-gray-400">미완료</span>
                         )}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
-                        {participant.last_login ? (
-                          <span className="text-green-600">🔐 있음</span>
-                        ) : (
-                          <span className="text-gray-400">🔓 없음</span>
-                        )}
+                      <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-700">
+                        {participant.last_login
+                          ? new Date(participant.last_login).toLocaleString('ko-KR')
+                          : '-'}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-700">
                         {new Date(participant.registered_at).toLocaleDateString('ko-KR')}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
                         <button
                           onClick={() => setSelectedParticipant(participant)}
-                          className="text-blue-600 hover:text-blue-900 font-medium"
+                          className="text-gray-700 hover:text-gray-900 font-medium underline"
                         >
                           상세보기
                         </button>
@@ -190,12 +220,12 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {/* 서명 상세 모달 */}
+        {/* 서명 상세 모달 - 공공문서 스타일 */}
         {selectedParticipant && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="bg-white rounded border-2 border-gray-400 shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
               <div className="p-6">
-                <div className="flex justify-between items-start mb-6">
+                <div className="flex justify-between items-start mb-6 border-b border-gray-300 pb-4">
                   <h2 className="text-2xl font-bold text-gray-900">
                     참가자 상세 정보
                   </h2>
@@ -244,7 +274,7 @@ export default function AdminPage() {
                     </label>
                     {selectedParticipant.has_signature &&
                     selectedParticipant.signature_data ? (
-                      <div className="border-2 border-gray-300 rounded-lg p-4 bg-white">
+                      <div className="border-2 border-gray-300 rounded p-4 bg-white">
                         <img
                           src={selectedParticipant.signature_data}
                           alt="서명"
@@ -252,7 +282,7 @@ export default function AdminPage() {
                         />
                       </div>
                     ) : (
-                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center text-gray-500">
+                      <div className="border-2 border-dashed border-gray-300 rounded p-8 text-center text-gray-500">
                         서명이 등록되지 않았습니다.
                       </div>
                     )}
@@ -261,7 +291,7 @@ export default function AdminPage() {
                   <div className="pt-4">
                     <button
                       onClick={() => setSelectedParticipant(null)}
-                      className="w-full px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300"
+                      className="w-full px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 border border-gray-300"
                     >
                       닫기
                     </button>

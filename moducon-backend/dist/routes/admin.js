@@ -37,7 +37,12 @@ const express_1 = require("express");
 const adminController = __importStar(require("../controllers/adminController"));
 const adminAuth_1 = require("../middleware/adminAuth");
 const router = (0, express_1.Router)();
-// 모든 관리자 라우트에 인증 미들웨어 적용
+/**
+ * POST /api/admin/login
+ * 관리자 로그인 (인증 불필요)
+ */
+router.post('/login', adminController.adminLogin);
+// 이하 모든 관리자 라우트에 인증 미들웨어 적용
 router.use(adminAuth_1.adminAuth);
 /**
  * GET /api/admin/participants

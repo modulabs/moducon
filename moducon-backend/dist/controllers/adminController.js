@@ -1,10 +1,52 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.searchParticipants = exports.getParticipantById = exports.getParticipants = void 0;
+exports.searchParticipants = exports.getParticipantById = exports.getParticipants = exports.adminLogin = void 0;
 const client_1 = require("@prisma/client");
+const bcryptjs_1 = __importDefault(require("bcryptjs"));
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const response_1 = require("../utils/response");
 const logger_1 = require("../utils/logger");
 const prisma = new client_1.PrismaClient();
+/**
+ * POST /api/admin/login
+ * 관리자 로그인
+ */
+const adminLogin = async (req, res) => {
+    try {
+        const { username, password } = req.body;
+        // 입력 검증
+        if (!username || !password) {
+            return res.status(400).json((0, response_1.errorResponse)('MISSING_FIELDS', '아이디와 비밀번호를 입력해주세요.'));
+        }
+        // 관리자 계정 조회
+        const admin = await prisma.admin.findUnique({
+            where: { username },
+        });
+        if (!admin) {
+            return res.status(401).json((0, response_1.errorResponse)('INVALID_CREDENTIALS', '아이디 또는 비밀번호가 올바르지 않습니다.'));
+        }
+        // 비밀번호 검증
+        const isValidPassword = await bcryptjs_1.default.compare(password, admin.passwordHash);
+        if (!isValidPassword) {
+            return res.status(401).json((0, response_1.errorResponse)('INVALID_CREDENTIALS', '아이디 또는 비밀번호가 올바르지 않습니다.'));
+        }
+        // JWT 토큰 생성
+        const token = jsonwebtoken_1.default.sign({ adminId: admin.id, username: admin.username }, process.env.ADMIN_SECRET || 'admin-secret-key-change-in-production', { expiresIn: '7d' });
+        logger_1.logger.info(`Admin login successful: ${username}`);
+        res.json((0, response_1.successResponse)({
+            token,
+            expiresIn: '7d',
+        }, 'Admin login successful'));
+    }
+    catch (error) {
+        logger_1.logger.error('Admin login error:', error);
+        res.status(500).json((0, response_1.errorResponse)('LOGIN_FAILED', 'Login failed. Please try again.'));
+    }
+};
+exports.adminLogin = adminLogin;
 /**
  * GET /api/admin/participants
  * 모든 참가자 목록 조회 (이름, 전화번호 뒷4자리, 서명 여부)

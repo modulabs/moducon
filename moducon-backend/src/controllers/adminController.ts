@@ -1,9 +1,71 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 import { successResponse, errorResponse } from '../utils/response';
 import { logger } from '../utils/logger';
 
 const prisma = new PrismaClient();
+
+/**
+ * POST /api/admin/login
+ * 관리자 로그인
+ */
+export const adminLogin = async (req: Request, res: Response) => {
+  try {
+    const { username, password } = req.body;
+
+    // 입력 검증
+    if (!username || !password) {
+      return res.status(400).json(
+        errorResponse('MISSING_FIELDS', '아이디와 비밀번호를 입력해주세요.')
+      );
+    }
+
+    // 관리자 계정 조회
+    const admin = await prisma.admin.findUnique({
+      where: { username },
+    });
+
+    if (!admin) {
+      return res.status(401).json(
+        errorResponse('INVALID_CREDENTIALS', '아이디 또는 비밀번호가 올바르지 않습니다.')
+      );
+    }
+
+    // 비밀번호 검증
+    const isValidPassword = await bcrypt.compare(password, admin.passwordHash);
+    if (!isValidPassword) {
+      return res.status(401).json(
+        errorResponse('INVALID_CREDENTIALS', '아이디 또는 비밀번호가 올바르지 않습니다.')
+      );
+    }
+
+    // JWT 토큰 생성
+    const token = jwt.sign(
+      { adminId: admin.id, username: admin.username },
+      process.env.ADMIN_SECRET || 'admin-secret-key-change-in-production',
+      { expiresIn: '7d' }
+    );
+
+    logger.info(`Admin login successful: ${username}`);
+
+    res.json(
+      successResponse(
+        {
+          token,
+          expiresIn: '7d',
+        },
+        'Admin login successful'
+      )
+    );
+  } catch (error) {
+    logger.error('Admin login error:', error);
+    res.status(500).json(
+      errorResponse('LOGIN_FAILED', 'Login failed. Please try again.')
+    );
+  }
+};
 
 /**
  * GET /api/admin/participants
