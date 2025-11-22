@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Header } from '@/components/layout/Header';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface Participant {
   id: string;
@@ -135,96 +136,168 @@ export default function AdminPage() {
           />
         </div>
 
-        {/* 참가자 목록 - 공공문서 스타일 */}
-        <div className="bg-white rounded border border-gray-300 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full">
-              <thead className="bg-gray-50 border-b border-gray-300">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    이름
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    전화번호 뒷자리
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider" style={{ width: '200px' }}>
-                    서명
-                  </th>
-                  <th className="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    최근 로그인
-                  </th>
-                  <th className="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    등록일시
-                  </th>
-                  <th className="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    상세
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {loading ? (
-                  <tr>
-                    <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
-                      로딩 중...
-                    </td>
-                  </tr>
-                ) : error ? (
-                  <tr>
-                    <td colSpan={6} className="px-6 py-4 text-center text-red-500">
-                      {error}
-                    </td>
-                  </tr>
-                ) : filteredParticipants.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
-                      검색 결과가 없습니다.
-                    </td>
-                  </tr>
-                ) : (
-                  filteredParticipants.map((participant) => (
-                    <tr key={participant.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {participant.name}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                        *{participant.phone_last4}
-                      </td>
-                      <td className="px-6 py-4">
-                        {participant.has_signature && participant.signature_data ? (
-                          <div className="flex items-center">
-                            <img
-                              src={participant.signature_data}
-                              alt={`${participant.name} 서명`}
-                              className="h-12 w-auto max-w-[180px] object-contain border border-gray-300 rounded bg-white"
-                            />
-                          </div>
-                        ) : (
-                          <span className="text-sm text-gray-400">미완료</span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-700">
-                        {participant.last_login
-                          ? new Date(participant.last_login).toLocaleString('ko-KR')
-                          : '-'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-700">
-                        {new Date(participant.registered_at).toLocaleDateString('ko-KR')}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
-                        <button
-                          onClick={() => setSelectedParticipant(participant)}
-                          className="text-gray-700 hover:text-gray-900 font-medium underline"
-                        >
-                          상세보기
-                        </button>
-                      </td>
+        {/* 참가자 목록 - 탭으로 분리 */}
+        <Tabs defaultValue="main" className="w-full">
+          <TabsList className="w-full justify-start border-b border-gray-300 rounded-none bg-transparent p-0">
+            <TabsTrigger
+              value="main"
+              className="px-6 py-3 rounded-none border-b-2 border-transparent data-[state=active]:border-gray-900 data-[state=active]:bg-transparent"
+            >
+              메인
+            </TabsTrigger>
+            <TabsTrigger
+              value="detail"
+              className="px-6 py-3 rounded-none border-b-2 border-transparent data-[state=active]:border-gray-900 data-[state=active]:bg-transparent"
+            >
+              상세
+            </TabsTrigger>
+          </TabsList>
+
+          {/* 메인 탭 - 이름, 전화번호, 서명만 표시 */}
+          <TabsContent value="main" className="mt-0">
+            <div className="bg-white rounded border border-gray-300 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="min-w-full">
+                  <thead className="bg-gray-50 border-b border-gray-300">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        이름
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        전화번호 뒷자리
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider" style={{ width: '250px' }}>
+                        서명
+                      </th>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {loading ? (
+                      <tr>
+                        <td colSpan={3} className="px-6 py-4 text-center text-gray-500">
+                          로딩 중...
+                        </td>
+                      </tr>
+                    ) : error ? (
+                      <tr>
+                        <td colSpan={3} className="px-6 py-4 text-center text-red-500">
+                          {error}
+                        </td>
+                      </tr>
+                    ) : filteredParticipants.length === 0 ? (
+                      <tr>
+                        <td colSpan={3} className="px-6 py-4 text-center text-gray-500">
+                          검색 결과가 없습니다.
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredParticipants.map((participant) => (
+                        <tr key={participant.id} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {participant.name}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                            *{participant.phone_last4}
+                          </td>
+                          <td className="px-6 py-4">
+                            {participant.has_signature && participant.signature_data ? (
+                              <div className="flex items-center">
+                                <img
+                                  src={participant.signature_data}
+                                  alt={`${participant.name} 서명`}
+                                  className="h-12 w-auto max-w-[220px] object-contain border border-gray-300 rounded bg-white"
+                                />
+                              </div>
+                            ) : (
+                              <span className="text-sm text-gray-400"></span>
+                            )}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* 상세 탭 - 최근 로그인, 등록일시, 상세보기 버튼 */}
+          <TabsContent value="detail" className="mt-0">
+            <div className="bg-white rounded border border-gray-300 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="min-w-full">
+                  <thead className="bg-gray-50 border-b border-gray-300">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        이름
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        전화번호 뒷자리
+                      </th>
+                      <th className="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        최근 로그인
+                      </th>
+                      <th className="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        등록일시
+                      </th>
+                      <th className="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        상세
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {loading ? (
+                      <tr>
+                        <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                          로딩 중...
+                        </td>
+                      </tr>
+                    ) : error ? (
+                      <tr>
+                        <td colSpan={5} className="px-6 py-4 text-center text-red-500">
+                          {error}
+                        </td>
+                      </tr>
+                    ) : filteredParticipants.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                          검색 결과가 없습니다.
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredParticipants.map((participant) => (
+                        <tr key={participant.id} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {participant.name}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                            *{participant.phone_last4}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-700">
+                            {participant.last_login
+                              ? new Date(participant.last_login).toLocaleString('ko-KR')
+                              : '-'}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-700">
+                            {new Date(participant.registered_at).toLocaleDateString('ko-KR')}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
+                            <button
+                              onClick={() => setSelectedParticipant(participant)}
+                              className="text-gray-700 hover:text-gray-900 font-medium underline"
+                            >
+                              상세보기
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
 
         {/* 서명 상세 모달 - 공공문서 스타일 */}
         {selectedParticipant && (
