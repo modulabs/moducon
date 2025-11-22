@@ -418,6 +418,12 @@
 | 2025-11-21 | - | ✅ **문서화 검증 100%** (계획서 820줄 + 보고서 334줄) | reviewer |
 | 2025-11-21 | - | 📄 **61_FINAL_QA_REPORT.md 작성** (최종 QA 검증 보고서, 95/100) | reviewer |
 | 2025-11-21 | - | 🏆 **프로덕션 배포 승인 (조건부)** (ADMIN_SECRET 설정 필요) | reviewer |
+| 2025-11-22 | - | 🐛 **서명 기능 수정 착수** (테이블 이미지 표시 + 누락 문제 해결) | hands-on worker |
+| 2025-11-22 | - | ✅ **백엔드 수정 완료** (authService.ts, adminController.ts) | hands-on worker |
+| 2025-11-22 | - | ✅ **프론트엔드 UI 수정 완료** (admin/page.tsx 테이블 이미지 표시) | hands-on worker |
+| 2025-11-22 | - | ✅ **서명 기능 테스트 완료** (조해창, 김현 서명 정상 표시) | hands-on worker |
+| 2025-11-22 | - | 📄 **62_SIGNATURE_FIX_REPORT.md 작성** (수정 보고서) | hands-on worker |
+| 2025-11-22 | - | ✅ **Git 커밋 완료** (backend-dev 브랜치) | hands-on worker |
 
 ## 📊 전체 진행률
 
