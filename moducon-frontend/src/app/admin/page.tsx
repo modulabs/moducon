@@ -147,7 +147,7 @@ export default function AdminPage() {
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                     전화번호 뒷자리
                   </th>
-                  <th className="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider" style={{ width: '200px' }}>
                     서명
                   </th>
                   <th className="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
@@ -189,9 +189,15 @@ export default function AdminPage() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                         *{participant.phone_last4}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center">
-                        {participant.has_signature ? (
-                          <span className="text-sm text-gray-700">완료</span>
+                      <td className="px-6 py-4">
+                        {participant.has_signature && participant.signature_data ? (
+                          <div className="flex items-center">
+                            <img
+                              src={participant.signature_data}
+                              alt={`${participant.name} 서명`}
+                              className="h-12 w-auto max-w-[180px] object-contain border border-gray-300 rounded bg-white"
+                            />
+                          </div>
                         ) : (
                           <span className="text-sm text-gray-400">미완료</span>
                         )}

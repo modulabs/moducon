@@ -223,14 +223,31 @@ export const searchParticipants = async (req: Request, res: Response) => {
       ],
     });
 
-    const participantsWithSignature = participants.map((participant) => ({
-      id: participant.id,
-      name: participant.name,
-      phone_last4: participant.phoneLast4,
-      has_signature: !!participant.signatureUrl,
-      last_login: participant.lastLogin,
-      registered_at: participant.registeredAt,
-    }));
+    // 서명 데이터를 포함한 참가자 정보 생성
+    const participantsWithSignature = await Promise.all(
+      participants.map(async (participant) => {
+        let signatureData = null;
+
+        if (participant.signatureUrl) {
+          // 서명이 있는 경우 실제 서명 데이터 조회
+          const signature = await prisma.signature.findUnique({
+            where: { userId: participant.id },
+            select: { signatureData: true },
+          });
+          signatureData = signature?.signatureData || null;
+        }
+
+        return {
+          id: participant.id,
+          name: participant.name,
+          phone_last4: participant.phoneLast4,
+          has_signature: !!participant.signatureUrl,
+          signature_data: signatureData,
+          last_login: participant.lastLogin,
+          registered_at: participant.registeredAt,
+        };
+      })
+    );
 
     res.json(
       successResponse(
