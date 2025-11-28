@@ -48,15 +48,15 @@ export default function SessionsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadSessions(activeTrack);
-  }, [activeTrack]);
+    const loadSessions = async () => {
+      setLoading(true);
+      const data = await fetchSessions(activeTrack || undefined);
+      setSessions(data);
+      setLoading(false);
+    };
 
-  const loadSessions = async (track: string | null) => {
-    setLoading(true);
-    const data = await fetchSessions(track || undefined);
-    setSessions(data);
-    setLoading(false);
-  };
+    loadSessions();
+  }, [activeTrack]);
 
   const filterByTrack = (track: string | null) => {
     setActiveTrack(track);
