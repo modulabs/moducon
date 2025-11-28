@@ -5,6 +5,13 @@ import { useParams, useRouter } from 'next/navigation';
 import { fetchBooths, type Booth } from '@/lib/googleSheets';
 import Link from 'next/link';
 
+// Static Export를 위한 generateStaticParams
+export async function generateStaticParams() {
+  // 현재는 샘플 데이터만 있으므로 빈 배열 반환
+  // 실제 데이터가 있을 경우 모든 부스 ID를 반환
+  return [];
+}
+
 export default function BoothDetailPage() {
   const params = useParams();
   const router = useRouter();
