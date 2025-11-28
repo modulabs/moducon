@@ -36,6 +36,19 @@ export interface Paper {
   willPresent: string;
 }
 
+export interface Session {
+  id: string;
+  name: string;
+  track: string;
+  startTime: string;
+  endTime: string;
+  location: string;
+  speaker: string;
+  difficulty: '초급' | '중급' | '고급';
+  description: string;
+  hashtags: string[];
+}
+
 /**
  * 부스 데이터를 가져와서 파싱
  */
@@ -99,6 +112,49 @@ export async function filterPapers(
 
   if (presentationTime) {
     filtered = filtered.filter(p => p.presentationTime === presentationTime);
+  }
+
+  return filtered;
+}
+
+/**
+ * 세션 데이터를 가져와서 파싱
+ * Google Sheets의 "Sessions" 시트에서 데이터 로드
+ */
+export async function getSessions(): Promise<Session[]> {
+  // Google Sheets MCP를 통해 데이터 가져오기
+  // 시트 범위: Sessions!A2:J100 (헤더 제외)
+  // 컬럼: ID, 세션명, 트랙, 시작시간, 종료시간, 장소, 연사, 난이도, 설명, 해시태그
+
+  // 현재는 하드코딩된 데이터 반환 (향후 MCP 연동)
+  return [];
+}
+
+/**
+ * 특정 세션 데이터 가져오기
+ */
+export async function getSessionById(id: string): Promise<Session | null> {
+  const sessions = await getSessions();
+  return sessions.find(s => s.id === id) || null;
+}
+
+/**
+ * 세션 필터링 (트랙별, 난이도별)
+ */
+export async function filterSessions(
+  track?: string,
+  difficulty?: '초급' | '중급' | '고급'
+): Promise<Session[]> {
+  const sessions = await getSessions();
+
+  let filtered = sessions;
+
+  if (track) {
+    filtered = filtered.filter(s => s.track === track);
+  }
+
+  if (difficulty) {
+    filtered = filtered.filter(s => s.difficulty === difficulty);
   }
 
   return filtered;
