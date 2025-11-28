@@ -42,21 +42,21 @@ const login = async (req, res) => {
         const { name, phone_last4 } = req.body;
         // 입력 검증
         if (!name || !phone_last4) {
-            return res.status(400).json((0, response_1.errorResponse)('INVALID_INPUT', 'Name and phone_last4 are required'));
+            return (0, response_1.errorResponse)(res, 'Name and phone_last4 are required', 400, 'INVALID_INPUT');
         }
         if (phone_last4.length !== 4 || !/^\d{4}$/.test(phone_last4)) {
-            return res.status(400).json((0, response_1.errorResponse)('INVALID_PHONE', 'phone_last4 must be exactly 4 digits'));
+            return (0, response_1.errorResponse)(res, 'phone_last4 must be exactly 4 digits', 400, 'INVALID_PHONE');
         }
         // 로그인 시도
         const result = await authService.login({ name, phone_last4 });
         if (!result) {
-            return res.status(401).json((0, response_1.errorResponse)('AUTH_USER_NOT_FOUND', '사용자 정보를 찾을 수 없습니다.'));
+            return (0, response_1.errorResponse)(res, '사용자 정보를 찾을 수 없습니다.', 401, 'AUTH_USER_NOT_FOUND');
         }
-        res.json((0, response_1.successResponse)(result, 'Login successful'));
+        (0, response_1.successResponse)(res, result, 'Login successful');
     }
     catch (error) {
         logger_1.logger.error('Login error:', error);
-        res.status(500).json((0, response_1.errorResponse)('LOGIN_FAILED', 'Login failed due to server error'));
+        (0, response_1.errorResponse)(res, 'Login failed due to server error', 500, 'LOGIN_FAILED');
     }
 };
 exports.login = login;
@@ -66,22 +66,22 @@ const saveSignature = async (req, res) => {
         const userId = req.user.userId;
         // 입력 검증
         if (!signature_data) {
-            return res.status(400).json((0, response_1.errorResponse)('INVALID_INPUT', 'signature_data is required'));
+            return (0, response_1.errorResponse)(res, 'signature_data is required', 400, 'INVALID_INPUT');
         }
         // Base64 이미지 검증
         if (!signature_data.startsWith('data:image/')) {
-            return res.status(400).json((0, response_1.errorResponse)('INVALID_SIGNATURE', 'signature_data must be a valid base64 image'));
+            return (0, response_1.errorResponse)(res, 'signature_data must be a valid base64 image', 400, 'INVALID_SIGNATURE');
         }
         // 서명 저장
         const result = await authService.saveSignature({
             userId,
             signatureData: signature_data,
         });
-        res.json((0, response_1.successResponse)(result, 'Signature saved'));
+        (0, response_1.successResponse)(res, result, 'Signature saved');
     }
     catch (error) {
         logger_1.logger.error('Save signature error:', error);
-        res.status(500).json((0, response_1.errorResponse)('SIGNATURE_SAVE_FAILED', 'Failed to save signature'));
+        (0, response_1.errorResponse)(res, 'Failed to save signature', 500, 'SIGNATURE_SAVE_FAILED');
     }
 };
 exports.saveSignature = saveSignature;
@@ -90,13 +90,13 @@ const getMe = async (req, res) => {
         const userId = req.user.userId;
         const user = await authService.getUserById(userId);
         if (!user) {
-            return res.status(404).json((0, response_1.errorResponse)('USER_NOT_FOUND', 'User not found'));
+            return (0, response_1.errorResponse)(res, 'User not found', 404, 'USER_NOT_FOUND');
         }
-        res.json((0, response_1.successResponse)(user));
+        (0, response_1.successResponse)(res, user);
     }
     catch (error) {
         logger_1.logger.error('Get user error:', error);
-        res.status(500).json((0, response_1.errorResponse)('GET_USER_FAILED', 'Failed to get user information'));
+        (0, response_1.errorResponse)(res, 'Failed to get user information', 500, 'GET_USER_FAILED');
     }
 };
 exports.getMe = getMe;
@@ -105,17 +105,17 @@ const resetLogin = async (req, res) => {
         const { name, phone_last4 } = req.body;
         // 입력 검증
         if (!name || !phone_last4) {
-            return res.status(400).json((0, response_1.errorResponse)('INVALID_INPUT', 'Name and phone_last4 are required'));
+            return (0, response_1.errorResponse)(res, 'Name and phone_last4 are required', 400, 'INVALID_INPUT');
         }
         const success = await authService.resetLogin({ name, phone_last4 });
         if (!success) {
-            return res.status(404).json((0, response_1.errorResponse)('USER_NOT_FOUND', 'User not found'));
+            return (0, response_1.errorResponse)(res, 'User not found', 404, 'USER_NOT_FOUND');
         }
-        res.json((0, response_1.successResponse)(null, 'Login session reset successfully'));
+        (0, response_1.successResponse)(res, null, 'Login session reset successfully');
     }
     catch (error) {
         logger_1.logger.error('Reset login error:', error);
-        res.status(500).json((0, response_1.errorResponse)('RESET_FAILED', 'Failed to reset login session'));
+        (0, response_1.errorResponse)(res, 'Failed to reset login session', 500, 'RESET_FAILED');
     }
 };
 exports.resetLogin = resetLogin;

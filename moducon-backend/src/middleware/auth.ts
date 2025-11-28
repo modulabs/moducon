@@ -19,9 +19,7 @@ export const authenticate = (
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json(
-        errorResponse('AUTH_TOKEN_MISSING', 'No authentication token provided')
-      );
+      return errorResponse(res, 'No authentication token provided', 401, 'AUTH_TOKEN_MISSING');
     }
 
     const token = authHeader.substring(7);
@@ -36,8 +34,6 @@ export const authenticate = (
     next();
   } catch (error) {
     logger.error('Authentication failed:', error);
-    return res.status(401).json(
-      errorResponse('AUTH_TOKEN_INVALID', 'Invalid or expired token')
-    );
+    return errorResponse(res, 'Invalid or expired token', 401, 'AUTH_TOKEN_INVALID');
   }
 };

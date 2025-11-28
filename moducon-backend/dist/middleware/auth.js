@@ -8,7 +8,7 @@ const authenticate = (req, res, next) => {
     try {
         const authHeader = req.headers.authorization;
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            return res.status(401).json((0, response_1.errorResponse)('AUTH_TOKEN_MISSING', 'No authentication token provided'));
+            return (0, response_1.errorResponse)(res, 'No authentication token provided', 401, 'AUTH_TOKEN_MISSING');
         }
         const token = authHeader.substring(7);
         const decoded = (0, jwt_1.verifyToken)(token);
@@ -21,7 +21,7 @@ const authenticate = (req, res, next) => {
     }
     catch (error) {
         logger_1.logger.error('Authentication failed:', error);
-        return res.status(401).json((0, response_1.errorResponse)('AUTH_TOKEN_INVALID', 'Invalid or expired token'));
+        return (0, response_1.errorResponse)(res, 'Invalid or expired token', 401, 'AUTH_TOKEN_INVALID');
     }
 };
 exports.authenticate = authenticate;

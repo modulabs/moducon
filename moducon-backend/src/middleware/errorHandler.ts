@@ -10,11 +10,11 @@ export const errorHandler = (
 ) => {
   logger.error('Unhandled error:', err);
 
-  res.status(500).json(
-    errorResponse(
-      'INTERNAL_SERVER_ERROR',
-      'An unexpected error occurred',
-      process.env.NODE_ENV === 'development' ? err.message : undefined
-    )
+  errorResponse(
+    res,
+    'An unexpected error occurred',
+    500,
+    'INTERNAL_SERVER_ERROR',
+    process.env.NODE_ENV === 'development' ? err.message : undefined
   );
 };
