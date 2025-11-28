@@ -10,7 +10,7 @@ import { useAuthStore } from '@/store/authStore';
 import Link from 'next/link';
 import { DigitalBadge } from '@/components/home/DigitalBadge';
 import { QuestProgress } from '@/components/home/QuestProgress';
-import { Calendar, Store, ArrowRight } from 'lucide-react';
+import { Calendar, Store, ArrowRight, FileText } from 'lucide-react';
 
 export default function HomePage() {
   const { user } = useAuthStore();
@@ -99,6 +99,12 @@ export default function HomePage() {
                 <Button variant="outline" className="w-full justify-start">
                   <Store className="mr-2 h-4 w-4" />
                   부스 목록
+                </Button>
+              </Link>
+              <Link href="/papers" passHref>
+                <Button variant="outline" className="w-full justify-start">
+                  <FileText className="mr-2 h-4 w-4" />
+                  포스터 발표
                 </Button>
               </Link>
             </CardContent>

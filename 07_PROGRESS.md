@@ -39,20 +39,21 @@
 
 ## 🎯 현재 작업 중
 
-**작업**: 🚀 **모바일 PWA 개발 시작**
-**담당자**: hands-on worker
-**상태**: 📋 **기획 완료** - 구현 준비 완료
+**작업**: 🎉 **모바일 PWA 개발 - 1차 구현 완료**
+**담당자**: hands-on worker → editor
+**상태**: ✅ **백엔드 API + 프론트엔드 UI + QR 스캔 구현 완료**
 
 **진행 상황**:
 1. ✅ 서명 기능 완료 (백엔드 96/100 A+ 등급)
-2. ✅ Google Sheets 데이터 확인 (부스 12개, 포스터 33개)
+2. ✅ Google Sheets 데이터 확인 (부스 13개, 포스터 33개)
 3. ✅ 모바일 PWA 개발 계획 수립 완료
-4. 📋 백엔드 API 추가 예정 (`/api/booths`, `/api/papers`)
-5. 📋 프론트엔드 UI 구현 예정 (부스/포스터 목록/상세)
-6. 📋 QR 스캔 기능 개선 예정 (후방 카메라)
+4. ✅ 백엔드 API 구현 (`/api/booths`, `/api/papers`)
+5. ✅ 프론트엔드 UI 구현 (부스/포스터 목록/상세)
+6. ✅ QR 스캔 기능 개선 (후방 카메라 `facingMode: 'environment'`)
 
 **계획 문서**: `81_MOBILE_PWA_PLAN.md`
-**다음 단계**: 백엔드 API 구현 → 프론트엔드 UI 구현
+**구현 문서**: `82_MOBILE_PWA_IMPLEMENTATION.md`
+**다음 단계**: Google Sheets MCP 실제 연동 + PWA 기능 추가
 
 ## 📅 다음 단계
 
