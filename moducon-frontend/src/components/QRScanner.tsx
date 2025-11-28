@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
 import { useRouter } from 'next/navigation';
+import { parseQRCode, getRouteFromQRData } from '@/lib/qrParser';
 
 interface QRScannerProps {
   onClose: () => void;
@@ -16,33 +17,12 @@ export default function QRScanner({ onClose, onScan }: QRScannerProps) {
   const [result, setResult] = useState<string | null>(null);
 
   /**
-   * QR 코드 값을 파싱하여 라우트 반환
-   * 예시:
-   * - "클라비" -> "/booths/booth-1"
-   * - "CVPR 2025" -> "/papers/paper-1"
+   * 햅틱 피드백 (모바일)
    */
-  const parseQRCode = useCallback((qrValue: string): string | null => {
-    const trimmed = qrValue.trim();
-
-    // 부스 이름인 경우
-    if (trimmed && !trimmed.includes(' 2025')) {
-      // 부스 이름으로 간주
-      const boothId = `booth-${trimmed.replace(/\s+/g, '-').toLowerCase()}`;
-      return `/booths/${boothId}`;
+  const triggerHaptic = useCallback(() => {
+    if (navigator.vibrate) {
+      navigator.vibrate(100);
     }
-
-    // 학회 이름인 경우 (포스터)
-    if (trimmed.includes('2025') || trimmed.includes('Workshop')) {
-      const paperId = `paper-${trimmed.replace(/\s+/g, '-').toLowerCase()}`;
-      return `/papers/${paperId}`;
-    }
-
-    // 직접 URL인 경우
-    if (trimmed.startsWith('/')) {
-      return trimmed;
-    }
-
-    return null;
   }, []);
 
   const stopScanner = useCallback(async () => {
@@ -60,18 +40,45 @@ export default function QRScanner({ onClose, onScan }: QRScannerProps) {
     console.log('QR Scan Success:', decodedText);
     setResult(decodedText);
 
-    // QR 값 파싱 및 라우팅
-    const parsedRoute = parseQRCode(decodedText);
-    if (parsedRoute) {
+    // QR 값 파싱
+    const parsed = parseQRCode(decodedText);
+    if (parsed) {
+      // 햅틱 피드백
+      triggerHaptic();
+
+      // 라우트 생성
+      const route = getRouteFromQRData(parsed);
+
+      // 스캐너 정지 및 이동
       stopScanner();
       if (onScan) {
         onScan(decodedText);
       }
-      router.push(parsedRoute);
+
+      // 타입별 메시지
+      const typeMessages = {
+        session: '세션',
+        booth: '부스',
+        paper: '포스터'
+      };
+      const message = `${typeMessages[parsed.type]} 페이지로 이동합니다.`;
+
+      // 성공 표시 (알림은 토스트 라이브러리 추가 시 활용)
+      console.log(`✅ ${message}`);
+      setResult(`${message} (${parsed.id})`);
+
+      // 페이지 이동
+      setTimeout(() => {
+        router.push(route);
+      }, 500);
     } else {
+      // 햅틱 피드백 (에러)
+      if (navigator.vibrate) {
+        navigator.vibrate([100, 50, 100]);
+      }
       setError('유효하지 않은 QR 코드입니다.');
     }
-  }, [router, onScan, stopScanner, parseQRCode]);
+  }, [router, onScan, stopScanner, triggerHaptic]);
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleScanError = useCallback((_errorMessage: string) => {
