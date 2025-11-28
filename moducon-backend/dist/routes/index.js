@@ -5,8 +5,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const auth_1 = __importDefault(require("./auth"));
+const booths_1 = __importDefault(require("./booths"));
+const papers_1 = __importDefault(require("./papers"));
 const router = (0, express_1.Router)();
 router.use('/auth', auth_1.default);
+router.use('/booths', booths_1.default);
+router.use('/papers', papers_1.default);
 // Health check
 router.get('/health', (req, res) => {
     res.json({
