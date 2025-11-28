@@ -1,0 +1,6 @@
+1:"$Sreact.fragment"
+2:I[22016,["/_next/static/chunks/46d572a3d5169920.js","/_next/static/chunks/157222ba9d13c5d6.js","/_next/static/chunks/a8440942472dfbf4.js"],""]
+3:I[97367,["/_next/static/chunks/ff1a16fafef87110.js","/_next/static/chunks/0144379f11d9a4d5.js"],"OutletBoundary"]
+4:"$Sreact.suspense"
+0:{"buildId":"FtXlKRm6WcaEFCjEhbdp6","rsc":["$","$1","c",{"children":[["$","div",null,{"className":"min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 flex items-center justify-center","children":["$","div",null,{"className":"text-center","children":[["$","div",null,{"className":"text-6xl mb-4","children":"❌"}],["$","p",null,{"className":"text-gray-600 text-lg mb-4","children":"부스를 찾을 수 없습니다."}],["$","$L2",null,{"href":"/booths","className":"px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors inline-block","children":"부스 목록으로"}]]}]}],[["$","script","script-0",{"src":"/_next/static/chunks/a8440942472dfbf4.js","async":true}]],["$","$L3",null,{"children":["$","$4",null,{"name":"Next.MetadataOutlet","children":"$@5"}]}]]}],"loading":null,"isPartial":false}
+5:null
