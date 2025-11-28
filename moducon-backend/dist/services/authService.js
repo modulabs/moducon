@@ -1,13 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.resetLogin = exports.getUserById = exports.saveSignature = exports.login = void 0;
-const client_1 = require("@prisma/client");
 const jwt_1 = require("../config/jwt");
 const logger_1 = require("../utils/logger");
-const prisma = new client_1.PrismaClient();
+const prisma_1 = require("../lib/prisma");
 const login = async (input) => {
     // 사용자 검색
-    const user = await prisma.user.findUnique({
+    const user = await prisma_1.prisma.user.findUnique({
         where: {
             unique_user: {
                 name: input.name,
@@ -28,7 +27,7 @@ const login = async (input) => {
         name: user.name,
     });
     // 세션 저장
-    await prisma.authSession.create({
+    await prisma_1.prisma.authSession.create({
         data: {
             userId: user.id,
             token,
@@ -36,7 +35,7 @@ const login = async (input) => {
         },
     });
     // 마지막 로그인 시간 업데이트
-    await prisma.user.update({
+    await prisma_1.prisma.user.update({
         where: { id: user.id },
         data: { lastLogin: new Date() },
     });
@@ -55,11 +54,11 @@ const login = async (input) => {
 exports.login = login;
 const saveSignature = async (input) => {
     // 기존 서명 삭제 (있다면)
-    await prisma.signature.deleteMany({
+    await prisma_1.prisma.signature.deleteMany({
         where: { userId: input.userId },
     });
     // 새 서명 저장
-    const signature = await prisma.signature.create({
+    const signature = await prisma_1.prisma.signature.create({
         data: {
             userId: input.userId,
             signatureData: input.signatureData,
@@ -76,7 +75,7 @@ const saveSignature = async (input) => {
 };
 exports.saveSignature = saveSignature;
 const getUserById = async (userId) => {
-    const user = await prisma.user.findUnique({
+    const user = await prisma_1.prisma.user.findUnique({
         where: { id: userId },
         include: {
             signatures: true,
@@ -99,7 +98,7 @@ const getUserById = async (userId) => {
 exports.getUserById = getUserById;
 const resetLogin = async (input) => {
     // 사용자 검색
-    const user = await prisma.user.findUnique({
+    const user = await prisma_1.prisma.user.findUnique({
         where: {
             unique_user: {
                 name: input.name,
@@ -111,16 +110,16 @@ const resetLogin = async (input) => {
         return false;
     }
     // 모든 세션 무효화
-    await prisma.authSession.updateMany({
+    await prisma_1.prisma.authSession.updateMany({
         where: { userId: user.id },
         data: { isRevoked: true },
     });
     // 서명 삭제
-    await prisma.signature.deleteMany({
+    await prisma_1.prisma.signature.deleteMany({
         where: { userId: user.id },
     });
     // 마지막 로그인 초기화
-    await prisma.user.update({
+    await prisma_1.prisma.user.update({
         where: { id: user.id },
         data: { lastLogin: null },
     });
