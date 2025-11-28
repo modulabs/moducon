@@ -2,10 +2,10 @@
 
 ## 📋 Document Information
 
-**Version:** 1.5
+**Version:** 1.6
 **Last Updated:** 2025-11-28
 **Author:** Moducon 2025 Planning Team
-**Status:** Mobile PWA Development
+**Status:** Mobile PWA Complete - Deployment Ready
 
 ### Version History
 | Version | Date | Author | Changes |
@@ -13,6 +13,7 @@
 | 1.0 | 2025-01-11 | Planning Team | 초기 PRD 작성 |
 | 1.4 | 2025-11-28 | Technical Lead | 서명 기능 100% 완료, 관리자 UI 개선 완료 |
 | 1.5 | 2025-11-28 | Technical Lead | 모바일 PWA 개발 시작, Google Sheets 연동 준비 |
+| 1.6 | 2025-11-28 | Technical Lead | 모바일 PWA 개발 완료 (부스/포스터 기능, Google Sheets 연동) |
 
 **Project Name:** 모두콘 2025 디지털 컨퍼런스 북
 **Project Type:** Progressive Web App (PWA)
@@ -293,10 +294,10 @@ AI/SW 기술 트렌드에 관심 있고, **기술을 활용한 효율적인 운�
   - 화장실, 식음료존, 포토존
   - 비상구
 
-### 4. 부스 & 페이퍼샵 (P0 - Must Have)
+### 4. 부스 & 페이퍼샵 (P0 - Must Have) ✅ **완료 (2025-11-28)**
 
-#### 4.1 LAB 부스 정보
-- **표시 항목**:
+#### 4.1 LAB 부스 정보 ✅ **완료**
+- **표시 항목**: ✅
   - 부스 이름
   - 운영 팀/회사
   - 데모 내용 소개 (텍스트 + 이미지/영상)
@@ -304,14 +305,17 @@ AI/SW 기술 트렌드에 관심 있고, **기술을 활용한 효율적인 운�
   - 위치 (지도 연동)
   - 예상 체험 시간
   - 현재 혼잡도
-- **필터/검색**:
-  - 관심사별 필터
+- **필터/검색**: ✅
+  - 타입별 필터 (기업/LAB/교육사업팀/테크포임팩트)
   - 키워드 검색
   - 거리순 정렬
   - 혼잡도순 정렬
+- **구현 완료일**: 2025-11-28
+- **실제 데이터**: 13개 부스 (Google Sheets 연동)
+- **기술 스택**: Next.js, Google Sheets MCP, shadcn/ui
 
-#### 4.2 부스 방문 기록
-- **인증 방법**: QR 스캔
+#### 4.2 부스 방문 기록 ✅ **완료**
+- **인증 방법**: QR 스캔 (후방 카메라 `facingMode: 'environment'`)
 - **기록 정보**:
   - 방문 시간
   - 방문 부스 목록
@@ -320,12 +324,24 @@ AI/SW 기술 트렌드에 관심 있고, **기술을 활용한 효율적인 운�
   - 내 활동 타임라인
   - 후속 연락/자료 제공
   - 이벤트 참여 자격
+- **구현 완료일**: 2025-11-28
+- **QR 스캔**: html5-qrcode 라이브러리, 부스 이름 인식 후 자동 라우팅
 
-#### 4.3 페이퍼샵 (포스터 세션)
-- **포스터 정보**:
+#### 4.3 페이퍼샵 (포스터 세션) ✅ **완료**
+- **포스터 정보**: ✅
   - 논문 제목
   - 저자 및 소속
   - 초록 (Abstract)
+  - 학회 및 연도 (CVPR, ICCV, ACL, EMNLP, NeurIPS 등)
+  - 발표 시간 및 장소
+  - PDF 링크 (논문 원문)
+- **필터/검색**: ✅
+  - 학회별 필터 (CVPR, ICCV, ACL, EMNLP 등)
+  - 발표시간별 필터
+  - 키워드 검색
+- **구현 완료일**: 2025-11-28
+- **실제 데이터**: 33개 포스터 (Google Sheets 연동)
+- **통계 표시**: 학회별/시간대별 포스터 수
   - 키워드/태그
   - 저자 사진 (있는 경우)
   - Q&A 가능 시간
