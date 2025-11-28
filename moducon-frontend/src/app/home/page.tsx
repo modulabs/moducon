@@ -4,17 +4,19 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/authStore';
-import { sessionAPI, boothAPI } from '@/lib/api';
-import type { Session, Booth } from '@/types';
+// API imports commented out for future use
+// import { sessionAPI, boothAPI } from '@/lib/api';
+// import type { Session, Booth } from '@/types';
 import Link from 'next/link';
 import { DigitalBadge } from '@/components/home/DigitalBadge';
 import { QuestProgress } from '@/components/home/QuestProgress';
-import { Calendar, Store, ArrowRight } from 'lucide-react';
+import { Calendar, Store, ArrowRight, FileText } from 'lucide-react';
 
 export default function HomePage() {
   const { user } = useAuthStore();
-  const [sessions, setSessions] = useState<Session[]>([]);
-  const [booths, setBooths] = useState<Booth[]>([]);
+  // State variables commented out for future use
+  // const [sessions, setSessions] = useState<Session[]>([]);
+  // const [booths, setBooths] = useState<Booth[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -97,6 +99,12 @@ export default function HomePage() {
                 <Button variant="outline" className="w-full justify-start">
                   <Store className="mr-2 h-4 w-4" />
                   부스 목록
+                </Button>
+              </Link>
+              <Link href="/papers" passHref>
+                <Button variant="outline" className="w-full justify-start">
+                  <FileText className="mr-2 h-4 w-4" />
+                  포스터 발표
                 </Button>
               </Link>
             </CardContent>

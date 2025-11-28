@@ -1,8 +1,6 @@
-import { PrismaClient } from '@prisma/client';
 import { generateToken, getTokenExpiry } from '../config/jwt';
 import { logger } from '../utils/logger';
-
-const prisma = new PrismaClient();
+import { prisma } from '../lib/prisma';
 
 export interface LoginInput {
   name: string;
