@@ -1,12 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { fetchPapers, filterPapers, searchPapers, type Paper } from '@/lib/googleSheets';
 import Link from 'next/link';
 
 export default function PapersPage() {
   const [papers, setPapers] = useState<Paper[]>([]);
-  const [filteredPapers, setFilteredPapers] = useState<Paper[]>([]);
   const [selectedConference, setSelectedConference] = useState<string>('');
   const [selectedTime, setSelectedTime] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -17,21 +16,16 @@ export default function PapersPage() {
   const presentationTimes = ['전체', '12:40-13:20', '15:40-16:20', '발표X'];
 
   useEffect(() => {
-    loadPapers();
+    const loadData = async () => {
+      setLoading(true);
+      const data = await fetchPapers();
+      setPapers(data);
+      setLoading(false);
+    };
+    loadData();
   }, []);
 
-  useEffect(() => {
-    applyFilters();
-  }, [papers, selectedConference, selectedTime, searchQuery]);
-
-  async function loadPapers() {
-    setLoading(true);
-    const data = await fetchPapers();
-    setPapers(data);
-    setLoading(false);
-  }
-
-  function applyFilters() {
+  const filteredPapers = useMemo(() => {
     let result = papers;
 
     // 학회 필터
@@ -46,8 +40,8 @@ export default function PapersPage() {
       result = searchPapers(result, searchQuery);
     }
 
-    setFilteredPapers(result);
-  }
+    return result;
+  }, [papers, selectedConference, selectedTime, searchQuery]);
 
   if (loading) {
     return (

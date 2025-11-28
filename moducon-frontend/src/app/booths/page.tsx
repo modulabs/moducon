@@ -1,12 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { fetchBooths, filterBoothsByType, searchBooths, type Booth } from '@/lib/googleSheets';
 import Link from 'next/link';
 
 export default function BoothsPage() {
   const [booths, setBooths] = useState<Booth[]>([]);
-  const [filteredBooths, setFilteredBooths] = useState<Booth[]>([]);
   const [selectedType, setSelectedType] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [loading, setLoading] = useState(true);
@@ -20,21 +19,16 @@ export default function BoothsPage() {
   ];
 
   useEffect(() => {
-    loadBooths();
+    const loadData = async () => {
+      setLoading(true);
+      const data = await fetchBooths();
+      setBooths(data);
+      setLoading(false);
+    };
+    loadData();
   }, []);
 
-  useEffect(() => {
-    applyFilters();
-  }, [booths, selectedType, searchQuery]);
-
-  async function loadBooths() {
-    setLoading(true);
-    const data = await fetchBooths();
-    setBooths(data);
-    setLoading(false);
-  }
-
-  function applyFilters() {
+  const filteredBooths = useMemo(() => {
     let result = booths;
 
     // 타입 필터
@@ -47,8 +41,8 @@ export default function BoothsPage() {
       result = searchBooths(result, searchQuery);
     }
 
-    setFilteredBooths(result);
-  }
+    return result;
+  }, [booths, selectedType, searchQuery]);
 
   if (loading) {
     return (

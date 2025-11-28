@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
 import { useRouter } from 'next/navigation';
 
@@ -12,74 +12,8 @@ interface QRScannerProps {
 export default function QRScanner({ onClose, onScan }: QRScannerProps) {
   const router = useRouter();
   const scannerRef = useRef<Html5Qrcode | null>(null);
-  const [scanning, setScanning] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<string | null>(null);
-
-  useEffect(() => {
-    startScanner();
-
-    return () => {
-      stopScanner();
-    };
-  }, []);
-
-  async function startScanner() {
-    try {
-      setScanning(true);
-      setError(null);
-
-      const scanner = new Html5Qrcode('qr-reader');
-      scannerRef.current = scanner;
-
-      await scanner.start(
-        { facingMode: 'environment' }, // 후방 카메라 사용
-        {
-          fps: 10,
-          qrbox: { width: 250, height: 250 },
-        },
-        handleScanSuccess,
-        handleScanError
-      );
-    } catch (err) {
-      console.error('Scanner start error:', err);
-      setError('카메라를 시작할 수 없습니다. 카메라 권한을 확인해주세요.');
-      setScanning(false);
-    }
-  }
-
-  async function stopScanner() {
-    if (scannerRef.current) {
-      try {
-        await scannerRef.current.stop();
-        scannerRef.current.clear();
-      } catch (err) {
-        console.error('Scanner stop error:', err);
-      }
-    }
-  }
-
-  function handleScanSuccess(decodedText: string) {
-    console.log('QR Scan Success:', decodedText);
-    setResult(decodedText);
-
-    // QR 값 파싱 및 라우팅
-    const parsedRoute = parseQRCode(decodedText);
-    if (parsedRoute) {
-      stopScanner();
-      if (onScan) {
-        onScan(decodedText);
-      }
-      router.push(parsedRoute);
-    } else {
-      setError('유효하지 않은 QR 코드입니다.');
-    }
-  }
-
-  function handleScanError(errorMessage: string) {
-    // QR 코드를 찾지 못한 경우는 무시 (너무 많은 로그 방지)
-    // console.error('QR Scan Error:', errorMessage);
-  }
 
   /**
    * QR 코드 값을 파싱하여 라우트 반환
@@ -87,7 +21,7 @@ export default function QRScanner({ onClose, onScan }: QRScannerProps) {
    * - "클라비" -> "/booths/booth-1"
    * - "CVPR 2025" -> "/papers/paper-1"
    */
-  function parseQRCode(qrValue: string): string | null {
+  const parseQRCode = useCallback((qrValue: string): string | null => {
     const trimmed = qrValue.trim();
 
     // 부스 이름인 경우
@@ -109,7 +43,71 @@ export default function QRScanner({ onClose, onScan }: QRScannerProps) {
     }
 
     return null;
-  }
+  }, []);
+
+  const stopScanner = useCallback(async () => {
+    if (scannerRef.current) {
+      try {
+        await scannerRef.current.stop();
+        scannerRef.current.clear();
+      } catch (err) {
+        console.error('Scanner stop error:', err);
+      }
+    }
+  }, []);
+
+  const handleScanSuccess = useCallback((decodedText: string) => {
+    console.log('QR Scan Success:', decodedText);
+    setResult(decodedText);
+
+    // QR 값 파싱 및 라우팅
+    const parsedRoute = parseQRCode(decodedText);
+    if (parsedRoute) {
+      stopScanner();
+      if (onScan) {
+        onScan(decodedText);
+      }
+      router.push(parsedRoute);
+    } else {
+      setError('유효하지 않은 QR 코드입니다.');
+    }
+  }, [router, onScan, stopScanner, parseQRCode]);
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const handleScanError = useCallback((_errorMessage: string) => {
+    // QR 코드를 찾지 못한 경우는 무시 (너무 많은 로그 방지)
+    // console.error('QR Scan Error:', errorMessage);
+  }, []);
+
+  useEffect(() => {
+    const startScanner = async () => {
+      try {
+        setError(null);
+
+        const scanner = new Html5Qrcode('qr-reader');
+        scannerRef.current = scanner;
+
+        await scanner.start(
+          { facingMode: 'environment' }, // 후방 카메라 사용
+          {
+            fps: 10,
+            qrbox: { width: 250, height: 250 },
+          },
+          handleScanSuccess,
+          handleScanError
+        );
+      } catch (err) {
+        console.error('Scanner start error:', err);
+        setError('카메라를 시작할 수 없습니다. 카메라 권한을 확인해주세요.');
+      }
+    };
+
+    startScanner();
+
+    return () => {
+      stopScanner();
+    };
+  }, [handleScanSuccess, handleScanError, stopScanner]);
 
   return (
     <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4">
