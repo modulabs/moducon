@@ -19,7 +19,7 @@ interface Session {
   hashtags: string[];
 }
 
-const tracks = ['Track 1', 'Track 2', 'Track 3', 'Track 4', 'Track 5', 'Track 6'];
+const tracks = ['Track 00', 'Track 01', 'Track 10', 'Track i', 'Track 101'];
 
 // API에서 세션 데이터 가져오기
 async function fetchSessions(track?: string): Promise<Session[]> {
@@ -101,7 +101,7 @@ export default function SessionsPage() {
               variant={activeTrack === track ? 'default' : 'outline'}
               onClick={() => filterByTrack(track)}
             >
-              Track {track}
+              {track}
             </Button>
           ))}
         </div>
