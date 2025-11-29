@@ -2,10 +2,10 @@
 
 ## 📋 Document Information
 
-**Version:** 1.6
-**Last Updated:** 2025-11-28
+**Version:** 1.7
+**Last Updated:** 2025-11-29
 **Author:** Moducon 2025 Planning Team
-**Status:** Mobile PWA Complete - Deployment Ready
+**Status:** Critical Updates Required - QR & Sessions Data
 
 ### Version History
 | Version | Date | Author | Changes |
@@ -14,6 +14,7 @@
 | 1.4 | 2025-11-28 | Technical Lead | 서명 기능 100% 완료, 관리자 UI 개선 완료 |
 | 1.5 | 2025-11-28 | Technical Lead | 모바일 PWA 개발 시작, Google Sheets 연동 준비 |
 | 1.6 | 2025-11-28 | Technical Lead | 모바일 PWA 개발 완료 (부스/포스터 기능, Google Sheets 연동) |
+| 1.7 | 2025-11-29 | Technical Lead | 신규 요구사항 4개 추가 (QR 개선, 세션 데이터, 로고 링크, Git 관리) |
 
 **Project Name:** 모두콘 2025 디지털 컨퍼런스 북
 **Project Type:** Progressive Web App (PWA)
