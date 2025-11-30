@@ -41,19 +41,18 @@ export async function fetchSessionsWithCache(
       }
     }
 
-    // API 호출
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-    const url = track
-      ? `${API_URL}/api/sessions?track=${encodeURIComponent(track)}`
-      : `${API_URL}/api/sessions`;
-
-    const response = await fetch(url);
+    // 정적 JSON 파일 로딩
+    const response = await fetch('/data/sessions.json');
     if (!response.ok) {
-      throw new Error(`API 호출 실패: ${response.status}`);
+      throw new Error(`데이터 로딩 실패: ${response.status}`);
     }
 
-    const result = await response.json();
-    const sessions = result.data || [];
+    const sessions = await response.json();
+
+    // 트랙 필터링 (클라이언트 사이드)
+    const filteredSessions = track
+      ? sessions.filter((s: Session) => s.track === track)
+      : sessions;
 
     // localStorage에 캐시 저장
     localStorage.setItem(CACHE_KEY, JSON.stringify(sessions));
@@ -61,7 +60,7 @@ export async function fetchSessionsWithCache(
     localStorage.setItem(CACHE_VERSION_KEY, CACHE_VERSION);
     console.log(`캐시 저장 (${sessions.length}개 세션)`);
 
-    return sessions;
+    return filteredSessions;
   } catch (error) {
     console.error('세션 로딩 실패:', error);
 
