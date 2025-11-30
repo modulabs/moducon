@@ -50,10 +50,12 @@
 3. ✅ 메인 로고 링크: `/` → `/home/` 수정 (완료)
 4. ✅ Git 관리 체계화: 브랜치 전략 및 커밋 컨벤션 (완료)
 
-**현재 이슈** (Critical):
-- ❌ `/home/page.tsx`에 더미 데이터(김철수, 이영희) 하드코딩 남아있음
+**현재 이슈** (Critical) - ✅ **원인 파악 완료**:
+- ✅ `/home/page.tsx` 더미 데이터 없음 (API 연동 완료)
 - ✅ 백엔드 API `/api/sessions` 정상 동작 (36개 세션)
-- ❌ 프론트엔드-백엔드 연동 미완료 (API 호출 코드 주석 처리됨)
+- ❌ **실제 문제**: 프로덕션 백엔드 미배포 (`api.moducon.vibemakers.kr` 동작 안 함)
+- ❌ 모바일(GitHub Pages)에서 API 호출 실패 → "자료가 없다" 에러
+- ✅ **해결 방안**: 정적 JSON 파일로 전환 (작업 진행 중)
 
 **작업 시간**:
 - 예상: 6시간 30분
@@ -447,7 +449,10 @@
 | 2025-11-30 | - | 📄 **125_TECH_LEAD_FINAL_FIX_PLAN.md 작성** (수정 계획서, 2.5시간 예상) | Technical Lead |
 | 2025-11-30 | - | 📄 **126_HANDOFF_TO_WORKER.md 작성** (hands-on worker 작업 지시서) | Technical Lead |
 | 2025-11-30 | - | 📄 **07_PROGRESS.md 업데이트** (현황 반영) | Technical Lead |
-| 2025-11-30 | - | ⚠️ **작업 대기 중** (홈페이지 더미 데이터 제거) | hands-on worker (예정) |
+| 2025-11-30 | - | 🔍 **모바일 데이터 로딩 문제 원인 파악** (프로덕션 백엔드 미배포) | Technical Lead |
+| 2025-11-30 | - | 📄 **130_TECH_LEAD_MOBILE_DATA_FIX.md 작성** (정적 JSON 해결 방안) | Technical Lead |
+| 2025-11-30 | - | 📄 **131_HANDOFF_TO_WORKER.md 작성** (작업 지시서, 3.5시간 예상) | Technical Lead |
+| 2025-11-30 | - | ⚠️ **작업 대기 중** (정적 JSON 파일 전환) | hands-on worker (예정) |
 
 ## 📊 전체 진행률
 
