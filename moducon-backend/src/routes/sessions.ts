@@ -16,7 +16,7 @@ const router = express.Router();
  * GET /api/sessions
  * 세션 목록 조회 (트랙, 난이도 필터링 지원)
  */
-router.get('/api/sessions', async (req: Request, res: Response) => {
+router.get('/', async (req: Request, res: Response) => {
   try {
     const { track, difficulty } = req.query;
 
@@ -42,7 +42,7 @@ router.get('/api/sessions', async (req: Request, res: Response) => {
  * GET /api/sessions/:id
  * 특정 세션 상세 조회
  */
-router.get('/api/sessions/:id', async (req: Request, res: Response) => {
+router.get('/:id', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const session = await getSessionById(id);

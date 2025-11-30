@@ -46,7 +46,7 @@ export function QRFloatingButton({
   };
 
   const positionClasses = {
-    'bottom-center': 'left-1/2 -translate-x-1/2 bottom-24',
+    'bottom-center': 'left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2',
     'bottom-right': 'right-8 bottom-24'
   };
 
@@ -58,12 +58,12 @@ export function QRFloatingButton({
         onKeyDown={handleKeyDown}
         className={`
           fixed ${positionClasses[position]} z-50
-          w-[120px] h-[120px] rounded-full
+          w-[140px] h-[140px] rounded-full
           bg-gradient-to-br from-primary to-primary/80
           shadow-lg hover:shadow-xl
           transition-all duration-300 hover:scale-110
           focus:outline-none focus:ring-4 focus:ring-primary/50
-          flex items-center justify-center
+          flex flex-col items-center justify-center gap-2
           group
         `}
         aria-label="QR 코드 스캔하기"
@@ -73,8 +73,27 @@ export function QRFloatingButton({
         {/* Pulse Animation */}
         <span className="absolute inset-0 rounded-full bg-primary/30 animate-ping" />
 
-        {/* QR Icon */}
-        <QRIcon className="w-16 h-16 text-white relative z-10" />
+        {/* 예시 QR 이미지 (작은 아이콘 형태) */}
+        <div className="relative z-10 w-12 h-12 bg-white rounded-lg p-1.5 flex items-center justify-center">
+          <svg viewBox="0 0 100 100" className="w-full h-full">
+            {/* 간단한 QR 코드 패턴 */}
+            <rect x="0" y="0" width="30" height="30" fill="black"/>
+            <rect x="70" y="0" width="30" height="30" fill="black"/>
+            <rect x="0" y="70" width="30" height="30" fill="black"/>
+            <rect x="10" y="10" width="10" height="10" fill="white"/>
+            <rect x="80" y="10" width="10" height="10" fill="white"/>
+            <rect x="10" y="80" width="10" height="10" fill="white"/>
+            {/* 중앙 패턴 */}
+            <rect x="45" y="45" width="10" height="10" fill="black"/>
+            <rect x="35" y="35" width="5" height="5" fill="black"/>
+            <rect x="60" y="35" width="5" height="5" fill="black"/>
+            <rect x="35" y="60" width="5" height="5" fill="black"/>
+            <rect x="60" y="60" width="5" height="5" fill="black"/>
+          </svg>
+        </div>
+
+        {/* 텍스트 라벨 */}
+        <span className="text-white text-xs font-semibold relative z-10">QR 스캔</span>
 
         {/* Tooltip (3초 후 자동 사라짐) */}
         {showTooltip && (

@@ -14,7 +14,7 @@ const router = express_1.default.Router();
  * GET /api/sessions
  * 세션 목록 조회 (트랙, 난이도 필터링 지원)
  */
-router.get('/api/sessions', async (req, res) => {
+router.get('/', async (req, res) => {
     try {
         const { track, difficulty } = req.query;
         const sessions = await (0, googleSheetsService_1.filterSessions)(track, difficulty);
@@ -35,7 +35,7 @@ router.get('/api/sessions', async (req, res) => {
  * GET /api/sessions/:id
  * 특정 세션 상세 조회
  */
-router.get('/api/sessions/:id', async (req, res) => {
+router.get('/:id', async (req, res) => {
     try {
         const { id } = req.params;
         const session = await (0, googleSheetsService_1.getSessionById)(id);
