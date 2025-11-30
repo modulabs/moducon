@@ -2,14 +2,22 @@
  * QR 코드 데이터 형식 파서
  *
  * 지원하는 QR 형식:
- * - moducon://session/{sessionId}  (세션 QR)
- * - moducon://booth/{boothId}      (부스 QR)
- * - moducon://paper/{paperId}      (포스터 QR)
+ * - moducon://session/{sessionId}     (세션 QR)
+ * - moducon://booth/{boothId}         (부스 QR)
+ * - moducon://paper/{paperId}         (포스터 QR)
+ * - checkin-session-{sessionId}       (세션 체크인)
+ * - checkin-booth-{boothId}           (부스 방문 체크인)
+ * - checkin-paper-{paperId}           (포스터 열람 체크인)
+ * - quiz-{quizId}                     (퀴즈 QR)
+ * - hidden-{hiddenId}                 (히든 배지 QR)
  */
 
 export interface QRCodeData {
-  type: 'session' | 'booth' | 'paper';
+  type: 'session' | 'booth' | 'paper' | 'checkin' | 'quiz' | 'hidden';
   id: string;
+  action: 'navigate' | 'record' | 'quiz' | 'badge';
+  route?: string;
+  data?: Record<string, unknown>;
 }
 
 /**
@@ -21,7 +29,63 @@ export function parseQRCode(qrData: string): QRCodeData | null {
   try {
     const trimmed = qrData.trim();
 
-    // moducon:// 프로토콜 확인
+    // 1. 체크인 QR 파싱 (우선순위: 높음)
+    if (trimmed.startsWith('checkin-session-')) {
+      const id = trimmed.replace('checkin-session-', '');
+      return {
+        type: 'checkin',
+        id,
+        action: 'record',
+        route: `/sessions/${id}?checkin=true`,
+        data: { checkinType: 'session', targetId: id }
+      };
+    }
+
+    if (trimmed.startsWith('checkin-booth-')) {
+      const id = trimmed.replace('checkin-booth-', '');
+      return {
+        type: 'checkin',
+        id,
+        action: 'record',
+        route: `/booths/${id}?checkin=true`,
+        data: { checkinType: 'booth', targetId: id }
+      };
+    }
+
+    if (trimmed.startsWith('checkin-paper-')) {
+      const id = trimmed.replace('checkin-paper-', '');
+      return {
+        type: 'checkin',
+        id,
+        action: 'record',
+        route: `/papers/${id}?checkin=true`,
+        data: { checkinType: 'paper', targetId: id }
+      };
+    }
+
+    // 2. 퀴즈 QR 파싱
+    if (trimmed.startsWith('quiz-')) {
+      const id = trimmed.replace('quiz-', '');
+      return {
+        type: 'quiz',
+        id,
+        action: 'quiz',
+        data: { quizId: id }
+      };
+    }
+
+    // 3. 히든 배지 QR 파싱
+    if (trimmed.startsWith('hidden-')) {
+      const id = trimmed.replace('hidden-', '');
+      return {
+        type: 'hidden',
+        id,
+        action: 'badge',
+        data: { hiddenId: id }
+      };
+    }
+
+    // 4. moducon:// 프로토콜 (기본 라우팅)
     if (trimmed.startsWith('moducon://')) {
       const url = new URL(trimmed);
 
@@ -41,18 +105,21 @@ export function parseQRCode(qrData: string): QRCodeData | null {
 
       return {
         type: type as 'session' | 'booth' | 'paper',
-        id: decodeURIComponent(id)
+        id: decodeURIComponent(id),
+        action: 'navigate',
+        route: `/${type}s/${decodeURIComponent(id)}`
       };
     }
 
-    // 레거시 포맷 지원 (부스 이름, 학회 이름 등)
-    // 이전 QR 코드와 호환성 유지
+    // 5. 레거시 포맷 지원 (부스 이름, 학회 이름 등)
     if (!trimmed.startsWith('/')) {
       // 부스 이름인 경우 (2025가 없고, Workshop이 없는 경우)
       if (!trimmed.includes('2025') && !trimmed.includes('Workshop')) {
         return {
           type: 'booth',
-          id: trimmed
+          id: trimmed,
+          action: 'navigate',
+          route: `/booths/${trimmed}`
         };
       }
 
@@ -60,7 +127,9 @@ export function parseQRCode(qrData: string): QRCodeData | null {
       if (trimmed.includes('2025') || trimmed.includes('Workshop')) {
         return {
           type: 'paper',
-          id: trimmed
+          id: trimmed,
+          action: 'navigate',
+          route: `/papers/${trimmed}`
         };
       }
     }

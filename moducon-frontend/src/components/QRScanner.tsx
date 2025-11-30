@@ -56,10 +56,13 @@ export default function QRScanner({ onClose, onScan }: QRScannerProps) {
       }
 
       // 타입별 메시지
-      const typeMessages = {
+      const typeMessages: Record<typeof parsed.type, string> = {
         session: '세션',
         booth: '부스',
-        paper: '포스터'
+        paper: '포스터',
+        checkin: '체크인',
+        quiz: '퀴즈',
+        hidden: '히든 배지'
       };
       const message = `${typeMessages[parsed.type]} 페이지로 이동합니다.`;
 
@@ -147,12 +150,17 @@ export default function QRScanner({ onClose, onScan }: QRScannerProps) {
               style={{ width: '100%' }}
             ></div>
 
-            {/* 스캔 가이드 오버레이 */}
-            <div className="absolute inset-0 pointer-events-none">
-              <div className="absolute inset-0 border-2 border-white/30 rounded-lg"></div>
-              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                <div className="w-64 h-64 border-4 border-purple-500 rounded-lg shadow-lg"></div>
-              </div>
+            {/* 정사각형 스캔 가이드 오버레이 */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              {/* 정사각형 스캔 박스 (280x280px, 흰색 테두리, 외부 어둡게) */}
+              <div className="w-[280px] h-[280px] border-4 border-white rounded-2xl shadow-[0_0_0_9999px_rgba(0,0,0,0.5)]" />
+            </div>
+
+            {/* 안내 메시지 (하단) */}
+            <div className="absolute bottom-4 left-0 right-0 pointer-events-none">
+              <p className="text-white text-center text-sm font-medium px-4">
+                QR 코드를 박스 안에 맞춰주세요
+              </p>
             </div>
           </div>
 
