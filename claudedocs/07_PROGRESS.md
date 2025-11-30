@@ -408,16 +408,44 @@ $ npm run build
 
 **상태**: ✅ **최종 승인 완료 (프로덕션 배포 가능)**
 
+### 2025-11-30 (저녁 - 신규 요구사항 추가)
+**담당**: Technical Lead
+
+**작업 내용**:
+- ✅ 사용자 신규 요구사항 분석 (2개)
+  - QR 스캐너 UI 위치 재조정 필요
+  - 세션 데이터 실제 동작 검증 필요
+- ✅ 기존 구현 Gap 분석
+  - QR 버튼 위치: 하단 중앙 → 정가운데 변경
+  - 예시 QR 이미지 추가 필요
+  - 세션 데이터 로딩 실패 원인 분석
+- ✅ 신규 요구사항 명세서 작성
+
+**발견 사항**:
+- ⚠️ QR 버튼 위치 불일치 (하단 → 정가운데)
+- ⚠️ 예시 QR 이미지 누락
+- ⚠️ Google Sheets API 키 미설정 추정
+
+**작성 문서**:
+- ✅ 118_NEW_REQUIREMENTS.md (신규 요구사항 v2.0)
+
+**다음 작업**:
+- 🔴 P0: Google Sheets API 키 발급 (15분)
+- 🔴 P0: 세션 데이터 실제 동작 검증 (1시간)
+- 🟡 P1: QR UI 재개선 (2-3시간)
+
+**상태**: 🔄 **v2.0 요구사항 추가 (재작업 필요)**
+
 ---
 
 ## 📊 통계
 
 ### 문서 현황
-- **총 문서 수**: 12개
+- **총 문서 수**: 13개
   - 01_PRD.md
   - 02_TECHNICAL_REQUIREMENTS.md
   - 03_DEVELOPMENT_PLAN.md
-  - 07_PROGRESS.md (v1.3) ⭐
+  - 07_PROGRESS.md (v1.4) ⭐
   - 108_CODE_REVIEW_REPORT.md
   - 109_SECURITY_FIX_GUIDE.md
   - 110_CODE_IMPROVEMENT_GUIDE.md
@@ -426,22 +454,25 @@ $ npm run build
   - 113_FINAL_CODE_REVIEW_REPORT.md
   - 115_FINAL_COMPLETION_REPORT.md
   - 116_HANDOFF_TO_REVIEWER.md
-  - 117_FINAL_QA_APPROVAL.md (신규) ⭐⭐⭐
+  - 117_FINAL_QA_APPROVAL.md
+  - 118_NEW_REQUIREMENTS.md (v2.0) ⭐⭐⭐
 
-### 예상 작업량
-- **총 예상 시간**: 6-10시간
-  - 백엔드: 2-3시간
-  - 프론트엔드: 4-6시간
-  - 테스트: 1시간
+### 예상 작업량 (v2.0 추가)
+- **v1.8 완료**: 6-10시간 (완료)
+- **v2.0 신규 추가**: 4.5시간
+  - API 키 발급: 15분
+  - 세션 데이터 검증: 30분
+  - 에러 해결: 30분
+  - QR UI 재개선: 2.5시간
+  - 모바일 테스트: 1시간
 
 ### 리소스 할당
-- **Technical Lead**: 기획 완료 ✅
-- **Backend Developer**: 대기 중 (2-3시간)
-- **Frontend Developer**: 대기 중 (4-6시간)
-- **QA Lead**: 대기 중 (1시간)
+- **Technical Lead**: 신규 요구사항 분석 완료 ✅
+- **hands-on worker**: 재작업 대기 (4.5시간)
+- **QA Lead**: 최종 검증 대기 (1시간)
 
 ---
 
-**문서 버전**: v1.3
-**최종 수정일**: 2025-11-30 (저녁 - 최종 QA 승인)
-**상태**: ✅ **최종 승인 완료 (프로덕션 배포 가능)**
+**문서 버전**: v1.4
+**최종 수정일**: 2025-11-30 (저녁 - v2.0 요구사항 추가)
+**상태**: 🔄 **v2.0 신규 요구사항 분석 완료 (hands-on worker 대기)**
