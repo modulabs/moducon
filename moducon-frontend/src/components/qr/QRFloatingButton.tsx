@@ -112,12 +112,11 @@ export function QRFloatingButton({
       </button>
 
       {/* 스캔 모달 */}
-      {isModalOpen && (
-        <QRScannerModal
-          onScan={handleScan}
-          onClose={() => setIsModalOpen(false)}
-        />
-      )}
+      <QRScannerModal
+        isOpen={isModalOpen}
+        onScan={handleScan}
+        onClose={() => setIsModalOpen(false)}
+      />
     </>
   );
 }
