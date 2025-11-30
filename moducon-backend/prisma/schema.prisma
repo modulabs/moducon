@@ -21,6 +21,8 @@ model User {
 
   authSessions      AuthSession[]
   signatures        Signature[]
+  checkins          UserCheckin[]
+  quizAttempts      UserQuizAttempt[]
 
   @@unique([name, phoneLast4], name: "unique_user")
   @@index([name, phoneLast4], name: "idx_users_name_phone")
@@ -50,4 +52,52 @@ model Signature {
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("signatures")
+}
+
+model UserCheckin {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  targetType  String   @map("target_type") @db.VarChar(20) // 'session', 'booth', 'paper'
+  targetId    String   @map("target_id") @db.VarChar(50)
+  checkedInAt DateTime @default(now()) @map("checked_in_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, targetType, targetId], name: "unique_checkin")
+  @@index([userId], name: "idx_checkins_user")
+  @@index([targetType, targetId], name: "idx_checkins_target")
+  @@map("user_checkins")
+}
+
+model Quiz {
+  id           String   @id @default(uuid()) @db.Uuid
+  targetType   String   @map("target_type") @db.VarChar(20) // 'session', 'booth', 'paper'
+  targetId     String   @map("target_id") @db.VarChar(50)
+  question     String   @db.Text
+  options      String[] @db.VarChar(255)
+  correctAnswer Int     @map("correct_answer") // 정답 인덱스 (0-3)
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  attempts UserQuizAttempt[]
+
+  @@unique([targetType, targetId], name: "unique_quiz_target")
+  @@index([targetType, targetId], name: "idx_quiz_target")
+  @@map("quizzes")
+}
+
+model UserQuizAttempt {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  quizId      String   @map("quiz_id") @db.Uuid
+  answer      Int      // 사용자 답변 (0-3)
+  isCorrect   Boolean  @map("is_correct")
+  attemptedAt DateTime @default(now()) @map("attempted_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  @@index([userId], name: "idx_attempts_user")
+  @@index([quizId], name: "idx_attempts_quiz")
+  @@map("user_quiz_attempts")
 }
