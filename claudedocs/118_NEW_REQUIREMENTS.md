@@ -196,80 +196,57 @@
 
 #### 2.2 현재 구현 검증
 
-**백엔드 코드**:
+**백엔드 코드** (실제 구현):
 ```typescript
 // moducon-backend/src/services/googleSheetsService.ts
 
-const SPREADSHEET_ID = process.env.SPREADSHEET_ID || '';
-const API_KEY = process.env.GOOGLE_SHEETS_API_KEY || '';
-
+/**
+ * 세션 데이터를 가져와서 파싱
+ * 하드코딩된 데이터 사용 (Google Sheets 데이터 기반)
+ */
 export async function getSessions(): Promise<Session[]> {
-  try {
-    const response = await axios.get(
-      `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/세션!A2:N`,
-      {
-        params: { key: API_KEY }
-      }
-    );
-
-    const rows = response.data.values || [];
-
-    return rows.map((row: any[]) => ({
-      id: row[0] || '',
-      pageUrl: row[1] || '',
-      track: row[2] || '',
-      location: row[3] || '',
-      startTime: parseTime(row[4])?.start || '',
-      endTime: parseTime(row[4])?.end || '',
-      speaker: row[5] || '',
-      speakerAffiliation: row[6] || '',
-      speakerBio: row[7] || '',
-      speakerProfile: row[8] || '',
-      name: row[9] || '',
-      description: row[10] || '',
-      hashtags: [row[11], row[12], row[13]].filter(Boolean),
-      difficulty: calculateDifficulty(row[11], row[12], row[13])
-    }));
-  } catch (error) {
-    console.error('Failed to fetch sessions:', error);
-    return [];
-  }
+  // 하드코딩된 데이터 import
+  const { SESSIONS_DATA } = await import('../data/sessions.js');
+  return SESSIONS_DATA;
 }
 ```
 
-**검증 포인트**:
-1. ✅ API 엔드포인트 올바름
-2. ✅ 시트명 정확 (`세션`)
-3. ✅ 범위 올바름 (`A2:N`)
-4. ⚠️ **환경 변수 설정 필요**
+**실제 동작 방식**:
+1. ✅ Google Sheets 데이터 → `moducon-backend/src/data/sessions.ts`에 하드코딩
+2. ✅ 33개 세션 데이터 정적 배열로 관리
+3. ✅ API 키 불필요 (정적 데이터)
+4. ✅ 즉시 사용 가능 (환경 변수 설정 없이)
 
-#### 2.3 환경 변수 설정
+**검증 포인트**:
+1. ✅ 세션 데이터 파일 존재: `moducon-backend/src/data/sessions.ts`
+2. ✅ 33개 세션 정확히 입력
+3. ✅ 타입 정의 일치: `Session` 인터페이스
+4. ⚠️ **Google Sheets 실시간 동기화 불가** (수동 업데이트 필요)
+
+#### 2.3 환경 변수 설정 (선택 사항)
 
 **파일**: `moducon-backend/.env`
 
 **필수 변수**:
 ```bash
-# Google Sheets API
-GOOGLE_SHEETS_API_KEY=AIzaSy...  # Google Cloud Console에서 발급
-SPREADSHEET_ID=1djkPQzg_1-_zgbWe8e5AYZlUjVoQYmJj2HlwRsCqu9g
-
-# Database
+# Database (필수)
 DATABASE_URL=file:./dev.db
 
-# JWT
+# JWT (필수)
 JWT_SECRET=your-super-secret-key-at-least-32-characters-long
 ```
 
-**API 키 발급 절차**:
-1. https://console.cloud.google.com/ 접속
-2. 프로젝트 생성 (또는 선택)
-3. "API 및 서비스" → "라이브러리"
-4. "Google Sheets API" 검색 → 활성화
-5. "사용자 인증 정보" → "API 키 만들기"
-6. API 키 제한 설정:
-   - **API 제한**: Google Sheets API만 허용
-   - **HTTP 리퍼러**: 프로덕션 도메인만 허용
-7. 키 복사 → `.env` 파일에 저장
+**선택 변수** (향후 Google Sheets API 직접 연동 시):
+```bash
+# Google Sheets API (현재 미사용 - 하드코딩 방식)
+GOOGLE_SHEETS_API_KEY=AIzaSy...  # Google Cloud Console에서 발급
+SPREADSHEET_ID=1djkPQzg_1-_zgbWe8e5AYZlUjVoQYmJj2HlwRsCqu9g
+```
+
+**⚠️ 주의**:
+- 현재 세션 데이터는 `src/data/sessions.ts`에서 하드코딩 방식으로 로드됩니다.
+- Google Sheets API 키는 **불필요**합니다.
+- 실시간 동기화가 필요한 경우에만 API 연동을 고려하세요.
 
 #### 2.4 실제 동작 테스트
 

@@ -1,12 +1,12 @@
 /**
  * Google Sheets Service
- * Google Sheets API를 통해 데이터를 가져오는 서비스
+ * Google Sheets 데이터 기반 정적 데이터를 제공하는 서비스
  */
 
-import axios from 'axios';
 import { Session, TimeRange } from '../types/session.js';
 import { Booth } from '../types/booth.js';
 import { Paper } from '../types/paper.js';
+import { SESSIONS_DATA } from '../data/sessions.js';
 
 const SPREADSHEET_ID = process.env.SPREADSHEET_ID || '1djkPQzg_1-_zgbWe8e5AYZlUjVoQYmJj2HlwRsCqu9g';
 const API_KEY = process.env.GOOGLE_SHEETS_API_KEY || '';
@@ -107,41 +107,11 @@ function calculateDifficulty(keywords: string[]): '초급' | '중급' | '고급'
 }
 
 /**
- * 세션 데이터를 가져와서 파싱
- * Google Sheets API를 통해 실제 데이터 로드
+ * 세션 데이터를 가져와서 반환
+ * 정적 데이터 사용 (Google Sheets 데이터 기반)
  */
 export async function getSessions(): Promise<Session[]> {
-  try {
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${RANGE}?key=${API_KEY}`;
-
-    const response = await axios.get(url);
-    const rows = response.data.values || [];
-
-    return rows.map((row: string[]) => {
-      const timeRange = parseTimeRange(row[4]);
-      const hashtags = [row[11], row[12], row[13]].filter(Boolean);
-
-      return {
-        id: row[0],
-        pageUrl: row[1],
-        track: row[2],
-        location: row[3],
-        startTime: timeRange?.start || '',
-        endTime: timeRange?.end || '',
-        speaker: row[5],
-        speakerAffiliation: row[6],
-        speakerBio: row[7],
-        speakerProfile: row[8],
-        name: row[9],
-        description: row[10],
-        hashtags,
-        difficulty: calculateDifficulty(hashtags)
-      };
-    });
-  } catch (error: any) {
-    console.error('Google Sheets 데이터 가져오기 실패:', error.message);
-    throw new Error('Failed to fetch sessions from Google Sheets');
-  }
+  return SESSIONS_DATA;
 }
 
 /**
