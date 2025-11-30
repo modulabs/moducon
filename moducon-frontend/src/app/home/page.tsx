@@ -4,9 +4,8 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/authStore';
-// API imports commented out for future use
-// import { sessionAPI, boothAPI } from '@/lib/api';
-// import type { Session, Booth } from '@/types';
+import { fetchSessionsWithCache } from '@/lib/sessionCache';
+import type { Session } from '@/types/session';
 import Link from 'next/link';
 import { DigitalBadge } from '@/components/home/DigitalBadge';
 import { QuestProgress } from '@/components/home/QuestProgress';
@@ -14,23 +13,31 @@ import { Calendar, Store, ArrowRight, FileText } from 'lucide-react';
 
 export default function HomePage() {
   const { user } = useAuthStore();
-  // State variables commented out for future use
-  // const [sessions, setSessions] = useState<Session[]>([]);
-  // const [booths, setBooths] = useState<Booth[]>([]);
+  const [upcomingSessions, setUpcomingSessions] = useState<Session[]>([]);
+  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // API calls will fail without the backend, so we'll use mock data for now
-        // const [sessionsData, boothsData] = await Promise.all([
-        //   sessionAPI.getAll(),
-        //   boothAPI.getAll(),
-        // ]);
-        // setSessions(sessionsData.slice(0, 3));
-        // setBooths(boothsData.slice(0, 3));
+        setLoading(true);
+        setError(null);
+
+        // 실제 API 호출
+        const allSessions = await fetchSessionsWithCache();
+
+        // 다가오는 세션 3개 선택 (시작 시간 기준 정렬)
+        const upcoming = allSessions
+          .sort((a, b) => {
+            // 시작 시간 기준 오름차순 정렬
+            return a.startTime.localeCompare(b.startTime);
+          })
+          .slice(0, 3); // 최대 3개
+
+        setUpcomingSessions(upcoming);
       } catch (error) {
-        console.error('Failed to fetch data:', error);
+        console.error('Failed to fetch sessions:', error);
+        setError('세션 정보를 불러올 수 없습니다.');
       } finally {
         setLoading(false);
       }
@@ -57,21 +64,37 @@ export default function HomePage() {
               <CardTitle>다가오는 세션</CardTitle>
             </CardHeader>
             <CardContent>
-              {/* Mock Data */}
-              <div className="space-y-4">
-                <div className="border-b pb-4 last:border-0">
-                  <h3 className="font-semibold">AI 시대의 프론트엔드 개발</h3>
-                  <p className="text-sm text-muted-foreground">
-                    김철수 • Track 1
-                  </p>
+              {error ? (
+                <div className="py-4">
+                  <p className="text-sm text-destructive">{error}</p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-2"
+                    onClick={() => window.location.reload()}
+                  >
+                    다시 시도
+                  </Button>
                 </div>
-                <div className="border-b pb-4 last:border-0">
-                  <h3 className="font-semibold">LLM을 활용한 챗봇 구축</h3>
-                  <p className="text-sm text-muted-foreground">
-                    이영희 • Track 2
-                  </p>
+              ) : upcomingSessions.length === 0 ? (
+                <p className="text-sm text-muted-foreground py-4">
+                  다가오는 세션이 없습니다.
+                </p>
+              ) : (
+                <div className="space-y-4">
+                  {upcomingSessions.map((session) => (
+                    <div key={session.id} className="border-b pb-4 last:border-0">
+                      <h3 className="font-semibold">{session.name}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {session.speaker} • {session.track}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {session.startTime} - {session.endTime} | {session.location}
+                      </p>
+                    </div>
+                  ))}
                 </div>
-              </div>
+              )}
               <Link href="/sessions">
                 <Button variant="outline" className="w-full mt-4">
                   전체 세션 보기 <ArrowRight className="ml-2 h-4 w-4" />
