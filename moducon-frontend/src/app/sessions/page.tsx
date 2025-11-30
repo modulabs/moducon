@@ -4,59 +4,41 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { PlusCircle } from 'lucide-react';
-
-interface Session {
-  id: string;
-  name: string;
-  track: string;
-  startTime: string;
-  endTime: string;
-  location: string;
-  speaker: string;
-  difficulty: '초급' | '중급' | '고급';
-  description: string;
-  hashtags: string[];
-}
+import { PlusCircle, RefreshCw } from 'lucide-react';
+import { fetchSessionsWithCache, invalidateSessionsCache } from '@/lib/sessionCache';
+import type { Session } from '@/types/session';
 
 const tracks = ['Track 00', 'Track 01', 'Track 10', 'Track i', 'Track 101'];
-
-// API에서 세션 데이터 가져오기
-async function fetchSessions(track?: string): Promise<Session[]> {
-  try {
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-    const url = track
-      ? `${API_URL}/api/sessions?track=${encodeURIComponent(track)}`
-      : `${API_URL}/api/sessions`;
-
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error('Failed to fetch sessions');
-    }
-
-    const result = await response.json();
-    return result.data || [];
-  } catch (error) {
-    console.error('세션 데이터 가져오기 실패:', error);
-    return [];
-  }
-}
 
 export default function SessionsPage() {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [activeTrack, setActiveTrack] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadSessions = async (track?: string) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const data = await fetchSessionsWithCache(track || undefined);
+      setSessions(data);
+    } catch (err) {
+      console.error('세션 로딩 실패:', err);
+      setError('세션 데이터를 불러올 수 없습니다. 네트워크를 확인해주세요.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const loadSessions = async () => {
-      setLoading(true);
-      const data = await fetchSessions(activeTrack || undefined);
-      setSessions(data);
-      setLoading(false);
-    };
-
-    loadSessions();
+    loadSessions(activeTrack || undefined);
   }, [activeTrack]);
+
+  const handleRefresh = () => {
+    invalidateSessionsCache();
+    loadSessions(activeTrack || undefined);
+  };
 
   const filterByTrack = (track: string | null) => {
     setActiveTrack(track);
@@ -82,9 +64,25 @@ export default function SessionsPage() {
 
   return (
     <div className="container mx-auto p-4 sm:p-6 lg:p-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">전체 세션</h1>
-        <p className="text-muted-foreground">관심 있는 세션을 찾아보세요.</p>
+      {/* 헤더 */}
+      <div className="mb-8 flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold">전체 세션</h1>
+          <p className="text-muted-foreground">
+            관심 있는 세션을 찾아보세요. (총 {sessions.length}개)
+          </p>
+        </div>
+
+        {/* 새로고침 버튼 */}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleRefresh}
+          disabled={loading}
+        >
+          <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+          새로고침
+        </Button>
       </div>
 
       <div className="mb-6">
@@ -110,13 +108,27 @@ export default function SessionsPage() {
       <div className="space-y-6">
         {loading ? (
           <div className="text-center py-12">
-            <p className="text-muted-foreground">로딩 중...</p>
+            <RefreshCw className="mx-auto h-8 w-8 animate-spin text-muted-foreground" />
+            <p className="mt-4 text-muted-foreground">로딩 중...</p>
+          </div>
+        ) : error ? (
+          <div className="text-center py-12">
+            <p className="text-destructive">{error}</p>
+            <Button
+              variant="outline"
+              className="mt-4"
+              onClick={handleRefresh}
+            >
+              다시 시도
+            </Button>
           </div>
         ) : sessions.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-muted-foreground">세션 데이터가 없습니다.</p>
-            <p className="text-sm text-muted-foreground mt-2">
-              Google Sheets에서 세션 정보를 추가해주세요.
+            <p className="text-muted-foreground">
+              {activeTrack
+                ? `${activeTrack} 세션이 없습니다.`
+                : '세션 데이터가 없습니다.'
+              }
             </p>
           </div>
         ) : (
@@ -132,27 +144,34 @@ export default function SessionsPage() {
                   </div>
                   <h3 className="text-xl font-semibold mb-1">{session.name}</h3>
                   <p className="text-muted-foreground mb-2">
-                    <strong>연사:</strong> {session.speaker}
+                    <strong>{session.speaker}</strong> · {session.speakerAffiliation}
                   </p>
-                  <p className="text-sm text-muted-foreground mb-3">
+                  <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
                     {session.description}
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {session.hashtags.map(tag => (
-                      <Badge key={tag} variant="outline">{tag}</Badge>
+                      <Badge key={tag} variant="outline">#{tag}</Badge>
                     ))}
                   </div>
                 </div>
                 <div className="flex flex-col items-start md:items-end justify-between">
                   <div className="text-right">
-                    <p className="font-mono">
-                      {formatTime(session.startTime)} - {formatTime(session.endTime)}
+                    <p className="font-mono text-sm">
+                      {session.startTime} - {session.endTime}
                     </p>
-                    <p className="text-sm text-muted-foreground">{session.location}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {session.location}
+                    </p>
                   </div>
-                  <Button variant="ghost" size="sm" className="mt-4 md:mt-0">
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    내 일정에 추가
+
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="mt-4 md:mt-0"
+                    onClick={() => window.open(session.pageUrl, '_blank')}
+                  >
+                    상세 보기 →
                   </Button>
                 </div>
               </CardContent>

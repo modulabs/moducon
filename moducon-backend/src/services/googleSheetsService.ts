@@ -1,53 +1,17 @@
 /**
  * Google Sheets Service
- * Google Sheets MCP를 통해 데이터를 가져오는 서비스
+ * Google Sheets API를 통해 데이터를 가져오는 서비스
  */
 
-const SPREADSHEET_ID = '1djkPQzg_1-_zgbWe8e5AYZlUjVoQYmJj2HlwRsCqu9g';
+import axios from 'axios';
+import { Session, TimeRange } from '../types/session.js';
+import { Booth } from '../types/booth.js';
+import { Paper } from '../types/paper.js';
 
-export interface Booth {
-  id: string;
-  name: string;
-  type: '기업' | '모두의연구소 LAB' | '모두의연구소 교육사업팀' | '테크포임팩트 부스';
-  description: string;
-  contactPerson: string;
-  boothDescription: string;
-  imageUrl: string;
-  hashtags: string[];
-  solutions: string;
-  technologies: string;
-  researchGoals: string;
-  mainProducts: string;
-  demoContent: string;
-}
-
-export interface Paper {
-  id: string;
-  author: string;
-  affiliation: string;
-  conference: string;
-  title: string;
-  fileUrl: string;
-  paperUrl: string;
-  category: string;
-  email: string;
-  phone: string;
-  presentationTime: string;
-  willPresent: string;
-}
-
-export interface Session {
-  id: string;
-  name: string;
-  track: string;
-  startTime: string;
-  endTime: string;
-  location: string;
-  speaker: string;
-  difficulty: '초급' | '중급' | '고급';
-  description: string;
-  hashtags: string[];
-}
+const SPREADSHEET_ID = process.env.SPREADSHEET_ID || '1djkPQzg_1-_zgbWe8e5AYZlUjVoQYmJj2HlwRsCqu9g';
+const API_KEY = process.env.GOOGLE_SHEETS_API_KEY || '';
+const SHEET_NAME = '세션';
+const RANGE = `${SHEET_NAME}!A2:N`; // 헤더 제외
 
 /**
  * 부스 데이터를 가져와서 파싱
@@ -118,16 +82,66 @@ export async function filterPapers(
 }
 
 /**
+ * 시간 파싱 유틸리티
+ * "10:10-10:50" → { start: "10:10", end: "10:50" }
+ */
+function parseTimeRange(timeRange: string): TimeRange | null {
+  const match = timeRange.match(/(\d{2}:\d{2})-(\d{2}:\d{2})/);
+  if (!match) {
+    console.warn(`Invalid time format: ${timeRange}`);
+    return null;
+  }
+  return { start: match[1], end: match[2] };
+}
+
+/**
+ * 난이도 추론 (키워드 기반)
+ */
+function calculateDifficulty(keywords: string[]): '초급' | '중급' | '고급' {
+  const advanced = ['딥테크', '양자컴퓨팅', '가속기', 'NPU', 'Physical-AI'];
+  const beginner = ['입문', '초보', '바이브코딩', 'AI부트캠프'];
+
+  if (keywords.some(k => advanced.includes(k))) return '고급';
+  if (keywords.some(k => beginner.includes(k))) return '초급';
+  return '중급';
+}
+
+/**
  * 세션 데이터를 가져와서 파싱
- * Google Sheets의 "Sessions" 시트에서 데이터 로드
+ * Google Sheets API를 통해 실제 데이터 로드
  */
 export async function getSessions(): Promise<Session[]> {
-  // Google Sheets MCP를 통해 데이터 가져오기
-  // 시트 범위: Sessions!A2:J100 (헤더 제외)
-  // 컬럼: ID, 세션명, 트랙, 시작시간, 종료시간, 장소, 연사, 난이도, 설명, 해시태그
+  try {
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${RANGE}?key=${API_KEY}`;
 
-  // 현재는 하드코딩된 데이터 반환 (향후 MCP 연동)
-  return [];
+    const response = await axios.get(url);
+    const rows = response.data.values || [];
+
+    return rows.map((row: string[]) => {
+      const timeRange = parseTimeRange(row[4]);
+      const hashtags = [row[11], row[12], row[13]].filter(Boolean);
+
+      return {
+        id: row[0],
+        pageUrl: row[1],
+        track: row[2],
+        location: row[3],
+        startTime: timeRange?.start || '',
+        endTime: timeRange?.end || '',
+        speaker: row[5],
+        speakerAffiliation: row[6],
+        speakerBio: row[7],
+        speakerProfile: row[8],
+        name: row[9],
+        description: row[10],
+        hashtags,
+        difficulty: calculateDifficulty(hashtags)
+      };
+    });
+  } catch (error: any) {
+    console.error('Google Sheets 데이터 가져오기 실패:', error.message);
+    throw new Error('Failed to fetch sessions from Google Sheets');
+  }
 }
 
 /**

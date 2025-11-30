@@ -6,7 +6,7 @@
  * 총 36개 세션
  */
 
-import { Session } from '../services/googleSheetsService';
+import { Session } from '../types/session.js';
 
 /**
  * 시간 범위를 파싱하여 startTime과 endTime으로 분리
