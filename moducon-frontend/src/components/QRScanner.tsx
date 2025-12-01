@@ -120,74 +120,69 @@ export default function QRScanner({ onClose, onScan }: QRScannerProps) {
   }, [handleScanSuccess, handleScanError, stopScanner]);
 
   return (
-    <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl p-6 max-w-lg w-full">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xl font-bold">QR 코드 스캔</h3>
-          <button
-            onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+    <div className="fixed inset-0 bg-black z-50">
+      {/* 카메라 영상 (전체 화면 배경) */}
+      <div
+        id="qr-reader"
+        className="absolute inset-0"
+        style={{ width: '100%', height: '100%' }}
+      ></div>
+
+      {/* 정사각형 스캔 가이드 오버레이 (중앙) */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+        {/* 안내 메시지 (상단) */}
+        <div className="mb-8">
+          <p className="text-white text-center text-lg font-medium px-4">
+            QR 코드를 네모 박스 안에 맞춰주세요
+          </p>
         </div>
 
-        <div className="space-y-4">
-          {/* 안내 메시지 */}
-          <div className="bg-blue-50 border-l-4 border-blue-600 p-4 rounded">
-            <p className="text-sm text-blue-900">
-              📱 부스 또는 포스터의 QR 코드를 카메라에 비춰주세요.
-            </p>
-          </div>
-
-          {/* QR 리더 */}
-          <div className="relative">
-            <div
-              id="qr-reader"
-              className="rounded-lg overflow-hidden"
-              style={{ width: '100%' }}
-            ></div>
-
-            {/* 정사각형 스캔 가이드 오버레이 */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              {/* 정사각형 스캔 박스 (280x280px, 흰색 테두리, 외부 어둡게) */}
-              <div className="w-[280px] h-[280px] border-4 border-white rounded-2xl shadow-[0_0_0_9999px_rgba(0,0,0,0.5)]" />
-            </div>
-
-            {/* 안내 메시지 (하단) */}
-            <div className="absolute bottom-4 left-0 right-0 pointer-events-none">
-              <p className="text-white text-center text-sm font-medium px-4">
-                QR 코드를 박스 안에 맞춰주세요
-              </p>
-            </div>
-          </div>
-
-          {/* 에러 메시지 */}
-          {error && (
-            <div className="bg-red-50 border-l-4 border-red-600 p-4 rounded">
-              <p className="text-sm text-red-900">{error}</p>
-            </div>
-          )}
-
-          {/* 스캔 결과 */}
-          {result && (
-            <div className="bg-green-50 border-l-4 border-green-600 p-4 rounded">
-              <p className="text-sm font-medium text-green-900 mb-1">스캔 완료!</p>
-              <p className="text-sm text-green-700">{result}</p>
-            </div>
-          )}
-
-          {/* 닫기 버튼 */}
-          <button
-            onClick={onClose}
-            className="w-full px-4 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors"
+        {/* 정사각형 스캔 박스 (280x280px, 흰색 테두리, 외부 어둡게) */}
+        <div className="relative">
+          <div
+            className="w-[280px] h-[280px] border-4 border-white rounded-2xl
+                       shadow-[0_0_0_9999px_rgba(0,0,0,0.5)]"
+            aria-label="QR 코드 스캔 영역"
           >
-            닫기
-          </button>
+            {/* 모서리 강조선 */}
+            <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-white rounded-tl-2xl" />
+            <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-white rounded-tr-2xl" />
+            <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-white rounded-bl-2xl" />
+            <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-white rounded-br-2xl" />
+          </div>
         </div>
       </div>
+
+      {/* 에러 메시지 */}
+      {error && (
+        <div className="absolute bottom-32 left-0 right-0 px-4 pointer-events-none">
+          <div className="bg-red-500/90 backdrop-blur-sm p-4 rounded-lg max-w-md mx-auto">
+            <p className="text-white text-center text-sm font-medium">{error}</p>
+          </div>
+        </div>
+      )}
+
+      {/* 스캔 결과 */}
+      {result && (
+        <div className="absolute bottom-32 left-0 right-0 px-4 pointer-events-none">
+          <div className="bg-green-500/90 backdrop-blur-sm p-4 rounded-lg max-w-md mx-auto">
+            <p className="text-white text-center text-sm font-bold mb-1">✅ 스캔 완료!</p>
+            <p className="text-white text-center text-sm">{result}</p>
+          </div>
+        </div>
+      )}
+
+      {/* 닫기 버튼 (상단 우측) */}
+      <button
+        onClick={onClose}
+        className="absolute top-4 right-4 p-2 bg-white/20 backdrop-blur-sm rounded-full
+                   hover:bg-white/30 transition-colors pointer-events-auto z-10"
+        aria-label="QR 스캔 닫기"
+      >
+        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
     </div>
   );
 }
