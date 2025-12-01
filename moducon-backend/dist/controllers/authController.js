@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.resetLogin = exports.getMe = exports.saveSignature = exports.login = void 0;
+exports.getSignature = exports.getSignatureByUser = exports.resetLogin = exports.getMe = exports.saveSignature = exports.login = void 0;
 const authService = __importStar(require("../services/authService"));
 const response_1 = require("../utils/response");
 const logger_1 = require("../utils/logger");
@@ -119,3 +119,45 @@ const resetLogin = async (req, res) => {
     }
 };
 exports.resetLogin = resetLogin;
+// 서명 이미지 조회 (이름과 전화번호로)
+const getSignatureByUser = async (req, res) => {
+    try {
+        const { name, phone_last4 } = req.query;
+        // 입력 검증
+        if (!name || !phone_last4) {
+            return (0, response_1.errorResponse)(res, 'Name and phone_last4 are required', 400, 'INVALID_PARAMS');
+        }
+        const signature = await authService.getSignatureByUser({
+            name: name,
+            phone_last4: phone_last4
+        });
+        if (!signature) {
+            return (0, response_1.errorResponse)(res, 'Signature not found', 404, 'SIGNATURE_NOT_FOUND');
+        }
+        (0, response_1.successResponse)(res, signature);
+    }
+    catch (error) {
+        logger_1.logger.error('Get signature error:', error);
+        (0, response_1.errorResponse)(res, 'Failed to get signature', 500, 'GET_SIGNATURE_FAILED');
+    }
+};
+exports.getSignatureByUser = getSignatureByUser;
+// 서명 이미지 조회 (userId로)
+const getSignature = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        if (!userId) {
+            return (0, response_1.errorResponse)(res, 'User ID is required', 400, 'INVALID_PARAMS');
+        }
+        const signature = await authService.getSignatureByUserId(userId);
+        if (!signature) {
+            return (0, response_1.errorResponse)(res, 'Signature not found', 404, 'SIGNATURE_NOT_FOUND');
+        }
+        (0, response_1.successResponse)(res, signature);
+    }
+    catch (error) {
+        logger_1.logger.error('Get signature error:', error);
+        (0, response_1.errorResponse)(res, 'Failed to get signature', 500, 'GET_SIGNATURE_FAILED');
+    }
+};
+exports.getSignature = getSignature;

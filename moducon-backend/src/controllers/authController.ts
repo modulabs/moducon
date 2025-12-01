@@ -97,3 +97,51 @@ export const resetLogin = async (req: Request, res: Response) => {
     errorResponse(res, 'Failed to reset login session', 500, 'RESET_FAILED');
   }
 };
+
+// 서명 이미지 조회 (이름과 전화번호로)
+export const getSignatureByUser = async (req: Request, res: Response) => {
+  try {
+    const { name, phone_last4 } = req.query;
+
+    // 입력 검증
+    if (!name || !phone_last4) {
+      return errorResponse(res, 'Name and phone_last4 are required', 400, 'INVALID_PARAMS');
+    }
+
+    const signature = await authService.getSignatureByUser({
+      name: name as string,
+      phone_last4: phone_last4 as string
+    });
+
+    if (!signature) {
+      return errorResponse(res, 'Signature not found', 404, 'SIGNATURE_NOT_FOUND');
+    }
+
+    successResponse(res, signature);
+  } catch (error) {
+    logger.error('Get signature error:', error);
+    errorResponse(res, 'Failed to get signature', 500, 'GET_SIGNATURE_FAILED');
+  }
+};
+
+// 서명 이미지 조회 (userId로)
+export const getSignature = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+
+    if (!userId) {
+      return errorResponse(res, 'User ID is required', 400, 'INVALID_PARAMS');
+    }
+
+    const signature = await authService.getSignatureByUserId(userId);
+
+    if (!signature) {
+      return errorResponse(res, 'Signature not found', 404, 'SIGNATURE_NOT_FOUND');
+    }
+
+    successResponse(res, signature);
+  } catch (error) {
+    logger.error('Get signature error:', error);
+    errorResponse(res, 'Failed to get signature', 500, 'GET_SIGNATURE_FAILED');
+  }
+};

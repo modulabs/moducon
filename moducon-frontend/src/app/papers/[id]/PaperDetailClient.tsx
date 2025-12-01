@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import type { Paper } from '@/lib/googleSheets';
+import SignatureDisplay from '@/components/papers/SignatureDisplay';
 
 interface PaperDetailClientProps {
   paper: Paper;
@@ -91,6 +92,20 @@ export default function PaperDetailClient({ paper }: PaperDetailClientProps) {
 
         {/* 상세 정보 */}
         <div className="space-y-6">
+          {/* 서명 섹션 */}
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <span className="text-2xl">✍️</span>
+              저자 서명
+            </h2>
+            <div className="flex justify-center p-4 bg-gray-50 rounded-lg">
+              <SignatureDisplay
+                authorName={paper.author}
+                className="h-20 w-auto"
+              />
+            </div>
+          </div>
+
           {/* 연락처 정보 */}
           {(paper.email || paper.phone) && (
             <div className="bg-white rounded-xl shadow-sm p-6">

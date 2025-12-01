@@ -56,6 +56,12 @@ export const authAPI = {
     }),
 
   getMe: () => apiCall<User>('/api/auth/me'),
+
+  getSignatureByUser: (name: string, phone_last4: string) =>
+    apiCall<{ signature_data: string; user_name: string }>(`/api/auth/signature/user?name=${encodeURIComponent(name)}&phone_last4=${phone_last4}`),
+
+  getSignature: (userId: string) =>
+    apiCall<{ signature_data: string; user_name: string }>(`/api/auth/signature/${userId}`),
 };
 
 // Session APIs

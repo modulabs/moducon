@@ -40,6 +40,8 @@ const router = (0, express_1.Router)();
 // 공개 엔드포인트
 router.post('/login', authController.login);
 router.post('/reset-login', authController.resetLogin);
+router.get('/signature/user', authController.getSignatureByUser); // 이름과 전화번호로 서명 조회
+router.get('/signature/:userId', authController.getSignature); // userId로 서명 조회
 // 인증 필요 엔드포인트
 router.post('/signature', auth_1.authenticate, authController.saveSignature);
 router.get('/me', auth_1.authenticate, authController.getMe);

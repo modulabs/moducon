@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { fetchPapers, filterPapers, searchPapers, type Paper } from '@/lib/googleSheets';
 import Link from 'next/link';
+import SignatureDisplay from '@/components/papers/SignatureDisplay';
 
 export default function PapersPage() {
   const [papers, setPapers] = useState<Paper[]>([]);
@@ -129,50 +130,73 @@ export default function PapersPage() {
           </div>
         </div>
 
-        {/* 포스터 목록 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {filteredPapers.map((paper) => (
-            <Link
-              key={paper.id}
-              href={`/papers/${paper.id}`}
-              className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all p-5 group"
-            >
-              <div className="flex items-start gap-4">
-                {/* 학회 아이콘 */}
-                <div className="w-16 h-16 bg-gradient-to-br from-purple-100 to-blue-100 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
-                  <span className="text-2xl">📄</span>
-                </div>
-
-                {/* 내용 */}
-                <div className="flex-1 min-w-0">
-                  {/* 학회 배지 */}
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="px-2 py-1 bg-purple-50 text-purple-600 text-xs font-medium rounded-full">
-                      {paper.conference}
-                    </span>
-                    {paper.presentationTime && (
-                      <span className="px-2 py-1 bg-blue-50 text-blue-600 text-xs font-medium rounded-full">
-                        {paper.presentationTime}
+        {/* 포스터 목록 - 테이블 형식 */}
+        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50 border-b">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    논문명
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    저자
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    학회
+                  </th>
+                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    발표시간
+                  </th>
+                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
+                    서명
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredPapers.map((paper) => (
+                  <tr key={paper.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-4 py-4">
+                      <Link
+                        href={`/papers/${paper.id}`}
+                        className="text-sm font-medium text-gray-900 hover:text-purple-600 line-clamp-2"
+                      >
+                        {paper.title}
+                      </Link>
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="text-sm">
+                        <div className="font-medium text-gray-900">{paper.author}</div>
+                        {paper.affiliation && (
+                          <div className="text-xs text-gray-500">{paper.affiliation}</div>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-4 py-4">
+                      <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                        {paper.conference}
                       </span>
-                    )}
-                  </div>
-
-                  {/* 제목 */}
-                  <h3 className="text-base font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-purple-600 transition-colors">
-                    {paper.title}
-                  </h3>
-
-                  {/* 저자 및 소속 */}
-                  <div className="text-sm text-gray-600">
-                    <p className="font-medium">{paper.author}</p>
-                    {paper.affiliation && (
-                      <p className="text-xs text-gray-500 mt-1">{paper.affiliation}</p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </Link>
-          ))}
+                    </td>
+                    <td className="px-4 py-4 text-center">
+                      {paper.presentationTime ? (
+                        <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                          {paper.presentationTime}
+                        </span>
+                      ) : (
+                        <span className="text-gray-400 text-xs">-</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-4">
+                      <SignatureDisplay
+                        authorName={paper.author}
+                        className="h-12 w-full"
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
 
         {/* 결과 없음 */}

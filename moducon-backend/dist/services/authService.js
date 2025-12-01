@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.resetLogin = exports.getUserById = exports.saveSignature = exports.login = void 0;
+exports.getSignatureByUserId = exports.getSignatureByUser = exports.resetLogin = exports.getUserById = exports.saveSignature = exports.login = void 0;
 const jwt_1 = require("../config/jwt");
 const logger_1 = require("../utils/logger");
 const prisma_1 = require("../lib/prisma");
@@ -127,3 +127,51 @@ const resetLogin = async (input) => {
     return true;
 };
 exports.resetLogin = resetLogin;
+// 사용자 이름과 전화번호로 서명 조회
+const getSignatureByUser = async (input) => {
+    const user = await prisma_1.prisma.user.findUnique({
+        where: {
+            unique_user: {
+                name: input.name,
+                phoneLast4: input.phone_last4,
+            },
+        },
+    });
+    if (!user) {
+        return null;
+    }
+    const signature = await prisma_1.prisma.signature.findFirst({
+        where: { userId: user.id },
+        orderBy: { createdAt: 'desc' },
+    });
+    if (!signature) {
+        return null;
+    }
+    return {
+        signature_data: signature.signatureData,
+        user_id: user.id,
+        user_name: user.name,
+        created_at: signature.createdAt.toISOString(),
+    };
+};
+exports.getSignatureByUser = getSignatureByUser;
+// userId로 서명 조회
+const getSignatureByUserId = async (userId) => {
+    const signature = await prisma_1.prisma.signature.findFirst({
+        where: { userId },
+        orderBy: { createdAt: 'desc' },
+    });
+    if (!signature) {
+        return null;
+    }
+    const user = await prisma_1.prisma.user.findUnique({
+        where: { id: userId },
+    });
+    return {
+        signature_data: signature.signatureData,
+        user_id: userId,
+        user_name: user?.name || '',
+        created_at: signature.createdAt.toISOString(),
+    };
+};
+exports.getSignatureByUserId = getSignatureByUserId;
