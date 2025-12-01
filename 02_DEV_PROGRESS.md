@@ -25,8 +25,8 @@
   - 사용자 이름 강조 (2xl font-bold)
 
 - ✅ **하단 네비게이션 QR 버튼 최적화**
-  - SVG 크기: 28px
-  - stroke: `#FFFFFF` (흰색, 최대 가시성)
+  - SVG 크기: 32px (가시성 개선)
+  - stroke: `#666666` (회색, 보라색 배경과 최적 대비)
   - 중앙 정렬: `absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2`
   - 불필요한 텍스트 제거 (아이콘만 표시)
 
@@ -78,24 +78,23 @@ moducon/
 
 ## 🔧 최근 수정 사항
 
-### 2025-12-01: UI 가시성 개선 (최종)
+### 2025-12-01: UI 가시성 개선 (최종 v2)
 **파일**: `moducon-frontend/src/components/layout/BottomNavigation.tsx`
 
 **변경 내용**:
 ```diff
-- stroke="#666666"
-+ stroke="#FFFFFF"
+- width="28" height="28"
++ width="32" height="32"
 
-+ className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-
-- <span className="text-[9px] text-white font-bold tracking-wider">SCAN</span>
-+ (제거 - 아이콘만 표시)
+- stroke="#FFFFFF"
++ stroke="#666666"
 ```
 
 **결과**:
-- QR 아이콘 가시성 최대화 (흰색, 보라색 배경과 명확한 대비)
-- 아이콘 정확한 중앙 정렬 (absolute positioning)
-- 깔끔한 UI
+- QR 아이콘 크기 증가 (28px → 32px, 가시성 향상)
+- stroke 색상 변경 (#FFFFFF → #666666, 보라색 배경과 최적 대비)
+- 아이콘 정확한 중앙 정렬 유지
+- 깔끔하고 명확한 UI
 
 ## 📊 진행률
 
