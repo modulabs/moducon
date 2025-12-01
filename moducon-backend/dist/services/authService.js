@@ -64,9 +64,15 @@ const saveSignature = async (input) => {
             signatureData: input.signatureData,
         },
     });
+    // users 테이블의 signatureUrl 업데이트
+    const signatureUrl = `/signatures/${input.userId}.png`;
+    await prisma.user.update({
+        where: { id: input.userId },
+        data: { signatureUrl },
+    });
     logger_1.logger.info(`Signature saved for user: ${input.userId}`);
     return {
-        signature_url: `/signatures/${input.userId}.png`,
+        signature_url: signatureUrl,
         user: {
             id: input.userId,
             has_signature: true,
