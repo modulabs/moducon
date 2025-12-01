@@ -40,7 +40,7 @@ export function BottomNavigation() {
           {/* 중앙 QR 버튼 (특별 UI) */}
           <button
             onClick={() => setQrModalOpen(true)}
-            className="relative -top-2 flex flex-col items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-primary to-primary/80 shadow-[0_4px_12px_rgba(79,70,229,0.4)] ring-4 ring-white hover:scale-105 transition-transform"
+            className="relative -top-2 flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-primary to-primary/80 shadow-[0_4px_12px_rgba(79,70,229,0.4)] ring-4 ring-white hover:scale-105 transition-transform"
             aria-label="QR 코드 스캔"
           >
             <svg
@@ -49,11 +49,10 @@ export function BottomNavigation() {
               height="28"
               viewBox="0 0 24 24"
               fill="none"
-              stroke="#FFFFFF"
+              stroke="#666666"
               strokeWidth="2.5"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="mb-1"
             >
               <rect width="5" height="5" x="3" y="3" rx="1"></rect>
               <rect width="5" height="5" x="16" y="3" rx="1"></rect>
@@ -68,7 +67,6 @@ export function BottomNavigation() {
               <path d="M21 12v.01"></path>
               <path d="M12 21v-1"></path>
             </svg>
-            <span className="text-[9px] text-white font-bold tracking-wider">SCAN</span>
           </button>
 
           {/* 포스터 탭 */}
