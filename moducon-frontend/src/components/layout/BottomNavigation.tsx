@@ -40,10 +40,11 @@ export function BottomNavigation() {
           {/* 중앙 QR 버튼 (특별 UI) */}
           <button
             onClick={() => setQrModalOpen(true)}
-            className="relative -top-2 flex flex-col items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-primary to-primary/80 shadow-lg ring-4 ring-white animate-pulse hover:scale-105 transition-transform"
+            className="relative -top-2 flex flex-col items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-primary to-primary/80 shadow-[0_4px_12px_rgba(79,70,229,0.4)] ring-4 ring-white animate-pulse hover:scale-105 transition-transform"
+            aria-label="QR 코드 스캔"
           >
-            <QrCode className="w-6 h-6 text-white" />
-            <span className="text-xs text-white mt-1">스캔</span>
+            <QrCode className="w-7 h-7 text-white" />
+            <span className="text-[10px] text-white font-medium mt-0.5">스캔</span>
           </button>
 
           {/* 포스터 탭 */}
