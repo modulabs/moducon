@@ -9,7 +9,7 @@ import type { Session } from '@/types/session';
 import Link from 'next/link';
 import { DigitalBadge } from '@/components/home/DigitalBadge';
 import { QuestProgress } from '@/components/home/QuestProgress';
-import { Calendar, Store, ArrowRight, FileText } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
 export default function HomePage() {
   const { user } = useAuthStore();
@@ -107,31 +107,6 @@ export default function HomePage() {
         {/* Right Column */}
         <div className="space-y-8">
           <DigitalBadge />
-          <Card>
-            <CardHeader>
-              <CardTitle>빠른 이동</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Link href="/sessions" passHref>
-                <Button variant="outline" className="w-full justify-start">
-                  <Calendar className="mr-2 h-4 w-4" />
-                  세션 목록
-                </Button>
-              </Link>
-              <Link href="/booths" passHref>
-                <Button variant="outline" className="w-full justify-start">
-                  <Store className="mr-2 h-4 w-4" />
-                  부스 목록
-                </Button>
-              </Link>
-              <Link href="/papers" passHref>
-                <Button variant="outline" className="w-full justify-start">
-                  <FileText className="mr-2 h-4 w-4" />
-                  포스터 발표
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
           <Card>
             <CardHeader>
               <CardTitle>추천 부스</CardTitle>
