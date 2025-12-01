@@ -120,36 +120,32 @@ export default function QRScanner({ onClose, onScan }: QRScannerProps) {
   }, [handleScanSuccess, handleScanError, stopScanner]);
 
   return (
-    <div className="fixed inset-0 bg-black z-50">
-      {/* 카메라 영상 (전체 화면 배경) */}
-      <div
-        id="qr-reader"
-        className="absolute inset-0"
-        style={{ width: '100%', height: '100%' }}
-      ></div>
+    <div className="fixed inset-0 bg-black z-50 flex flex-col items-center justify-center">
+      {/* 안내 메시지 (상단) */}
+      <div className="mb-8">
+        <p className="text-white text-center text-lg font-medium px-4">
+          QR 코드를 네모 박스 안에 맞춰주세요
+        </p>
+      </div>
 
-      {/* 정사각형 스캔 가이드 오버레이 (중앙) */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-        {/* 안내 메시지 (상단) */}
-        <div className="mb-8">
-          <p className="text-white text-center text-lg font-medium px-4">
-            QR 코드를 네모 박스 안에 맞춰주세요
-          </p>
-        </div>
+      {/* 정사각형 스캔 박스 (280x280px) - 카메라 영상 포함 */}
+      <div className="relative">
+        {/* 카메라 영상 컨테이너 (정사각형 박스 안에만 표시) */}
+        <div
+          id="qr-reader"
+          className="w-[280px] h-[280px] rounded-2xl overflow-hidden"
+        ></div>
 
-        {/* 정사각형 스캔 박스 (280x280px, 흰색 테두리, 외부 어둡게) */}
-        <div className="relative">
-          <div
-            className="w-[280px] h-[280px] border-4 border-white rounded-2xl
-                       shadow-[0_0_0_9999px_rgba(0,0,0,0.5)]"
-            aria-label="QR 코드 스캔 영역"
-          >
-            {/* 모서리 강조선 */}
-            <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-white rounded-tl-2xl" />
-            <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-white rounded-tr-2xl" />
-            <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-white rounded-bl-2xl" />
-            <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-white rounded-br-2xl" />
-          </div>
+        {/* 흰색 테두리 오버레이 */}
+        <div
+          className="absolute inset-0 border-4 border-white rounded-2xl pointer-events-none"
+          aria-label="QR 코드 스캔 영역"
+        >
+          {/* 모서리 강조선 */}
+          <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-white rounded-tl-2xl" />
+          <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-white rounded-tr-2xl" />
+          <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-white rounded-bl-2xl" />
+          <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-white rounded-br-2xl" />
         </div>
       </div>
 
