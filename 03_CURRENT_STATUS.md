@@ -3,6 +3,7 @@
 ## 📅 최종 업데이트
 **날짜**: 2025-12-01
 **작성자**: Technical Lead
+**최근 수정**: UI 개선 (DigitalBadge, BottomNavigation)
 
 ## ✅ 완료된 작업
 
@@ -12,12 +13,18 @@
 - ✅ `02_NEXT_STEPS.md` 작성 (Phase 3-5 가이드)
 - ✅ 핵심 문서 3개만 루트에 유지
 
-### 2. UI 수정 완료
-- ✅ 홈 화면: 깔끔한 상태 (불필요한 블록 없음)
-- ✅ QR 버튼 아이콘: 사용자 제공 SVG 적용
-  - lucide-react 대신 인라인 SVG 사용
-  - `w-6 h-6`, `text-white`, `stroke-white` 적용
-  - 애니메이션 제거 (불필요한 깜빡임 방지)
+### 2. UI 수정 완료 (2차 개선)
+- ✅ **홈 화면 DigitalBadge 개선**
+  - "참가자" + QR 아이콘 → "디지털 배지" + 🎫 이모지로 변경
+  - 배경색: `bg-primary/10` (부드러운 보라색 톤)
+  - 사용자 이름 강조 (2xl font-bold)
+
+- ✅ **하단 네비게이션 QR 버튼 아이콘 개선**
+  - SVG 크기: `24px` → `28px` (가시성 향상)
+  - stroke: `currentColor` → `#FFFFFF` (명시적 흰색)
+  - strokeWidth: `2` → `2.5` (선명도 향상)
+  - 텍스트: "스캔" → "SCAN" (영문 대문자, bold, tracking-wider)
+  - 레이아웃: `mb-1` 여백 추가 (아이콘과 텍스트 간격 조정)
 
 ### 3. Phase 1-2 구현 완료
 - ✅ 프론트엔드 기본 구조

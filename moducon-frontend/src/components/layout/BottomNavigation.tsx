@@ -45,15 +45,15 @@ export function BottomNavigation() {
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
+              width="28"
+              height="28"
               viewBox="0 0 24 24"
               fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
+              stroke="#FFFFFF"
+              strokeWidth="2.5"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="w-6 h-6 text-white stroke-white"
+              className="mb-1"
             >
               <rect width="5" height="5" x="3" y="3" rx="1"></rect>
               <rect width="5" height="5" x="16" y="3" rx="1"></rect>
@@ -68,7 +68,7 @@ export function BottomNavigation() {
               <path d="M21 12v.01"></path>
               <path d="M12 21v-1"></path>
             </svg>
-            <span className="text-[10px] text-white font-semibold mt-0.5">스캔</span>
+            <span className="text-[9px] text-white font-bold tracking-wider">SCAN</span>
           </button>
 
           {/* 포스터 탭 */}
