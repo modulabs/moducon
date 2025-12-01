@@ -47,7 +47,7 @@ const login = async (input) => {
             name: user.name,
             phone_last4: user.phoneLast4,
             registration_type: user.registrationType,
-            has_signature: user.signatures.length > 0,
+            has_signature: user.signatures !== null,
         },
     };
 };
@@ -90,7 +90,7 @@ const getUserById = async (userId) => {
         phone_last4: user.phoneLast4,
         email: user.email,
         organization: user.organization,
-        has_signature: user.signatures.length > 0,
+        has_signature: user.signatures !== null,
         registration_type: user.registrationType,
         registered_at: user.registeredAt.toISOString(),
     };
