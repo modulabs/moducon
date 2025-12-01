@@ -17,9 +17,7 @@ export const adminLogin = async (req: Request, res: Response) => {
 
     // 입력 검증
     if (!username || !password) {
-      return res.status(400).json(
-        errorResponse('MISSING_FIELDS', '아이디와 비밀번호를 입력해주세요.')
-      );
+      return errorResponse(res, '아이디와 비밀번호를 입력해주세요.', 400, 'MISSING_FIELDS');
     }
 
     // 관리자 계정 조회
@@ -28,17 +26,13 @@ export const adminLogin = async (req: Request, res: Response) => {
     });
 
     if (!admin) {
-      return res.status(401).json(
-        errorResponse('INVALID_CREDENTIALS', '아이디 또는 비밀번호가 올바르지 않습니다.')
-      );
+      return errorResponse(res, '아이디 또는 비밀번호가 올바르지 않습니다.', 401, 'INVALID_CREDENTIALS');
     }
 
     // 비밀번호 검증
     const isValidPassword = await bcrypt.compare(password, admin.passwordHash);
     if (!isValidPassword) {
-      return res.status(401).json(
-        errorResponse('INVALID_CREDENTIALS', '아이디 또는 비밀번호가 올바르지 않습니다.')
-      );
+      return errorResponse(res, '아이디 또는 비밀번호가 올바르지 않습니다.', 401, 'INVALID_CREDENTIALS');
     }
 
     // JWT 토큰 생성
@@ -50,20 +44,10 @@ export const adminLogin = async (req: Request, res: Response) => {
 
     logger.info(`Admin login successful: ${username}`);
 
-    res.json(
-      successResponse(
-        {
-          token,
-          expiresIn: '7d',
-        },
-        'Admin login successful'
-      )
-    );
+    successResponse(res, { token, expiresIn: '7d' }, 'Admin login successful');
   } catch (error) {
     logger.error('Admin login error:', error);
-    res.status(500).json(
-      errorResponse('LOGIN_FAILED', 'Login failed. Please try again.')
-    );
+    errorResponse(res, 'Login failed. Please try again.', 500, 'LOGIN_FAILED');
   }
 };
 
@@ -71,7 +55,7 @@ export const adminLogin = async (req: Request, res: Response) => {
  * GET /api/admin/participants
  * 모든 참가자 목록 조회 (이름, 전화번호 뒷4자리, 서명 여부)
  */
-export const getParticipants = async (req: Request, res: Response) => {
+export const getParticipants = async (_req: Request, res: Response) => {
   try {
     const participants = await prisma.user.findMany({
       select: {
@@ -114,20 +98,13 @@ export const getParticipants = async (req: Request, res: Response) => {
       })
     );
 
-    res.json(
-      successResponse(
-        {
-          total: participantsWithSignature.length,
-          participants: participantsWithSignature,
-        },
-        'Participants retrieved successfully'
-      )
-    );
+    successResponse(res, {
+      total: participantsWithSignature.length,
+      participants: participantsWithSignature,
+    }, 'Participants retrieved successfully');
   } catch (error) {
     logger.error('Get participants error:', error);
-    res.status(500).json(
-      errorResponse('GET_PARTICIPANTS_FAILED', 'Failed to retrieve participants')
-    );
+    errorResponse(res, 'Failed to retrieve participants', 500, 'GET_PARTICIPANTS_FAILED');
   }
 };
 
@@ -154,9 +131,7 @@ export const getParticipantById = async (req: Request, res: Response) => {
     });
 
     if (!participant) {
-      return res.status(404).json(
-        errorResponse('PARTICIPANT_NOT_FOUND', 'Participant not found')
-      );
+      return errorResponse(res, 'Participant not found', 404, 'PARTICIPANT_NOT_FOUND');
     }
 
     // 서명 데이터 조회
@@ -169,22 +144,15 @@ export const getParticipantById = async (req: Request, res: Response) => {
       signatureData = signature;
     }
 
-    res.json(
-      successResponse(
-        {
-          ...participant,
-          phone_last4: participant.phoneLast4,
-          has_signature: !!participant.signatureUrl,
-          signature: signatureData,
-        },
-        'Participant retrieved successfully'
-      )
-    );
+    successResponse(res, {
+      ...participant,
+      phone_last4: participant.phoneLast4,
+      has_signature: !!participant.signatureUrl,
+      signature: signatureData,
+    }, 'Participant retrieved successfully');
   } catch (error) {
     logger.error('Get participant by id error:', error);
-    res.status(500).json(
-      errorResponse('GET_PARTICIPANT_FAILED', 'Failed to retrieve participant')
-    );
+    errorResponse(res, 'Failed to retrieve participant', 500, 'GET_PARTICIPANT_FAILED');
   }
 };
 
@@ -197,9 +165,7 @@ export const searchParticipants = async (req: Request, res: Response) => {
     const { query } = req.query;
 
     if (!query || typeof query !== 'string') {
-      return res.status(400).json(
-        errorResponse('INVALID_QUERY', 'Search query is required')
-      );
+      return errorResponse(res, 'Search query is required', 400, 'INVALID_QUERY');
     }
 
     const participants = await prisma.user.findMany({
@@ -249,19 +215,12 @@ export const searchParticipants = async (req: Request, res: Response) => {
       })
     );
 
-    res.json(
-      successResponse(
-        {
-          total: participantsWithSignature.length,
-          participants: participantsWithSignature,
-        },
-        'Search completed'
-      )
-    );
+    successResponse(res, {
+      total: participantsWithSignature.length,
+      participants: participantsWithSignature,
+    }, 'Search completed');
   } catch (error) {
     logger.error('Search participants error:', error);
-    res.status(500).json(
-      errorResponse('SEARCH_FAILED', 'Failed to search participants')
-    );
+    errorResponse(res, 'Failed to search participants', 500, 'SEARCH_FAILED');
   }
 };

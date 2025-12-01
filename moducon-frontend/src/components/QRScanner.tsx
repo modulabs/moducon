@@ -28,10 +28,14 @@ export default function QRScanner({ onClose, onScan }: QRScannerProps) {
   const stopScanner = useCallback(async () => {
     if (scannerRef.current) {
       try {
-        await scannerRef.current.stop();
+        const state = scannerRef.current.getState();
+        // 2 = SCANNING, 3 = PAUSED (these states can be stopped)
+        if (state === 2 || state === 3) {
+          await scannerRef.current.stop();
+        }
         scannerRef.current.clear();
       } catch (err) {
-        console.error('Scanner stop error:', err);
+        // Ignore stop errors - scanner may already be stopped
       }
     }
   }, []);
