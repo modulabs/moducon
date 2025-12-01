@@ -49,10 +49,11 @@ export function BottomNavigation() {
               height="28"
               viewBox="0 0 24 24"
               fill="none"
-              stroke="#666666"
+              stroke="#FFFFFF"
               strokeWidth="2.5"
               strokeLinecap="round"
               strokeLinejoin="round"
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
             >
               <rect width="5" height="5" x="3" y="3" rx="1"></rect>
               <rect width="5" height="5" x="16" y="3" rx="1"></rect>
