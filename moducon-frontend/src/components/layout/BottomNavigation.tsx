@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { Calendar, Store, QrCode, FileText, Map } from 'lucide-react';
+import { Home, Calendar, Store, FileText, Map, QrCode } from 'lucide-react';
 import { QRScannerModal } from '@/components/qr/QRScannerModal';
+import { motion } from 'motion/react';
 
 export function BottomNavigation() {
   const pathname = usePathname();
@@ -11,82 +12,78 @@ export function BottomNavigation() {
   const [qrModalOpen, setQrModalOpen] = useState(false);
 
   const tabs = [
+    { label: '홈', icon: Home, path: '/home' },
     { label: '세션', icon: Calendar, path: '/sessions' },
+    { label: 'QR', icon: QrCode, path: 'qr', isCenter: true },
     { label: '부스', icon: Store, path: '/booths' },
-    { label: '포스터', icon: FileText, path: '/papers' },
     { label: '지도', icon: Map, path: '/map' },
   ];
 
   return (
     <>
-      <div className="fixed bottom-0 left-0 right-0 h-16 bg-white/90 backdrop-blur-lg border-t border-gray-200 z-50">
-        <div className="flex items-center justify-around h-full max-w-screen-lg mx-auto px-4">
-          {/* 세션 탭 */}
-          <TabButton
-            label={tabs[0].label}
-            icon={tabs[0].icon}
-            isActive={pathname.startsWith(tabs[0].path)}
-            onClick={() => router.push(tabs[0].path)}
-          />
+      <nav className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-[#FF6B9D] via-[#FF8B5A] to-[#FFA94D] border-t border-white/20 z-50 backdrop-blur-lg shadow-2xl">
+        <div className="flex justify-around items-center h-16 relative max-w-screen-lg mx-auto">
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = tab.path !== 'qr' && pathname.startsWith(tab.path);
 
-          {/* 부스 탭 */}
-          <TabButton
-            label={tabs[1].label}
-            icon={tabs[1].icon}
-            isActive={pathname.startsWith(tabs[1].path)}
-            onClick={() => router.push(tabs[1].path)}
-          />
+            // Center QR button
+            if (tab.isCenter) {
+              return (
+                <motion.button
+                  key={tab.path}
+                  onClick={() => setQrModalOpen(true)}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="absolute left-1/2 -translate-x-1/2 -top-8 z-10"
+                  aria-label="QR 코드 스캔"
+                >
+                  <div className="relative">
+                    {/* Pulse ring animation */}
+                    <motion.div
+                      animate={{
+                        scale: [1, 1.3, 1],
+                        opacity: [0.5, 0, 0.5]
+                      }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                      className="absolute inset-0 rounded-full bg-gradient-to-r from-[#FF6B9D] to-[#FFA94D] blur-md"
+                    />
 
-          {/* 중앙 QR 버튼 (특별 UI) */}
-          <button
-            onClick={() => setQrModalOpen(true)}
-            className="relative -top-2 flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-primary to-primary/80 shadow-[0_4px_12px_rgba(79,70,229,0.4)] ring-4 ring-white hover:scale-105 transition-transform"
-            aria-label="QR 코드 스캔"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="36"
-              height="36"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#666666"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-            >
-              <rect width="5" height="5" x="3" y="3" rx="1"></rect>
-              <rect width="5" height="5" x="16" y="3" rx="1"></rect>
-              <rect width="5" height="5" x="3" y="16" rx="1"></rect>
-              <path d="M21 16h-3a2 2 0 0 0-2 2v3"></path>
-              <path d="M21 21v.01"></path>
-              <path d="M12 7v3a2 2 0 0 1-2 2H7"></path>
-              <path d="M3 12h.01"></path>
-              <path d="M12 3h.01"></path>
-              <path d="M12 16v.01"></path>
-              <path d="M16 12h1"></path>
-              <path d="M21 12v.01"></path>
-              <path d="M12 21v-1"></path>
-            </svg>
-          </button>
+                    {/* Main button */}
+                    <div className="relative w-16 h-16 rounded-full shadow-2xl flex flex-col items-center justify-center bg-white text-[#FF8B5A] border-4 border-[#FF8B5A] hover:bg-gradient-to-br hover:from-[#FF6B9D] hover:via-[#FF8B5A] hover:to-[#FFA94D] hover:text-white hover:border-white transition-all">
+                      <Icon className="w-7 h-7" />
+                    </div>
+                  </div>
+                </motion.button>
+              );
+            }
 
-          {/* 포스터 탭 */}
-          <TabButton
-            label={tabs[2].label}
-            icon={tabs[2].icon}
-            isActive={pathname.startsWith(tabs[2].path)}
-            onClick={() => router.push(tabs[2].path)}
-          />
+            return (
+              <motion.button
+                key={tab.path}
+                onClick={() => router.push(tab.path)}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                className={`flex flex-col items-center justify-center flex-1 h-full transition-all relative ${
+                  isActive ? 'text-white scale-110' : 'text-black/60'
+                }`}
+              >
+                <Icon className="w-6 h-6 mb-1" />
+                <span className="text-xs font-medium">{tab.label}</span>
 
-          {/* 지도 탭 */}
-          <TabButton
-            label={tabs[3].label}
-            icon={tabs[3].icon}
-            isActive={pathname.startsWith(tabs[3].path)}
-            onClick={() => router.push(tabs[3].path)}
-          />
+                {/* Active indicator */}
+                {isActive && (
+                  <motion.div
+                    layoutId="activeTab"
+                    className="absolute -top-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-white shadow-lg"
+                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                  />
+                )}
+              </motion.button>
+            );
+          })}
         </div>
-      </div>
+      </nav>
 
       {/* QR Scanner Modal */}
       <QRScannerModal
@@ -94,26 +91,5 @@ export function BottomNavigation() {
         onClose={() => setQrModalOpen(false)}
       />
     </>
-  );
-}
-
-interface TabButtonProps {
-  label: string;
-  icon: React.ComponentType<{ className?: string }>;
-  isActive: boolean;
-  onClick: () => void;
-}
-
-function TabButton({ label, icon: Icon, isActive, onClick }: TabButtonProps) {
-  return (
-    <button
-      onClick={onClick}
-      className={`flex flex-col items-center justify-center space-y-1 ${
-        isActive ? 'text-primary font-semibold' : 'text-gray-500'
-      }`}
-    >
-      <Icon className="w-6 h-6" />
-      <span className="text-xs">{label}</span>
-    </button>
   );
 }
