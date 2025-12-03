@@ -1,25 +1,42 @@
 /**
  * Paper Controller
- * 포스터 관련 API 컨트롤러
+ * 포스터 관련 API 컨트롤러 (PostgreSQL DB 사용)
  */
 
 import { Request, Response } from 'express';
-import * as sheetsService from '../services/googleSheetsService';
+import { prisma } from '../lib/prisma';
 import { successResponse, errorResponse } from '../utils/response';
 import { logger } from '../utils/logger';
 
 /**
  * GET /api/papers
- * 포스터 목록 조회
+ * 포스터 목록 조회 (학회, 발표시간 필터링 지원)
  */
 export async function getPapers(req: Request, res: Response): Promise<void> {
   try {
     const { conference, presentationTime } = req.query;
 
-    const papers = await sheetsService.filterPapers(
-      conference as string | undefined,
-      presentationTime as string | undefined
-    );
+    const where: {
+      hashtags?: { has: string };
+      presentationTime?: { contains: string };
+      isActive: boolean;
+    } = {
+      isActive: true,
+    };
+
+    // 학회명은 hashtags 배열에 저장됨
+    if (conference && typeof conference === 'string') {
+      where.hashtags = { has: conference };
+    }
+
+    if (presentationTime && typeof presentationTime === 'string') {
+      where.presentationTime = { contains: presentationTime };
+    }
+
+    const papers = await prisma.poster.findMany({
+      where,
+      orderBy: { code: 'asc' },
+    });
 
     successResponse(res, papers, '포스터 목록을 성공적으로 조회했습니다.');
   } catch (error) {
@@ -30,16 +47,21 @@ export async function getPapers(req: Request, res: Response): Promise<void> {
 
 /**
  * GET /api/papers/:id
- * 특정 포스터 상세 조회
+ * 특정 포스터 상세 조회 (code 또는 id로 조회)
  */
 export async function getPaperById(req: Request, res: Response): Promise<void> {
   try {
     const { id } = req.params;
 
-    const paper = await sheetsService.getPaperById(id);
+    const paper = await prisma.poster.findFirst({
+      where: {
+        OR: [{ code: id }, { id }],
+        isActive: true,
+      },
+    });
 
     if (!paper) {
-      errorResponse(res, '포스터를 찾을 수 없습니다.', 404);
+      errorResponse(res, '포스터를 찾을 수 없습니다.', 404, 'PAPER_NOT_FOUND');
       return;
     }
 

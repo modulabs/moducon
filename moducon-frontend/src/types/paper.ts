@@ -1,18 +1,17 @@
 /**
- * 포스터(논문) 관련 타입 정의
+ * 포스터(논문) 데이터 구조 (DB 스키마 기반)
  */
-
 export interface Paper {
   id: string;
-  author: string;
-  affiliation: string;
-  conference: string;
+  code: string;
   title: string;
-  fileUrl: string;
-  paperUrl: string;
-  category: string;
-  email: string;
-  phone: string;
-  presentationTime: string;
-  willPresent: string;
+  abstract: string | null;
+  researcher: string | null;
+  affiliation: string | null;
+  hashtags: string[];
+  presentationTime: string | null;
+  location: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
 }

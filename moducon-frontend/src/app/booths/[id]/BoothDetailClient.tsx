@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import type { Booth } from '@/lib/googleSheets';
+import type { Booth } from '@/types/booth';
 
 interface BoothDetailClientProps {
   booth: Booth;
@@ -55,11 +55,13 @@ export default function BoothDetailClient({ booth }: BoothDetailClientProps) {
               </div>
             )}
             {/* 타입 배지 */}
-            <div className="absolute top-4 left-4">
-              <span className="px-4 py-2 bg-white/90 backdrop-blur-sm rounded-full text-sm font-medium text-purple-600 shadow-md">
-                {booth.type}
-              </span>
-            </div>
+            {booth.orgType && (
+              <div className="absolute top-4 left-4">
+                <span className="px-4 py-2 bg-white/90 backdrop-blur-sm rounded-full text-sm font-medium text-purple-600 shadow-md">
+                  {booth.orgType}
+                </span>
+              </div>
+            )}
           </div>
 
           {/* 기본 정보 */}
@@ -81,10 +83,10 @@ export default function BoothDetailClient({ booth }: BoothDetailClientProps) {
             )}
 
             {/* 담당자 */}
-            {booth.contactPerson && (
+            {booth.managerName && (
               <div className="flex items-center gap-2 text-gray-600 mb-4">
                 <span className="text-sm font-medium">담당자:</span>
-                <span className="text-sm">{booth.contactPerson}</span>
+                <span className="text-sm">{booth.managerName}</span>
               </div>
             )}
           </div>
@@ -126,13 +128,13 @@ export default function BoothDetailClient({ booth }: BoothDetailClientProps) {
           )}
 
           {/* 핵심 기술 */}
-          {booth.technologies && (
+          {booth.coreTech && (
             <div className="bg-white rounded-xl shadow-sm p-6">
               <h2 className="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
                 <span className="text-2xl">⚙️</span>
                 핵심 기술
               </h2>
-              <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{booth.technologies}</p>
+              <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{booth.coreTech}</p>
             </div>
           )}
 

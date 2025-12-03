@@ -4,9 +4,10 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { PlusCircle, RefreshCw } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 import { fetchSessionsWithCache, invalidateSessionsCache } from '@/lib/sessionCache';
 import type { Session } from '@/types/session';
+import { parseTimeSlot } from '@/types/session';
 
 const tracks = ['Track 00', 'Track 01', 'Track 10', 'Track i', 'Track 101'];
 
@@ -44,23 +45,6 @@ export default function SessionsPage() {
     setActiveTrack(track);
   };
 
-  const formatTime = (timeStr: string) => {
-    // "09:00" 형식의 시간 문자열을 그대로 표시
-    return timeStr;
-  };
-
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case '초급':
-        return 'bg-green-100 text-green-800';
-      case '중급':
-        return 'bg-blue-100 text-blue-800';
-      case '고급':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
 
   return (
     <div className="container mx-auto p-4 sm:p-6 lg:p-8">
@@ -132,51 +116,53 @@ export default function SessionsPage() {
             </p>
           </div>
         ) : (
-          sessions.map(session => (
-            <Card key={session.id}>
-              <CardContent className="p-6 grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="md:col-span-3">
-                  <div className="flex gap-2 mb-2">
-                    <Badge variant="secondary">{session.track}</Badge>
-                    <Badge className={getDifficultyColor(session.difficulty)}>
-                      {session.difficulty}
-                    </Badge>
-                  </div>
-                  <h3 className="text-xl font-semibold mb-1">{session.name}</h3>
-                  <p className="text-muted-foreground mb-2">
-                    <strong>{session.speaker}</strong> · {session.speakerAffiliation}
-                  </p>
-                  <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                    {session.description}
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {session.hashtags.map(tag => (
-                      <Badge key={tag} variant="outline">#{tag}</Badge>
-                    ))}
-                  </div>
-                </div>
-                <div className="flex flex-col items-start md:items-end justify-between">
-                  <div className="text-right">
-                    <p className="font-mono text-sm">
-                      {session.startTime} - {session.endTime}
+          sessions.map(session => {
+            const { startTime, endTime } = parseTimeSlot(session.timeSlot);
+            return (
+              <Card key={session.id}>
+                <CardContent className="p-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div className="md:col-span-3">
+                    <div className="flex gap-2 mb-2">
+                      <Badge variant="secondary">{session.track}</Badge>
+                    </div>
+                    <h3 className="text-xl font-semibold mb-1">{session.title}</h3>
+                    <p className="text-muted-foreground mb-2">
+                      <strong>{session.speakerName}</strong>{session.speakerOrg ? ` · ${session.speakerOrg}` : ''}
                     </p>
-                    <p className="text-sm text-muted-foreground">
-                      {session.location}
+                    <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                      {session.description}
                     </p>
+                    <div className="flex flex-wrap gap-2">
+                      {session.keywords.map((keyword: string) => (
+                        <Badge key={keyword} variant="outline">#{keyword}</Badge>
+                      ))}
+                    </div>
                   </div>
+                  <div className="flex flex-col items-start md:items-end justify-between">
+                    <div className="text-right">
+                      <p className="font-mono text-sm">
+                        {startTime} - {endTime}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {session.location}
+                      </p>
+                    </div>
 
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="mt-4 md:mt-0"
-                    onClick={() => window.open(session.pageUrl, '_blank')}
-                  >
-                    상세 보기 →
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))
+                    {session.pageUrl && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="mt-4 md:mt-0"
+                        onClick={() => window.open(session.pageUrl!, '_blank')}
+                      >
+                        상세 보기 →
+                      </Button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })
         )}
       </div>
     </div>

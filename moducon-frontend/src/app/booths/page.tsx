@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { fetchBooths, filterBoothsByType, searchBooths, type Booth } from '@/lib/googleSheets';
+import { fetchBoothsWithCache } from '@/lib/boothCache';
+import type { Booth } from '@/types/booth';
 import Link from 'next/link';
 
 export default function BoothsPage() {
@@ -21,9 +22,14 @@ export default function BoothsPage() {
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
-      const data = await fetchBooths();
-      setBooths(data);
-      setLoading(false);
+      try {
+        const data = await fetchBoothsWithCache();
+        setBooths(data);
+      } catch (error) {
+        console.error('부스 로딩 실패:', error);
+      } finally {
+        setLoading(false);
+      }
     };
     loadData();
   }, []);
@@ -31,14 +37,20 @@ export default function BoothsPage() {
   const filteredBooths = useMemo(() => {
     let result = booths;
 
-    // 타입 필터
+    // 타입 필터 (orgType 필드 사용)
     if (selectedType && selectedType !== '전체') {
-      result = filterBoothsByType(result, selectedType);
+      result = result.filter(booth => booth.orgType === selectedType);
     }
 
     // 검색
     if (searchQuery.trim()) {
-      result = searchBooths(result, searchQuery);
+      const query = searchQuery.toLowerCase();
+      result = result.filter(booth =>
+        booth.name.toLowerCase().includes(query) ||
+        booth.description?.toLowerCase().includes(query) ||
+        booth.boothDescription?.toLowerCase().includes(query) ||
+        booth.hashtags.some(tag => tag.toLowerCase().includes(query))
+      );
     }
 
     return result;
@@ -132,11 +144,13 @@ export default function BoothsPage() {
                   </div>
                 )}
                 {/* 타입 배지 */}
-                <div className="absolute top-3 left-3">
-                  <span className="px-3 py-1 bg-white/90 backdrop-blur-sm rounded-full text-xs font-medium text-purple-600 shadow-sm">
-                    {booth.type}
-                  </span>
-                </div>
+                {booth.orgType && (
+                  <div className="absolute top-3 left-3">
+                    <span className="px-3 py-1 bg-white/90 backdrop-blur-sm rounded-full text-xs font-medium text-purple-600 shadow-sm">
+                      {booth.orgType}
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* 내용 영역 */}

@@ -1,456 +1,236 @@
-# 03_DEVELOPMENT_PLAN.md - 개발 계획서
+# 개발 계획 및 다음 단계
 
-**프로젝트명**: 모두콘 2025 디지털 컨퍼런스 북 개선
-**버전**: v1.0
-**작성일**: 2025-11-30
+## 📅 최종 업데이트
+**날짜**: 2025-12-03
 **작성자**: Technical Lead
 
 ---
 
-## 📋 개요
+## 📊 개발 현황
 
-PRD v1.8에서 정의한 2개 신규 요구사항에 대한 구체적 개발 계획입니다.
+### ✅ 완료된 작업
 
-### 작업 범위
-1. **QR 스캐너 UI/UX 개선**: 2-4시간
-2. **세션 데이터 실시간 연동**: 4-6시간
-3. **총 예상 시간**: 6-10시간
+#### Phase 1: 기획 & 문서화
+- [x] PRD, 개발 계획, DB 설계, API 명세 완료
+- [x] 대화 내역 문서 claudedocs/ 정리 완료
+- [x] 핵심 문서 루트에 유지
 
----
+#### Phase 2: 기본 UI 구현
+- [x] 프론트엔드 기본 구조
+- [x] 사용자 인증 & 세션 관리
+- [x] 홈/세션/부스/포스터 페이지
+- [x] 모바일 PWA 최적화
 
-## 🏗️ 시스템 아키텍처
+#### UI 개선 완료 (2025-12-02)
+- [x] **Header 브랜드 디자인 적용**
+  - 그라데이션 배경: `#FF6B9D` → `#FF8B5A` → `#FFA94D`
+  - ModulabsLogo 통합 (w-20 h-8, 비율 2.25:1)
+  - Tailwind: `bg-gradient-to-r from-[#FF6B9D] via-[#FF8B5A] to-[#FFA94D]`
 
-### 현재 아키텍처
-```
-┌─────────────────┐
-│   Next.js 16    │
-│   Frontend      │
-│   (Port 3000)   │
-└────────┬────────┘
-         │
-         │ REST API
-         ▼
-┌─────────────────┐
-│   Express.js    │
-│   Backend       │
-│   (Port 3001)   │
-└────────┬────────┘
-         │
-         │ Google Sheets API
-         ▼
-┌─────────────────┐
-│  Google Sheets  │
-│   Spreadsheet   │
-└─────────────────┘
-```
+- [x] **CORS 설정 완료**
+  - 프론트엔드 도메인: `moducon.vibemakers.kr`
+  - 개발 환경: `localhost:3000`
 
-### 개선 후 아키텍처
-```
-┌──────────────────────────────────┐
-│        Next.js 16 Frontend       │
-├──────────────────────────────────┤
-│  QRFloatingButton (신규)         │
-│    ├─ QRScannerModal             │
-│    ├─ html5-qrcode               │
-│    └─ Camera API                 │
-│                                   │
-│  SessionsPage (개선)             │
-│    ├─ fetchSessionsWithCache     │
-│    ├─ sessionStorage (5분 캐시)  │
-│    └─ 트랙 필터링                │
-└────────┬─────────────────────────┘
-         │
-         │ REST API (/api/sessions)
-         │ POST /api/verify-qr
-         ▼
-┌──────────────────────────────────┐
-│      Express.js Backend          │
-├──────────────────────────────────┤
-│  googleSheetsService (개선)     │
-│    ├─ getSessions()              │
-│    ├─ filterSessions()           │
-│    └─ axios + Google API         │
-│                                   │
-│  QR 검증 로직 (신규)             │
-│    ├─ JWT 기반 인증              │
-│    └─ 체크인 기록                │
-└────────┬─────────────────────────┘
-         │
-         │ Google Sheets API v4
-         ▼
-┌──────────────────────────────────┐
-│       Google Sheets              │
-│  Spreadsheet ID: 1djkPQzg...     │
-│    ├─ "세션" (33개 세션)         │
-│    ├─ "부스" (13개 부스)         │
-│    └─ "포스터" (33개 포스터)     │
-└──────────────────────────────────┘
-```
+#### Phase 3: Database 구축 및 프론트엔드 연동 완료 (2025-12-03) ✅
+- [x] **PostgreSQL DB 스키마 구축**
+  - Session, Booth, Poster 모델 (uuid_v7 ID)
+  - User, UserCheckin, Quiz 모델
+  - 전체 스키마 Prisma ORM 적용
+
+- [x] **xlsx 데이터 → DB 마이그레이션**
+  - 세션: 32개
+  - 부스: 15개
+  - 포스터: 33개
+
+- [x] **백엔드 API 업데이트**
+  - `/api/sessions` - Prisma DB 조회
+  - `/api/booths` - Prisma DB 조회
+  - `/api/papers` - Prisma DB 조회
+
+- [x] **프론트엔드 DB API 연동**
+  - `sessionCache.ts` - 백엔드 API 연동
+  - `boothCache.ts` - 백엔드 API 연동
+  - `paperCache.ts` - 백엔드 API 연동
+  - 타입 정의 DB 스키마 반영 (Session, Booth, Paper)
+  - 페이지 컴포넌트 필드명 업데이트
 
 ---
 
-## 📂 디렉토리 구조
+## 🎯 Phase 4-5 개발 계획
 
-### 신규/수정 파일 목록
-```
-moducon-frontend/
-├── src/
-│   ├── components/
-│   │   └── qr/
-│   │       ├── QRFloatingButton.tsx (신규)
-│   │       ├── QRScannerModal.tsx (신규)
-│   │       ├── QRScanner.tsx (기존 - 리팩토링)
-│   │       └── icons/
-│   │           └── QRIcon.tsx (신규)
-│   ├── lib/
-│   │   └── sessionCache.ts (신규)
-│   ├── types/
-│   │   └── session.ts (신규)
-│   └── app/
-│       ├── sessions/
-│       │   └── page.tsx (수정)
-│       └── home/
-│           └── page.tsx (수정 - QR 버튼 추가)
-
-moducon-backend/
-└── src/
-    ├── services/
-    │   └── googleSheetsService.ts (수정)
-    ├── routes/
-    │   ├── sessions.ts (기존 - 확인)
-    │   └── qr.ts (신규)
-    ├── types/
-    │   └── session.ts (신규)
-    └── middleware/
-        └── errorHandler.ts (수정)
-```
+### 예상 소요 시간: 2-3시간
 
 ---
 
-## 📅 개발 일정
+## Phase 4: 체크인 + 퀴즈 API (2시간)
 
-### Phase 1: 백엔드 개발 (2-3시간)
+### 목표
+체크인 및 퀴즈 API 엔드포인트 구현
 
-#### Day 1 - Morning (2시간)
-**담당**: Backend Developer
-**목표**: Google Sheets API 연동 완료
+### API 엔드포인트 (5개)
 
-**Task 1.1: 환경 설정 (30분)**
-- [ ] `.env` 파일에 Google Sheets API 키 추가
-- [ ] `axios` 패키지 설치 확인
-- [ ] Spreadsheet ID 환경 변수 설정
+#### 1. POST /api/checkin
+**기능**: 부스 체크인 생성
 
-**Task 1.2: 타입 정의 (30분)**
-- [ ] `src/types/session.ts` 생성
-- [ ] `Session` 인터페이스 정의
-- [ ] `SessionRaw` 인터페이스 정의
+#### 2. GET /api/checkin/user/:userId
+**기능**: 사용자별 체크인 목록 조회
 
-**Task 1.3: Google Sheets Service 구현 (1시간)**
-- [ ] `getSessions()` 함수 구현
-  - Google Sheets API 호출
-  - 데이터 파싱 (시간, 해시태그)
-  - 난이도 추론 로직
-- [ ] `getSessionById()` 함수 구현
-- [ ] `filterSessions()` 함수 구현
-- [ ] 에러 핸들링 추가
+#### 3. POST /api/quiz
+**기능**: 퀴즈 답변 제출 및 정답 확인
 
-**검증**:
-```bash
-# 로컬 테스트
-curl http://localhost:3001/api/sessions
-# Expected: 33개 세션 데이터 반환
-```
+#### 4. GET /api/quiz/user/:userId
+**기능**: 사용자별 퀴즈 답변 목록
+
+#### 5. GET /api/stats/user/:userId
+**기능**: 사용자 통계 (체크인 수, 퀴즈 정답률)
+
+### 보안
+- JWT 인증 미들웨어 적용
+- 요청 검증 (Zod 스키마)
+- Rate limiting
 
 ---
 
-### Phase 2: 프론트엔드 개발 (4-6시간)
+## Phase 5: 마이페이지 UI (1-1.5시간)
 
-#### Day 1 - Afternoon (3시간)
-**담당**: Frontend Developer
-**목표**: QR 스캐너 UI 완성
+### 페이지 구조
+**경로**: `/mypage`
 
-**Task 2.1: QR 컴포넌트 개발 (2시간)**
-- [ ] `QRIcon.tsx` SVG 컴포넌트 생성
-- [ ] `QRFloatingButton.tsx` 원형 버튼 구현
-  - 버튼 디자인 (120px 원형, 그라데이션)
-  - Pulse 애니메이션
-  - 툴팁 (3초 자동 사라짐)
-- [ ] `QRScannerModal.tsx` 전체 화면 모달 구현
-  - 카메라 뷰 통합
-  - 스캔 가이드라인 오버레이
-  - 사용 안내 메시지
-  - 에러 핸들링
+### 4개 주요 컴포넌트
 
-**Task 2.2: Tailwind 설정 (30분)**
-- [ ] `tailwind.config.js` 커스텀 애니메이션 추가
-- [ ] `fade-in-out` 키프레임 정의
-- [ ] Pulse 애니메이션 확인
+#### 1. ProfileCard
+**기능**: 사용자 프로필 정보 표시
 
-**Task 2.3: 홈 페이지 통합 (30분)**
-- [ ] `app/home/page.tsx`에 `QRFloatingButton` 추가
-- [ ] QR 스캔 핸들러 구현
-- [ ] Toast 알림 연동
+#### 2. BadgeCollection
+**기능**: 획득한 배지 컬렉션
 
-**검증**:
-- [ ] 모바일 브라우저에서 QR 버튼 표시 확인
-- [ ] 카메라 권한 요청 정상 동작
-- [ ] QR 스캔 성공 시 체크인 완료 메시지
+#### 3. CheckInStats
+**기능**: 체크인 통계 대시보드
+
+#### 4. CheckpointList
+**기능**: 체크포인트 목록 (최근 활동)
+
+### API 연동
+- `GET /api/stats/user/:userId` → CheckInStats
+- `GET /api/checkin/user/:userId` → CheckpointList
+- `GET /api/quiz/user/:userId` → BadgeCollection
 
 ---
 
-#### Day 2 - Morning (2시간)
-**담당**: Frontend Developer
-**목표**: 세션 데이터 연동 완료
+## 📊 진행률
 
-**Task 2.4: 캐싱 레이어 구현 (1시간)**
-- [ ] `lib/sessionCache.ts` 생성
-- [ ] `fetchSessionsWithCache()` 함수 구현
-  - sessionStorage 캐싱 (5분)
-  - 캐시 유효성 검증
-- [ ] `invalidateSessionsCache()` 함수 구현
+| Phase | 작업 | 상태 | 진행률 |
+|-------|------|------|--------|
+| Phase 1 | 기획 & 문서화 | ✅ 완료 | 100% |
+| Phase 2 | 기본 UI 구현 | ✅ 완료 | 100% |
+| Phase 3 | DB 구축 및 프론트엔드 연동 | ✅ 완료 | 100% |
+| Phase 4 | 체크인 + 퀴즈 API | 🚧 대기 | 0% |
+| Phase 5 | 마이페이지 UI | 🚧 대기 | 0% |
 
-**Task 2.5: 세션 페이지 업데이트 (1시간)**
-- [ ] `app/sessions/page.tsx` 수정
-  - `fetchSessionsWithCache()` 연동
-  - 새로고침 버튼 추가
-  - 에러 상태 처리
-  - 로딩 스피너 개선
-- [ ] 트랙 필터 동작 확인
-- [ ] 난이도 배지 색상 확인
-
-**검증**:
-```bash
-# 프론트엔드 테스트
-npm run dev
-# /sessions 페이지 접속
-# Expected: 33개 세션 카드 표시
-```
+**전체 진행률**: 60% (3/5 Phase 완료)
 
 ---
 
-### Phase 3: 통합 테스트 (1시간)
+## ✅ 체크리스트
 
-#### Day 2 - Afternoon (1시간)
-**담당**: QA Lead
-**목표**: End-to-End 테스트 완료
+### Phase 3 ✅
+- [x] PostgreSQL DB 스키마 구축
+- [x] Session, Booth, Poster 모델 구현
+- [x] xlsx 데이터 → DB 마이그레이션
+- [x] 백엔드 API Prisma DB 연동
+- [x] 프론트엔드 타입 정의 업데이트
+- [x] 프론트엔드 캐시 레이어 API 연동
+- [x] 빌드 성공 검증 (62개 페이지)
 
-**Task 3.1: 기능 테스트 (30분)**
-- [ ] QR 스캐너
-  - 원형 버튼 클릭 → 모달 오픈
-  - 카메라 활성화 확인
-  - QR 코드 스캔 성공
-  - 햅틱 피드백 동작 (모바일)
-- [ ] 세션 페이지
-  - 33개 세션 모두 표시
-  - 트랙 필터 동작
-  - 캐싱 확인 (네트워크 탭)
-  - 새로고침 버튼 동작
+### Phase 4
+- [ ] POST /api/checkin 구현
+- [ ] GET /api/checkin/user/:userId 구현
+- [ ] POST /api/quiz 구현
+- [ ] GET /api/quiz/user/:userId 구현
+- [ ] GET /api/stats/user/:userId 구현
+- [ ] JWT 미들웨어 적용
+- [ ] API 테스트 (Postman/Thunder Client)
 
-**Task 3.2: 성능 테스트 (15분)**
-- [ ] 세션 API 응답 시간 < 500ms
-- [ ] 캐시 적중 시 응답 시간 < 10ms
-- [ ] QR 스캔 응답 시간 < 1초
-
-**Task 3.3: 에러 시나리오 테스트 (15분)**
-- [ ] 네트워크 오프라인 시 캐시 동작
-- [ ] Google Sheets API 오류 시 에러 메시지
-- [ ] 카메라 권한 거부 시 안내 메시지
-
----
-
-## 🛠️ 기술 스택 및 의존성
-
-### 기존 의존성
-```json
-{
-  "frontend": {
-    "next": "^16.0.0",
-    "react": "^19.0.0",
-    "tailwindcss": "^4.0.0",
-    "html5-qrcode": "^2.3.8",
-    "lucide-react": "^0.263.1"
-  },
-  "backend": {
-    "express": "^4.18.2",
-    "typescript": "^5.0.0",
-    "dotenv": "^16.0.3"
-  }
-}
-```
-
-### 신규 의존성
-```bash
-# 백엔드
-cd moducon-backend
-npm install axios
-
-# 프론트엔드 (추가 설치 없음)
-```
+### Phase 5
+- [ ] ProfileCard 컴포넌트 구현
+- [ ] BadgeCollection 컴포넌트 구현
+- [ ] CheckInStats 컴포넌트 구현
+- [ ] CheckpointList 컴포넌트 구현
+- [ ] API 연동 및 테스트
+- [ ] 반응형 디자인 검증
 
 ---
 
-## 🔐 보안 고려사항
+## 🔧 최근 수정 사항
 
-### 환경 변수 관리
-```bash
-# moducon-backend/.env
-GOOGLE_SHEETS_API_KEY=AIzaSy...  # Google Cloud Console에서 발급
-SPREADSHEET_ID=1djkPQzg_1-_zgbWe8e5AYZlUjVoQYmJj2HlwRsCqu9g
-NODE_ENV=development
+### 2025-12-03: DB API 연동 (Phase 3 완료)
+**변경 내용**:
+- PostgreSQL DB 스키마 구축 (Session, Booth, Poster, User 등)
+- xlsx 데이터 마이그레이션 완료 (32 세션, 15 부스, 33 포스터)
+- 백엔드 API Prisma DB 연동 (`/api/sessions`, `/api/booths`, `/api/papers`)
+- 프론트엔드 캐시 레이어 업데이트 (sessionCache, boothCache, paperCache)
+- 프론트엔드 타입 정의 DB 스키마 반영
+- 페이지 컴포넌트 필드명 업데이트 (home, sessions, booths 등)
 
-# moducon-frontend/.env.local
-NEXT_PUBLIC_API_URL=http://localhost:3001
-```
+### 2025-12-02: UI/UX 디자인 적용
+**파일**: `moducon-frontend/src/components/layout/Header.tsx`
 
-### .gitignore 확인
-```bash
-# 이미 설정되어 있는지 확인
-cat .gitignore | grep ".env"
-# .env
-# .env.local
-# .env.production
-```
+**변경 내용**:
+- 브랜드 그라데이션 배경 적용
+- ModulabsLogo 컴포넌트 통합
+- 로고 비율 수정 (w-8 h-8 → w-20 h-8)
 
-### API 키 제한 설정
-1. Google Cloud Console → API 및 서비스 → 사용자 인증 정보
-2. API 키 편집 → 애플리케이션 제한사항
-   - HTTP 리퍼러 제한: `https://moducon.modulabs.co.kr/*`
-3. API 제한사항
-   - Google Sheets API만 허용
+### 2025-12-02: CORS 설정
+**파일**: `moducon-backend/src/index.ts`
+
+**변경 내용**:
+- 프로덕션 도메인 `moducon.vibemakers.kr` 추가
+- 동적 CORS origin 설정
 
 ---
 
-## 📊 모니터링 및 로깅
+## 📂 프로젝트 구조
 
-### 백엔드 로깅
-```typescript
-// moducon-backend/src/utils/logger.ts
-
-export function logGoogleSheetsRequest(success: boolean, duration: number) {
-  console.log({
-    timestamp: new Date().toISOString(),
-    service: 'GoogleSheets',
-    success,
-    duration: `${duration}ms`,
-    endpoint: '/api/sessions'
-  });
-}
-
-// 사용
-const startTime = Date.now();
-try {
-  const sessions = await getSessions();
-  logGoogleSheetsRequest(true, Date.now() - startTime);
-} catch (error) {
-  logGoogleSheetsRequest(false, Date.now() - startTime);
-}
 ```
-
-### 프론트엔드 로깅
-```typescript
-// moducon-frontend/src/lib/analytics.ts
-
-export function trackQRScan(success: boolean, duration: number) {
-  console.log({
-    event: 'qr_scan',
-    success,
-    duration,
-    timestamp: new Date().toISOString()
-  });
-
-  // Google Analytics 연동 (옵션)
-  if (window.gtag) {
-    window.gtag('event', 'qr_scan', {
-      success,
-      duration
-    });
-  }
-}
+moducon_dev/
+├── claudedocs/                 # 프로젝트 문서
+│   ├── 01_PRD.md
+│   ├── 02_TECHNICAL_REQUIREMENTS.md
+│   ├── 03_DEVELOPMENT_PLAN.md (본 문서)
+│   ├── 04_UI_VERIFICATION_GUIDE.md
+│   ├── 05_API_SPEC.md
+│   ├── 06_DEPLOYMENT_GUIDE.md
+│   ├── 07_FINAL_QA_REPORT.md
+│   └── archive/               # 이전 문서 보관
+├── moducon-frontend/           # Next.js + TypeScript
+│   └── src/
+│       ├── app/
+│       │   ├── home/          ✅
+│       │   ├── sessions/      ✅
+│       │   ├── booths/        ✅
+│       │   ├── papers/        ✅
+│       │   └── mypage/        🚧
+│       └── components/
+│           ├── layout/
+│           │   └── Header.tsx  ✅ (브랜드 디자인 적용)
+│           └── home/
+├── moducon-backend/            # Express + Prisma
+│   ├── src/
+│   │   └── index.ts           ✅ (CORS 설정)
+│   └── prisma/
+│       └── schema.prisma
+└── README.md
 ```
-
----
-
-## ✅ 완료 기준 (Definition of Done)
-
-### QR 스캐너 UI
-- [ ] 원형 버튼이 모든 페이지에 표시됨
-- [ ] 버튼 클릭 시 전체 화면 모달 오픈
-- [ ] 후방 카메라 자동 선택
-- [ ] 250px 스캔 가이드라인 표시
-- [ ] 스캔 성공 시 햅틱 피드백
-- [ ] 에러 시 재시도 안내
-- [ ] 모바일 iOS/Android 테스트 완료
-
-### 세션 데이터 연동
-- [ ] Google Sheets API 연결 성공
-- [ ] 33개 세션 데이터 모두 로드
-- [ ] 트랙별 필터링 정상 동작
-- [ ] 난이도 추론 로직 동작
-- [ ] 5분 캐싱 정상 작동
-- [ ] 새로고침 버튼으로 수동 갱신
-- [ ] 네트워크 에러 시 친절한 메시지
-- [ ] 응답 시간 < 500ms (캐시 제외)
-
-### 코드 품질
-- [ ] TypeScript 타입 에러 0개
-- [ ] ESLint 경고 0개
-- [ ] 코드 리뷰 승인
-- [ ] 단위 테스트 작성 (옵션)
-
-### 문서화
-- [ ] README.md 업데이트 (신규 기능 설명)
-- [ ] API 문서 업데이트 (/api/sessions)
-- [ ] CHANGELOG.md 작성
 
 ---
 
 ## 🚀 배포 계획
 
-### 배포 전 체크리스트
-- [ ] 환경 변수 프로덕션 설정 확인
-- [ ] Google Sheets API 키 프로덕션 키로 교체
-- [ ] CORS 설정 확인 (허용 도메인)
-- [ ] 빌드 테스트 (프론트엔드 + 백엔드)
-
-### 배포 단계
-```bash
-# 1. 백엔드 배포
-cd moducon-backend
-npm run build
-npm start  # PM2 또는 Docker 사용
-
-# 2. 프론트엔드 배포
-cd moducon-frontend
-npm run build
-npm run start  # 또는 Vercel/Netlify 배포
-
-# 3. 배포 검증
-curl https://api.moducon.modulabs.co.kr/api/sessions
-# Expected: 33개 세션 데이터
-```
+### 단계별 배포
+1. **Phase 3 완료 후**: DB 마이그레이션만 Railway 배포
+2. **Phase 4 완료 후**: Backend API Vercel/Railway 배포
+3. **Phase 5 완료 후**: Frontend Vercel 배포 (전체 완성)
 
 ---
 
-## 📝 다음 단계
-
-### 행사 당일 (D-Day)
-- [ ] 실시간 모니터링 (서버 로그, 에러율)
-- [ ] 긴급 대응 체계 (핫픽스 준비)
-- [ ] 사용자 피드백 수집
-
-### 행사 후 (D+1 ~ D+7)
-- [ ] 사용 데이터 분석
-  - QR 스캔 성공률
-  - 세션 페이지 접속 수
-  - 캐시 적중률
-- [ ] 개선 사항 도출
-- [ ] Phase 2 기능 개발 계획 수립
-  - 퀘스트 자동 생성
-  - 실시간 혼잡도
-  - 배지 시스템
-
----
-
-**문서 버전**: v1.0
-**최종 수정일**: 2025-11-30
-**다음 검토 예정일**: 개발 착수 전
+**다음 담당자**: hands-on worker (Phase 3-5 구현)

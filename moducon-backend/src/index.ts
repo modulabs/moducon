@@ -10,11 +10,27 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
-const CORS_ORIGIN = process.env.CORS_ORIGIN || 'http://localhost:3000';
+
+// CORS 허용 도메인 설정 (프론트엔드 도메인만)
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://moducon.vibemakers.kr',
+  ...(process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : []),
+];
 
 // 미들웨어
 app.use(cors({
-  origin: CORS_ORIGIN,
+  origin: (origin, callback) => {
+    // origin이 없는 경우 (same-origin 요청 또는 서버 간 요청)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      logger.warn(`CORS blocked: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
 }));
 app.use(express.json({ limit: '10mb' }));
@@ -36,5 +52,5 @@ app.use(errorHandler);
 app.listen(PORT, () => {
   logger.info(`🚀 Server running on http://localhost:${PORT}`);
   logger.info(`📝 Environment: ${process.env.NODE_ENV || 'development'}`);
-  logger.info(`🌐 CORS origin: ${CORS_ORIGIN}`);
+  logger.info(`🌐 CORS origins: ${allowedOrigins.join(', ')}`);
 });

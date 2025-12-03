@@ -116,4 +116,53 @@ router.post('/submit', authenticate, async (req: AuthRequest, res: Response) => 
   }
 });
 
+// 3. GET /api/quiz/user/:userId - 사용자별 퀴즈 시도 목록
+router.get('/user/:userId', authenticate, async (req: AuthRequest, res: Response) => {
+  try {
+    const { userId } = req.params;
+    const requestUserId = req.user?.userId;
+
+    if (!requestUserId) {
+      return errorResponse(res, '인증이 필요합니다.', 401, 'UNAUTHORIZED');
+    }
+
+    // 본인의 퀴즈 시도 목록만 조회 가능
+    if (userId !== requestUserId) {
+      return errorResponse(
+        res,
+        '본인의 퀴즈 기록만 조회할 수 있습니다.',
+        403,
+        'FORBIDDEN'
+      );
+    }
+
+    const attempts = await prisma.userQuizAttempt.findMany({
+      where: { userId },
+      include: {
+        quiz: {
+          select: {
+            id: true,
+            targetType: true,
+            targetId: true,
+            question: true,
+          },
+        },
+      },
+      orderBy: { attemptedAt: 'desc' },
+    });
+
+    logger.debug(`Retrieved ${attempts.length} quiz attempts for user ${userId}`);
+
+    return successResponse(res, { attempts });
+  } catch (error) {
+    logger.error('퀴즈 시도 목록 조회 실패:', error);
+    return errorResponse(
+      res,
+      '퀴즈 기록 조회 중 오류가 발생했습니다.',
+      500,
+      'FETCH_FAILED'
+    );
+  }
+});
+
 export default router;

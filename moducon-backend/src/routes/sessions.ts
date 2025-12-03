@@ -1,69 +1,89 @@
 /**
  * 세션 라우트
- * Google Sheets에서 세션 데이터를 가져와 제공
+ * PostgreSQL DB에서 세션 데이터를 가져와 제공
  */
 
-import express, { Request, Response } from 'express';
-import {
-  getSessions,
-  getSessionById,
-  filterSessions
-} from '../services/googleSheetsService';
+import { Router, Request, Response } from 'express';
+import { prisma } from '../lib/prisma';
+import { successResponse, errorResponse } from '../utils/response';
+import { logger } from '../utils/logger';
 
-const router = express.Router();
+const router = Router();
 
 /**
  * GET /api/sessions
- * 세션 목록 조회 (트랙, 난이도 필터링 지원)
+ * 세션 목록 조회 (트랙 필터링 지원)
  */
 router.get('/', async (req: Request, res: Response) => {
   try {
-    const { track, difficulty } = req.query;
+    const { track } = req.query;
 
-    const sessions = await filterSessions(
-      track as string | undefined,
-      difficulty as '초급' | '중급' | '고급' | undefined
-    );
+    const where: { track?: string; isActive: boolean } = {
+      isActive: true,
+    };
 
-    res.json({
-      success: true,
-      data: sessions
+    if (track && typeof track === 'string') {
+      where.track = track;
+    }
+
+    const sessions = await prisma.session.findMany({
+      where,
+      orderBy: [{ track: 'asc' }, { timeSlot: 'asc' }],
     });
+
+    return successResponse(res, sessions, '세션 목록을 성공적으로 조회했습니다.');
   } catch (error) {
-    console.error('세션 목록 조회 오류:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Internal Server Error'
-    });
+    logger.error('세션 목록 조회 실패:', error);
+    return errorResponse(res, '세션 목록 조회에 실패했습니다.', 500);
   }
 });
 
 /**
- * GET /api/sessions/:id
- * 특정 세션 상세 조회
+ * GET /api/sessions/:code
+ * 특정 세션 상세 조회 (code로 조회)
  */
-router.get('/:id', async (req: Request, res: Response) => {
+router.get('/:code', async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
-    const session = await getSessionById(id);
+    const { code } = req.params;
+
+    const session = await prisma.session.findFirst({
+      where: {
+        OR: [{ code }, { id: code }],
+        isActive: true,
+      },
+    });
 
     if (!session) {
-      return res.status(404).json({
-        success: false,
-        error: 'Session not found'
-      });
+      return errorResponse(res, '세션을 찾을 수 없습니다.', 404, 'SESSION_NOT_FOUND');
     }
 
-    res.json({
-      success: true,
-      data: session
-    });
+    return successResponse(res, session, '세션 상세 정보를 성공적으로 조회했습니다.');
   } catch (error) {
-    console.error('세션 상세 조회 오류:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Internal Server Error'
+    logger.error('세션 상세 조회 실패:', error);
+    return errorResponse(res, '세션 상세 조회에 실패했습니다.', 500);
+  }
+});
+
+/**
+ * GET /api/sessions/track/:track
+ * 트랙별 세션 목록 조회
+ */
+router.get('/track/:track', async (req: Request, res: Response) => {
+  try {
+    const { track } = req.params;
+
+    const sessions = await prisma.session.findMany({
+      where: {
+        track,
+        isActive: true,
+      },
+      orderBy: { timeSlot: 'asc' },
     });
+
+    return successResponse(res, sessions, `${track} 트랙 세션 목록을 조회했습니다.`);
+  } catch (error) {
+    logger.error('트랙별 세션 조회 실패:', error);
+    return errorResponse(res, '트랙별 세션 조회에 실패했습니다.', 500);
   }
 });
 

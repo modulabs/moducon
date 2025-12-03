@@ -1,794 +1,561 @@
-# 05_API_SPEC.md - API 명세서
+# API 명세서
 
-## 📋 문서 정보
-- **프로젝트명**: 모두콘 2025 디지털 컨퍼런스 북
-- **문서 버전**: 1.0
-- **작성일**: 2025-01-14
-- **작성자**: Technical Lead
-- **Backend URL**: https://api.moducon.vibemakers.kr
+## 📅 최종 업데이트
+**날짜**: 2025-12-03
 
 ---
 
-## 🎯 API 개요
+## 기본 정보
 
-### Base URL
-- **Development**: `http://localhost:3001`
-- **Production**: `https://api.moducon.vibemakers.kr`
+| 항목 | 값 |
+|------|-----|
+| Base URL (Production) | `https://backend.vibemakers.kr` |
+| Base URL (Development) | `http://localhost:3001` |
+| Content-Type | `application/json` |
+| Authentication | Bearer Token (JWT) |
 
-### 인증 방식
-- **Type**: JWT (JSON Web Token)
-- **Header**: `Authorization: Bearer <token>`
-- **Token 만료**: 24시간
-- **Refresh**: Refresh Token 고려 (선택)
+## CORS 설정
 
-### 공통 응답 형식
-
-#### 성공 응답
-```json
-{
-  "success": true,
-  "data": { ... },
-  "message": "Operation successful"
-}
+### 허용된 Origin
+```typescript
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://moducon.vibemakers.kr',
+  ...(process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : []),
+];
 ```
-
-#### 오류 응답
-```json
-{
-  "success": false,
-  "error": {
-    "code": "ERROR_CODE",
-    "message": "Error message",
-    "details": { ... }
-  }
-}
-```
-
-### HTTP 상태 코드
-- `200 OK`: 성공
-- `201 Created`: 리소스 생성 성공
-- `400 Bad Request`: 잘못된 요청
-- `401 Unauthorized`: 인증 실패
-- `403 Forbidden`: 권한 없음
-- `404 Not Found`: 리소스 없음
-- `500 Internal Server Error`: 서버 오류
 
 ---
 
-## 🔐 인증 (Authentication)
+## 인증 API
 
-### 1. 사용자 로그인
+### POST /api/auth/verify
+QR 코드 검증 및 사용자 인증
 
-**현장 QR 스캔 후 사용자 인증**
-
-#### POST /api/auth/login
-
-**Request**:
+**Request Body**
 ```json
 {
   "name": "홍길동",
-  "phone_last4": "1234"
+  "phone": "1234"
 }
 ```
 
-**Response** (성공):
+**Response (200)**
 ```json
 {
   "success": true,
   "data": {
     "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
     "user": {
-      "id": "uuid-123",
+      "id": "uuid",
       "name": "홍길동",
-      "phone_last4": "1234",
-      "registration_type": "pre_registered",
-      "has_signature": false
+      "phone": "1234"
     }
-  },
-  "message": "Login successful"
+  }
 }
 ```
 
-**Response** (실패 - 매칭 안됨):
+### POST /api/auth/signature
+디지털 서명 저장
+
+**Headers**
+```
+Authorization: Bearer <token>
+```
+
+**Request Body**
+```json
+{
+  "signature": "base64-encoded-signature-data"
+}
+```
+
+**Response (200)**
+```json
+{
+  "success": true,
+  "data": {
+    "signatureUrl": "https://..."
+  }
+}
+```
+
+### POST /api/auth/login
+이메일/비밀번호 로그인
+
+**Request Body**
+```json
+{
+  "email": "user@example.com",
+  "password": "password123"
+}
+```
+
+**Response (200)**
+```json
+{
+  "success": true,
+  "data": {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "user": {
+      "id": "uuid",
+      "email": "user@example.com",
+      "name": "홍길동",
+      "affiliation": "Modulabs",
+      "role": "Developer"
+    }
+  }
+}
+```
+
+### GET /api/auth/me
+현재 로그인된 사용자 정보 조회
+
+**Headers**
+```
+Authorization: Bearer <token>
+```
+
+**Response (200)**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "uuid",
+    "email": "user@example.com",
+    "name": "홍길동",
+    "affiliation": "Modulabs",
+    "role": "Developer",
+    "qrCode": "base64-encoded-qr"
+  }
+}
+```
+
+---
+
+## 데이터 API (PostgreSQL DB 연동) ✅
+
+### GET /api/sessions
+세션 목록 조회 (PostgreSQL DB + Prisma ORM)
+
+**Query Parameters**
+| 파라미터 | 타입 | 필수 | 설명 |
+|----------|------|------|------|
+| track | string | 선택 | 트랙 필터 (예: "Track 00") |
+
+**Response (200)**
+```json
+[
+  {
+    "id": "019ae3c3-bfdf-7812-a9b4-...",
+    "code": "S001",
+    "track": "Track 00",
+    "location": "이삼봉홀",
+    "timeSlot": "10:00-10:50",
+    "speakerName": "홍길동",
+    "speakerOrg": "모두의연구소",
+    "speakerBio": "연사 소개...",
+    "speakerProfileUrl": "https://...",
+    "title": "AI 기술 트렌드",
+    "description": "발표 내용...",
+    "keywords": ["AI", "딥러닝"],
+    "pageUrl": "https://...",
+    "isActive": true,
+    "createdAt": "2025-12-03T00:00:00Z",
+    "updatedAt": "2025-12-03T00:00:00Z"
+  }
+]
+```
+
+### GET /api/booths
+부스 목록 조회 (PostgreSQL DB + Prisma ORM)
+
+**Query Parameters**
+| 파라미터 | 타입 | 필수 | 설명 |
+|----------|------|------|------|
+| orgType | string | 선택 | 조직 타입 필터 |
+
+**Response (200)**
+```json
+[
+  {
+    "id": "019ae3c3-bffc-7adc-849d-...",
+    "code": "B001",
+    "name": "AI LAB",
+    "organization": "모두의연구소",
+    "orgType": "모두의연구소 LAB",
+    "description": "단체 소개...",
+    "boothDescription": "부스 소개...",
+    "hashtags": ["AI", "ML"],
+    "solutions": "제공 솔루션...",
+    "coreTech": "핵심 기술...",
+    "researchGoals": "연구 목표...",
+    "mainProducts": "주요 제품...",
+    "demoContent": "데모 내용...",
+    "imageUrl": "https://...",
+    "managerName": "담당자명",
+    "isActive": true,
+    "createdAt": "2025-12-03T00:00:00Z",
+    "updatedAt": "2025-12-03T00:00:00Z"
+  }
+]
+```
+
+### GET /api/papers
+포스터 목록 조회 (PostgreSQL DB + Prisma ORM)
+
+**Response (200)**
+```json
+[
+  {
+    "id": "019ae3c3-c000-7646-a3c4-...",
+    "code": "P001",
+    "title": "딥러닝 연구",
+    "abstract": "연구 요약...",
+    "researcher": "연구자명",
+    "affiliation": "소속",
+    "hashtags": ["딥러닝", "NLP"],
+    "presentationTime": "14:00-15:00",
+    "location": "포스터존 A",
+    "isActive": true,
+    "createdAt": "2025-12-03T00:00:00Z",
+    "updatedAt": "2025-12-03T00:00:00Z"
+  }
+]
+```
+
+---
+
+## 체크인 API
+
+### POST /api/checkin
+세션/부스/포스터 체크인 생성
+
+**Headers**
+```
+Authorization: Bearer <token>
+```
+
+**Request Body**
+```json
+{
+  "targetType": "booth",  // "session" | "booth" | "paper"
+  "targetId": "booth_1"
+}
+```
+
+**Response (201)**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "uuid",
+    "userId": "user_uuid",
+    "targetType": "booth",
+    "targetId": "booth_1",
+    "checkedInAt": "2025-12-13T10:00:00Z"
+  }
+}
+```
+
+**Error Response (409 - 이미 체크인됨)**
 ```json
 {
   "success": false,
-  "error": {
-    "code": "AUTH_USER_NOT_FOUND",
-    "message": "사전 신청 정보를 찾을 수 없습니다. 현장 등록 데스크로 문의해주세요."
-  }
+  "error": "Already checked in",
+  "code": "ALREADY_CHECKED_IN"
 }
 ```
 
-**Validation**:
-- `name`: 필수, 1-100자
-- `phone_last4`: 필수, 정확히 4자리 숫자
+### GET /api/checkin/user/:userId
+사용자별 체크인 목록 조회
 
----
-
-### 2. 디지털 서명 저장
-
-**서명 완료 후 출입증 발급**
-
-#### POST /api/auth/signature
-
-**Headers**:
+**Headers**
 ```
 Authorization: Bearer <token>
 ```
 
-**Request**:
-```json
-{
-  "signature_data": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA..."
-}
-```
+**Query Parameters**
+| 파라미터 | 타입 | 필수 | 설명 |
+|----------|------|------|------|
+| targetType | string | 선택 | "session" \| "booth" \| "paper" |
 
-**Response** (성공):
-```json
-{
-  "success": true,
-  "data": {
-    "signature_url": "https://api.moducon.vibemakers.kr/signatures/uuid-123.png",
-    "badge": {
-      "qr_code": "moducon://user/uuid-123",
-      "user_id": "uuid-123",
-      "name": "홍길동",
-      "participant_type": "general"
-    }
-  },
-  "message": "Signature saved and badge issued"
-}
-```
-
-**Validation**:
-- `signature_data`: Base64 인코딩된 이미지 (PNG/JPEG)
-- 최대 크기: 5MB
-
----
-
-### 3. 현재 사용자 정보 조회
-
-#### GET /api/auth/me
-
-**Headers**:
-```
-Authorization: Bearer <token>
-```
-
-**Response**:
+**Response (200)**
 ```json
 {
   "success": true,
   "data": {
-    "id": "uuid-123",
-    "name": "홍길동",
-    "email": "hong@example.com",
-    "organization": "모두의연구소",
-    "role": "participant",
-    "interests": ["AI/ML", "NLP", "MLOps"],
-    "signature_url": "https://...",
-    "registered_at": "2025-01-10T00:00:00Z",
-    "last_login": "2025-01-14T10:30:00Z"
-  }
-}
-```
-
----
-
-### 4. 로그아웃
-
-#### POST /api/auth/logout
-
-**Headers**:
-```
-Authorization: Bearer <token>
-```
-
-**Response**:
-```json
-{
-  "success": true,
-  "message": "Logged out successfully"
-}
-```
-
----
-
-## 👤 사용자 프로필 (User Profile)
-
-### 1. 프로필 조회
-
-#### GET /api/user/profile
-
-**Headers**:
-```
-Authorization: Bearer <token>
-```
-
-**Response**:
-```json
-{
-  "success": true,
-  "data": {
-    "id": "uuid-123",
-    "name": "홍길동",
-    "organization": "모두의연구소",
-    "position": "AI 연구원",
-    "interests": ["AI/ML", "NLP"],
-    "bio": "...",
-    "social_links": [
-      { "type": "LinkedIn", "url": "https://..." },
-      { "type": "GitHub", "url": "https://..." }
-    ],
-    "privacy": {
-      "email_visible": false,
-      "social_links_visible": true
-    }
-  }
-}
-```
-
----
-
-### 2. 프로필 수정
-
-#### PATCH /api/user/profile
-
-**Request**:
-```json
-{
-  "organization": "모두의연구소",
-  "position": "AI 연구원",
-  "bio": "AI와 ML에 관심이 많습니다.",
-  "social_links": [
-    { "type": "LinkedIn", "url": "https://..." }
-  ],
-  "privacy": {
-    "email_visible": false
-  }
-}
-```
-
-**Response**:
-```json
-{
-  "success": true,
-  "data": { "profile": { ... } },
-  "message": "Profile updated"
-}
-```
-
----
-
-### 3. 내 프로필 QR 코드 생성
-
-#### GET /api/user/qr
-
-**Headers**:
-```
-Authorization: Bearer <token>
-```
-
-**Response**:
-```json
-{
-  "success": true,
-  "data": {
-    "qr_code_url": "moducon://profile/uuid-123",
-    "qr_image_svg": "<svg>...</svg>",
-    "qr_image_png": "data:image/png;base64,..."
-  }
-}
-```
-
----
-
-### 4. 관심 분야 설정
-
-**온보딩 시 또는 설정에서 수정**
-
-#### POST /api/user/interests
-
-**Request**:
-```json
-{
-  "interests": ["AI/ML", "NLP", "MLOps"]
-}
-```
-
-**Response**:
-```json
-{
-  "success": true,
-  "data": {
-    "interests": ["AI/ML", "NLP", "MLOps"]
-  },
-  "message": "Interests updated"
-}
-```
-
-**Validation**:
-- `interests`: 배열, 최대 3개
-- 허용 값: `"생성 AI"`, `"컴퓨터 비전"`, `"NLP/LLM"`, `"로보틱스"`, `"MLOps"`, `"데이터 엔지니어링"`, `"AI 윤리/정책"`, `"기타"`
-
----
-
-## 📅 세션 (Sessions)
-
-### 1. 전체 세션 목록
-
-#### GET /api/sessions
-
-**Query Parameters**:
-- `track`: 트랙 필터 (1-6)
-- `date`: 날짜 필터 (YYYY-MM-DD)
-- `start_time`: 시작 시간 이후 (HH:MM)
-- `tags`: 태그 필터 (쉼표 구분, 예: `AI,ML`)
-
-**Example**:
-```
-GET /api/sessions?track=1&tags=AI,ML
-```
-
-**Response**:
-```json
-{
-  "success": true,
-  "data": {
-    "sessions": [
+    "checkins": [
       {
-        "id": "session-001",
-        "title": "생성 AI의 최신 동향",
-        "speaker_id": "speaker-001",
-        "speaker_name": "김철수",
-        "track": 1,
-        "date": "2025-12-13",
-        "start_time": "10:00",
-        "end_time": "11:00",
-        "location": "Track 1",
-        "difficulty": "intermediate",
-        "tags": ["AI", "생성 AI"],
-        "description": "...",
-        "is_keynote": false,
-        "congestion": {
-          "level": "medium",
-          "current_count": 45,
-          "max_capacity": 80,
-          "percentage": 56
-        }
+        "id": "uuid",
+        "targetType": "booth",
+        "targetId": "booth_1",
+        "checkedInAt": "2025-12-13T10:00:00Z"
       },
-      ...
-    ],
-    "total": 42
-  }
-}
-```
-
----
-
-### 2. 세션 상세 조회
-
-#### GET /api/sessions/:id
-
-**Response**:
-```json
-{
-  "success": true,
-  "data": {
-    "session": {
-      "id": "session-001",
-      "title": "생성 AI의 최신 동향",
-      "description": "...",
-      "speaker": {
-        "id": "speaker-001",
-        "name": "김철수",
-        "organization": "모두의연구소",
-        "bio": "...",
-        "profile_image": "https://..."
-      },
-      "track": 1,
-      "date": "2025-12-13",
-      "start_time": "10:00",
-      "end_time": "11:00",
-      "location": "Track 1",
-      "difficulty": "intermediate",
-      "tags": ["AI", "생성 AI"],
-      "materials": [
-        {
-          "type": "slide",
-          "title": "발표 자료",
-          "url": "https://..."
-        }
-      ],
-      "qr_code": "moducon://session/session-001/checkin",
-      "congestion": { ... }
-    }
-  }
-}
-```
-
----
-
-### 3. 세션 체크인
-
-**세션장 입구 QR 스캔**
-
-#### POST /api/sessions/:id/checkin
-
-**Headers**:
-```
-Authorization: Bearer <token>
-```
-
-**Response**:
-```json
-{
-  "success": true,
-  "data": {
-    "checkin_id": "checkin-001",
-    "session_id": "session-001",
-    "checked_in_at": "2025-12-13T10:05:00Z",
-    "points_earned": 10
-  },
-  "message": "Checked in successfully"
-}
-```
-
-**Error Cases**:
-- 이미 체크인한 경우: `CHECKIN_ALREADY_EXISTS`
-- 세션 시간 아님: `CHECKIN_INVALID_TIME`
-- 만석: `CHECKIN_SESSION_FULL`
-
----
-
-### 4. 세션 체크아웃 (선택)
-
-#### POST /api/sessions/:id/checkout
-
-**Headers**:
-```
-Authorization: Bearer <token>
-```
-
-**Response**:
-```json
-{
-  "success": true,
-  "data": {
-    "checked_out_at": "2025-12-13T10:55:00Z",
-    "duration_minutes": 50
-  },
-  "message": "Checked out successfully"
-}
-```
-
----
-
-### 5. 내 참석 세션 목록
-
-#### GET /api/sessions/my-schedule
-
-**Headers**:
-```
-Authorization: Bearer <token>
-```
-
-**Response**:
-```json
-{
-  "success": true,
-  "data": {
-    "sessions": [
       {
-        "session": { ... },
-        "checked_in_at": "2025-12-13T10:05:00Z",
-        "checked_out_at": "2025-12-13T10:55:00Z",
-        "duration_minutes": 50
-      },
-      ...
-    ]
-  }
-}
-```
-
----
-
-## 🏢 부스 (Booths)
-
-### 1. 전체 부스 목록
-
-#### GET /api/booths
-
-**Query Parameters**:
-- `interest`: 관심 분야 필터
-- `sort`: 정렬 (`distance`, `congestion`, `name`)
-- `location_x`: 현재 위치 X 좌표 (거리순 정렬 시 필요)
-- `location_y`: 현재 위치 Y 좌표
-
-**Example**:
-```
-GET /api/booths?interest=AI/ML&sort=congestion
-```
-
-**Response**:
-```json
-{
-  "success": true,
-  "data": {
-    "booths": [
-      {
-        "id": "booth-001",
-        "name": "AI 챗봇 데모",
-        "organization": "모두의연구소 LAB",
-        "description": "...",
-        "demo_description": "...",
-        "tech_tags": ["AI", "NLP", "Chatbot"],
-        "location": {
-          "x": 10.5,
-          "y": 20.3
-        },
-        "estimated_duration_minutes": 15,
-        "booth_type": "lab",
-        "image_url": "https://...",
-        "video_url": "https://...",
-        "qr_code": "moducon://booth/booth-001",
-        "congestion": {
-          "level": "low",
-          "estimated_wait_time": 0
-        }
-      },
-      ...
-    ],
-    "total": 25
-  }
-}
-```
-
----
-
-### 2. 부스 상세 조회
-
-#### GET /api/booths/:id
-
-**Response**:
-```json
-{
-  "success": true,
-  "data": {
-    "booth": {
-      "id": "booth-001",
-      "name": "AI 챗봇 데모",
-      "organization": "모두의연구소 LAB",
-      "description": "...",
-      "demo_description": "...",
-      "tech_tags": ["AI", "NLP", "Chatbot"],
-      "location": { "x": 10.5, "y": 20.3 },
-      "estimated_duration_minutes": 15,
-      "booth_type": "lab",
-      "image_url": "https://...",
-      "video_url": "https://...",
-      "qr_code": "moducon://booth/booth-001",
-      "congestion": { ... },
-      "contact": {
-        "email": "contact@example.com",
-        "website": "https://..."
+        "id": "uuid",
+        "targetType": "session",
+        "targetId": "session_5",
+        "checkedInAt": "2025-12-13T11:00:00Z"
       }
-    }
+    ],
+    "total": 2
+  }
+}
+
+---
+
+## 퀴즈 API
+
+### GET /api/quiz/:targetType/:targetId
+특정 대상의 퀴즈 조회
+
+**Response (200)**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "uuid",
+    "targetType": "booth",
+    "targetId": "booth_1",
+    "question": "이 부스에서 소개하는 AI 기술은?",
+    "options": ["GPT", "BERT", "LLaMA", "Claude"],
+    "isActive": true
   }
 }
 ```
 
----
+**Error Response (404 - 퀴즈 없음)**
+```json
+{
+  "success": false,
+  "error": "Quiz not found",
+  "code": "NOT_FOUND"
+}
+```
 
-### 3. 부스 방문 인증
+### POST /api/quiz/attempt
+퀴즈 답변 제출 및 정답 확인
 
-**부스 QR 스캔**
-
-#### POST /api/booths/:id/visit
-
-**Headers**:
+**Headers**
 ```
 Authorization: Bearer <token>
 ```
 
-**Response**:
+**Request Body**
+```json
+{
+  "quizId": "quiz_uuid",
+  "answer": 2  // 0-3 인덱스 (선택한 옵션 번호)
+}
+```
+
+**Response (200)**
 ```json
 {
   "success": true,
   "data": {
-    "visit_id": "visit-001",
-    "booth_id": "booth-001",
-    "visited_at": "2025-12-13T11:30:00Z",
-    "points_earned": 15,
-    "quest_completed": true
-  },
-  "message": "Visit recorded"
+    "id": "attempt_uuid",
+    "quizId": "quiz_uuid",
+    "answer": 2,
+    "isCorrect": true,
+    "correctAnswer": 2,
+    "attemptedAt": "2025-12-13T10:05:00Z"
+  }
 }
 ```
 
----
+**Error Response (409 - 이미 답변함)**
+```json
+{
+  "success": false,
+  "error": "Already attempted this quiz",
+  "code": "ALREADY_ATTEMPTED"
+}
+```
 
-### 4. 내가 방문한 부스
+### GET /api/quiz/user/:userId
+사용자별 퀴즈 답변 목록
 
-#### GET /api/booths/visited
-
-**Headers**:
+**Headers**
 ```
 Authorization: Bearer <token>
 ```
 
-**Response**:
+**Response (200)**
 ```json
 {
   "success": true,
   "data": {
-    "visits": [
+    "attempts": [
       {
-        "booth": { ... },
-        "visited_at": "2025-12-13T11:30:00Z"
-      },
-      ...
-    ],
-    "total": 8
-  }
-}
-```
-
----
-
-## 📄 페이퍼샵 (Papers)
-
-### 1. 전체 논문 목록
-
-#### GET /api/papers
-
-**Query Parameters**:
-- `keyword`: 키워드 검색
-- `field`: 연구 분야 필터
-- `tags`: 태그 필터 (쉼표 구분)
-
-**Example**:
-```
-GET /api/papers?keyword=transformer&tags=NLP
-```
-
-**Response**:
-```json
-{
-  "success": true,
-  "data": {
-    "papers": [
-      {
-        "id": "paper-001",
-        "title": "Transformer를 활용한 한국어 NLP",
-        "authors": ["김철수", "이영희"],
-        "organization": "모두의연구소",
-        "abstract": "...",
-        "keywords": ["NLP", "Transformer", "한국어"],
-        "pdf_url": "https://...",
-        "poster_image_url": "https://...",
-        "qr_code": "moducon://paper/paper-001/quiz",
-        "qa_available_time": "14:00 - 15:00"
-      },
-      ...
-    ],
-    "total": 32
-  }
-}
-```
-
----
-
-### 2. 논문 상세 조회
-
-#### GET /api/papers/:id
-
-**Response**:
-```json
-{
-  "success": true,
-  "data": {
-    "paper": {
-      "id": "paper-001",
-      "title": "...",
-      "authors": ["김철수", "이영희"],
-      "organization": "모두의연구소",
-      "abstract": "...",
-      "keywords": ["NLP", "Transformer"],
-      "pdf_url": "https://...",
-      "poster_image_url": "https://...",
-      "qr_code": "moducon://paper/paper-001/quiz",
-      "qa_available_time": "14:00 - 15:00",
-      "author_contacts": [
-        {
-          "name": "김철수",
-          "email": "kim@example.com"
-        }
-      ]
-    }
-  }
-}
-```
-
----
-
-### 3. 논문 퀴즈 조회
-
-#### GET /api/papers/:id/quiz
-
-**Response**:
-```json
-{
-  "success": true,
-  "data": {
-    "quiz": {
-      "paper_id": "paper-001",
-      "questions": [
-        {
-          "id": "q1",
-          "question": "이 논문의 핵심 기법은?",
-          "options": [
-            { "id": "a", "text": "Transformer" },
-            { "id": "b", "text": "RNN" },
-            { "id": "c", "text": "CNN" }
-          ]
+        "id": "attempt_uuid",
+        "quiz": {
+          "id": "quiz_uuid",
+          "targetType": "booth",
+          "targetId": "booth_1",
+          "question": "이 부스에서 소개하는 AI 기술은?"
         },
-        ...
-      ],
-      "total_questions": 5
-    }
+        "answer": 2,
+        "isCorrect": true,
+        "attemptedAt": "2025-12-13T10:05:00Z"
+      }
+    ],
+    "total": 1,
+    "correctCount": 1
+  }
+}
+
+---
+
+## 통계 API
+
+### GET /api/stats/user/:userId
+사용자 통계 (체크인 수, 퀴즈 정답률, 배지)
+
+**Headers**
+```
+Authorization: Bearer <token>
+```
+
+**Response (200)**
+```json
+{
+  "success": true,
+  "data": {
+    "checkins": {
+      "total": 5,
+      "byType": {
+        "session": 2,
+        "booth": 2,
+        "paper": 1
+      }
+    },
+    "quizzes": {
+      "total": 3,
+      "correct": 2,
+      "accuracy": 66.67
+    },
+    "badges": [
+      {
+        "id": "explorer",
+        "name": "탐험가",
+        "description": "3개 이상 부스 방문",
+        "earnedAt": "2025-12-13T11:00:00Z"
+      },
+      {
+        "id": "scholar",
+        "name": "학자",
+        "description": "퀴즈 정답률 50% 이상",
+        "earnedAt": "2025-12-13T11:30:00Z"
+      }
+    ],
+    "points": 150
+  }
+}
+```
+
+### 배지 종류
+
+| ID | 이름 | 조건 |
+|----|------|------|
+| `first_checkin` | 첫 발자국 | 첫 체크인 완료 |
+| `explorer` | 탐험가 | 3개 이상 부스 방문 |
+| `session_lover` | 세션 러버 | 3개 이상 세션 참석 |
+| `paper_reader` | 논문 독자 | 3개 이상 포스터 방문 |
+| `quiz_master` | 퀴즈 마스터 | 퀴즈 5개 이상 정답 |
+| `scholar` | 학자 | 퀴즈 정답률 80% 이상 |
+| `completionist` | 완주자 | 모든 부스 방문 |
+
+---
+
+## QR 코드 API
+
+### GET /api/qr/:userId
+사용자 QR 코드 조회
+
+**Response (200)**
+```json
+{
+  "success": true,
+  "data": {
+    "qrCode": "base64-encoded-qr-image",
+    "userId": "uuid"
+  }
+}
+```
+
+### POST /api/qr/exchange
+명함 교환 등록
+
+**Headers**
+```
+Authorization: Bearer <token>
+```
+
+**Request Body**
+```json
+{
+  "targetUserId": "uuid"
+}
+```
+
+**Response (201)**
+```json
+{
+  "success": true,
+  "data": {
+    "exchangeId": "uuid",
+    "exchangedAt": "2025-12-02T10:00:00Z"
   }
 }
 ```
 
 ---
 
-### 4. 퀴즈 제출
+## 에러 응답 형식
 
-#### POST /api/papers/:id/quiz/submit
-
-**Request**:
 ```json
 {
-  "answers": [
-    { "question_id": "q1", "selected_option": "a" },
-    { "question_id": "q2", "selected_option": "b" },
-    ...
-  ]
+  "success": false,
+  "error": "Error message",
+  "code": "ERROR_CODE",
+  "details": {}
 }
 ```
 
-**Response**:
-```json
-{
-  "success": true,
-  "data": {
-    "score": 4,
-    "total_questions": 5,
-    "passed": true,
-    "points_earned": 20,
-    "details": [
-      {
-        "question_id": "q1",
-        "correct": true,
-        "selected_option": "a",
-        "correct_option": "a"
-      },
-      ...
-    ]
-  },
-  "message": "Quiz completed"
-}
-```
+### 에러 코드
 
-**Validation**:
-- 최소 3문제 이상 정답 시 통과
+| 코드 | HTTP Status | 설명 |
+|------|-------------|------|
+| UNAUTHORIZED | 401 | 인증 필요 |
+| FORBIDDEN | 403 | 권한 없음 |
+| NOT_FOUND | 404 | 리소스 없음 |
+| VALIDATION_ERROR | 400 | 입력값 오류 |
+| INTERNAL_ERROR | 500 | 서버 오류 |
 
 ---
 
-**Note**: API 명세가 너무 길어 05_API_SPEC_part2.md로 계속됩니다.
+## Rate Limiting
+
+| Endpoint | 제한 |
+|----------|------|
+| /api/auth/* | 10 requests/minute |
+| /api/users/* | 60 requests/minute |
+| /api/qr/* | 30 requests/minute |
+| /api/checkin/* | 60 requests/minute |
+| /api/quiz/* | 60 requests/minute |
 
 ---
 
-**다음 파일**: [05_API_SPEC_part2.md](./05_API_SPEC_part2.md) - 퀘스트, 활동, 네트워킹, 혼잡도, 알림, 관리자 API
+## 보안
+
+### JWT 인증
+- **토큰 만료**: 24시간
+- **저장소**: HTTP-only cookies
+- **알고리즘**: HS256
+
+### 요청 검증
+- Zod 스키마 기반 검증
+- SQL Injection 방어 (Prisma ORM)
+- XSS 방어 (React 기본 이스케이핑)

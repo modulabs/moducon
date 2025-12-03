@@ -14,6 +14,7 @@ import ModulabsLogo from '@/imports/Group-53-445';
 import WhiteBear from '@/imports/Group-53-73';
 import GreenBearGroup from '@/imports/Group2';
 import { Button } from '@/components/ui/button';
+import { parseTimeSlot } from '@/types/session';
 
 export default function HomePage() {
   const { user } = useAuthStore();
@@ -38,7 +39,11 @@ export default function HomePage() {
         setError(null);
         const allSessions = await fetchSessionsWithCache();
         const upcoming = allSessions
-          .sort((a, b) => a.startTime.localeCompare(b.startTime))
+          .sort((a, b) => {
+            const aTime = parseTimeSlot(a.timeSlot).startTime;
+            const bTime = parseTimeSlot(b.timeSlot).startTime;
+            return aTime.localeCompare(bTime);
+          })
           .slice(0, 3);
         setUpcomingSessions(upcoming);
       } catch (error) {
@@ -217,36 +222,39 @@ export default function HomePage() {
               <p className="text-sm text-gray-500">다가오는 세션이 없습니다.</p>
             </div>
           ) : (
-            upcomingSessions.map((session, index) => (
-              <div
-                key={session.id}
-                className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#FF6B9D] via-[#FF8B5A] to-[#FFA94D]"
-              >
-                <div className="relative p-5 text-white">
-                  <div className="flex items-start justify-between mb-3">
-                    <h3 className="text-sm font-medium flex-1">{session.name}</h3>
-                    {index === 0 && (
-                      <div className="px-3 py-1 bg-white/30 backdrop-blur-sm rounded-full text-xs font-bold border border-white/40 shadow-md whitespace-nowrap animate-pulse">
-                        🔴 NEXT
-                      </div>
-                    )}
-                  </div>
+            upcomingSessions.map((session, index) => {
+              const { startTime, endTime } = parseTimeSlot(session.timeSlot);
+              return (
+                <div
+                  key={session.id}
+                  className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#FF6B9D] via-[#FF8B5A] to-[#FFA94D]"
+                >
+                  <div className="relative p-5 text-white">
+                    <div className="flex items-start justify-between mb-3">
+                      <h3 className="text-sm font-medium flex-1">{session.title}</h3>
+                      {index === 0 && (
+                        <div className="px-3 py-1 bg-white/30 backdrop-blur-sm rounded-full text-xs font-bold border border-white/40 shadow-md whitespace-nowrap animate-pulse">
+                          🔴 NEXT
+                        </div>
+                      )}
+                    </div>
 
-                  <p className="text-xs opacity-90 mb-2">{session.speaker}</p>
+                    <p className="text-xs opacity-90 mb-2">{session.speakerName}</p>
 
-                  <div className="flex items-center gap-4 text-xs opacity-95">
-                    <span className="flex items-center gap-1 bg-black/20 px-2 py-1 rounded-lg">
-                      <Clock className="w-3 h-3" />
-                      {session.startTime} - {session.endTime}
-                    </span>
-                    <span className="flex items-center gap-1 bg-black/20 px-2 py-1 rounded-lg">
-                      <MapPin className="w-3 h-3" />
-                      {session.track}
-                    </span>
+                    <div className="flex items-center gap-4 text-xs opacity-95">
+                      <span className="flex items-center gap-1 bg-black/20 px-2 py-1 rounded-lg">
+                        <Clock className="w-3 h-3" />
+                        {startTime} - {endTime}
+                      </span>
+                      <span className="flex items-center gap-1 bg-black/20 px-2 py-1 rounded-lg">
+                        <MapPin className="w-3 h-3" />
+                        {session.track}
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))
+              );
+            })
           )}
 
           <Link href="/sessions">

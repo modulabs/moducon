@@ -1,24 +1,25 @@
-import { fetchBooths } from '@/lib/googleSheets';
+import { fetchBoothsWithCache } from '@/lib/boothCache';
 import BoothDetailClient from './BoothDetailClient';
 import Link from 'next/link';
 
 // Static Export를 위한 generateStaticParams
 export async function generateStaticParams() {
-  const booths = await fetchBooths();
+  const booths = await fetchBoothsWithCache();
   return booths.map(booth => ({
     id: booth.id,
   }));
 }
 
 interface BoothDetailPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default async function BoothDetailPage({ params }: BoothDetailPageProps) {
-  const booths = await fetchBooths();
-  const booth = booths.find(b => b.id === params.id);
+  const resolvedParams = await params;
+  const booths = await fetchBoothsWithCache();
+  const booth = booths.find(b => b.id === resolvedParams.id || b.code === resolvedParams.id);
 
   if (!booth) {
     return (

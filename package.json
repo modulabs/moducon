@@ -1,0 +1,32 @@
+{
+  "name": "moducon-dev",
+  "version": "1.0.0",
+  "description": "Moducon 2025 Full Stack Application",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd moducon-backend && npm run dev",
+    "dev:frontend": "cd moducon-frontend && npm run dev",
+    "build": "npm run build:backend && npm run build:frontend",
+    "build:backend": "cd moducon-backend && npm run build",
+    "build:frontend": "cd moducon-frontend && npm run build",
+    "start": "concurrently \"npm run start:backend\" \"npm run start:frontend\"",
+    "start:backend": "cd moducon-backend && npm run start",
+    "start:frontend": "cd moducon-frontend && npm run start",
+    "install:all": "npm install && cd moducon-backend && npm install && cd ../moducon-frontend && npm install",
+    "db:migrate": "cd moducon-backend && npm run db:migrate",
+    "db:seed": "cd moducon-backend && npm run db:seed",
+    "db:studio": "cd moducon-backend && npm run db:studio",
+    "db:reset": "cd moducon-backend && npm run db:reset"
+  },
+  "keywords": [
+    "moducon",
+    "fullstack",
+    "typescript"
+  ],
+  "author": "Moducon 2025",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

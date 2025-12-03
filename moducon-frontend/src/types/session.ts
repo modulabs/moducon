@@ -1,19 +1,29 @@
 /**
- * 세션 데이터 구조
+ * 세션 데이터 구조 (DB 스키마 기반)
  */
 export interface Session {
   id: string;
-  pageUrl: string;
+  code: string;
   track: string;
   location: string;
-  startTime: string; // "HH:MM"
-  endTime: string; // "HH:MM"
-  speaker: string;
-  speakerAffiliation: string;
-  speakerBio: string;
-  speakerProfile: string;
-  name: string; // 세션 제목
-  description: string;
-  hashtags: string[];
-  difficulty: '초급' | '중급' | '고급';
+  timeSlot: string; // "HH:MM-HH:MM"
+  speakerName: string;
+  speakerOrg: string | null;
+  speakerBio: string | null;
+  speakerProfileUrl: string | null;
+  title: string;
+  description: string | null;
+  keywords: string[];
+  pageUrl: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * 세션 시간 파싱 유틸리티
+ */
+export function parseTimeSlot(timeSlot: string): { startTime: string; endTime: string } {
+  const [startTime, endTime] = timeSlot.split('-').map(t => t.trim());
+  return { startTime: startTime || '', endTime: endTime || '' };
 }

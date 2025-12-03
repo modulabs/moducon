@@ -1,410 +1,232 @@
-# UI 가시성 검증 가이드
+# 프로젝트 중점사항 및 UI 검증 가이드
 
-**작성일**: 2025-12-01
-**목적**: 사용자 제기 UI 이슈 검증 및 해결 방안
-
----
-
-## 🎯 검증 대상 이슈
-
-### Issue #1: 홈 화면 "참가자" 블록
-**상태**: ✅ **해결 완료**
-**위치**: `src/components/home/DigitalBadge.tsx`
-
-### Issue #2: 하단 네비게이션 QR 아이콘 가시성
-**상태**: ⚠️ **실제 테스트 필요**
-**위치**: `src/components/layout/BottomNavigation.tsx`
+## 📅 최종 업데이트
+**날짜**: 2025-12-02
+**작성자**: Technical Lead
 
 ---
 
-## 1. Issue #1: 홈 화면 "참가자" 블록 ✅
+## 🎨 브랜드 디자인 시스템
 
-### 현재 구현 상태
+### 컬러 팔레트
 
-```typescript
-// src/components/home/DigitalBadge.tsx (lines 10-21)
-<Card className="w-full">
-  <CardContent className="p-6 flex items-center gap-6">
-    <div className="p-4 bg-primary/10 rounded-lg">
-      <div className="w-16 h-16 flex items-center justify-center">
-        <span className="text-4xl">🎫</span>
+| 색상 | HEX | 용도 |
+|------|-----|------|
+| Pink | `#FF6B9D` | 그라데이션 시작점 |
+| Orange | `#FF8B5A` | 그라데이션 중간점 |
+| Yellow | `#FFA94D` | 그라데이션 끝점 |
+| White | `#FFFFFF` | 텍스트, 배경 |
+| Primary (기존) | `#4F46E5` | 보라색 (QR 버튼 배경) |
+
+### 그라데이션 적용
+
+```css
+/* CSS */
+background: linear-gradient(to right, #FF6B9D, #FF8B5A, #FFA94D);
+
+/* Tailwind */
+className="bg-gradient-to-r from-[#FF6B9D] via-[#FF8B5A] to-[#FFA94D]"
+```
+
+---
+
+## 🔍 컴포넌트 검증 체크리스트
+
+### Header 컴포넌트 ✅
+**파일**: `moducon-frontend/src/components/layout/Header.tsx`
+
+- [x] 그라데이션 배경 적용
+- [x] ModulabsLogo 표시 (w-20 h-8)
+- [x] "모두콘 2025" 텍스트 표시
+- [x] 로그인 사용자 이름 표시
+- [x] 로그아웃 버튼 동작
+- [x] sticky 포지셔닝 (top-0)
+- [x] z-index 적용 (z-50)
+
+**현재 코드**:
+```tsx
+<header className="sticky top-0 z-50 w-full bg-gradient-to-r from-[#FF6B9D] via-[#FF8B5A] to-[#FFA94D] shadow-lg">
+  <div className="container flex h-14 items-center justify-between px-4">
+    <Link href="/home/" className="flex items-center gap-3">
+      <div className="w-20 h-8">
+        <ModulabsLogo />
       </div>
-    </div>
-    <div>
-      <p className="text-sm text-muted-foreground">디지털 배지</p>
-      <h2 className="text-2xl font-bold">{user?.name}</h2>
-    </div>
-  </CardContent>
-</Card>
+      <span className="text-lg font-bold text-white">모두콘 2025</span>
+    </Link>
+    ...
+  </div>
+</header>
 ```
 
-### 변경 이력
+### 로고 검증 ✅
+- **파일**: `/moducon-frontend/src/imports/Group-53-445.tsx`
+- **viewBox**: 2686 x 1193
+- **비율**: 약 2.25:1 (width:height)
+- **권장 크기**: `w-20 h-8` (80px x 32px)
 
-**이전 버전** (제거됨):
+### 하단 네비게이션 QR 버튼 ✅
+**파일**: `moducon-frontend/src/components/layout/BottomNavigation.tsx`
+
+```tsx
+<svg
+  width="32" height="32"          // 크기: 32px
+  stroke="#666666"                 // 색상: 회색
+  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"  // 중앙 정렬
+>
+```
+
+**스타일링**:
+- 배경: `bg-gradient-to-r from-primary to-primary/80`
+- 크기: `w-16 h-16` (64px)
+- 그림자: `shadow-[0_4px_12px_rgba(79,70,229,0.4)]`
+- 링 테두리: `ring-4 ring-white`
+
+---
+
+## 📱 페이지별 검증
+
+### 홈 페이지 (`/home`)
+**핵심 기능**:
+- DigitalBadge: 사용자 이름 + 🎫 이모지
+- QuestProgress: 퀘스트 진행도 (Mock 데이터)
+- 다가오는 세션: 실제 API 연동 (`fetchSessionsWithCache`)
+
+**주의사항**:
+- "참가자" 텍스트 블럭 **존재하지 않음** (DigitalBadge만 표시)
+- QR 아이콘 홈 화면 블럭 **제거됨**
+
+### 반응형 검증
+
+| 브레이크포인트 | 너비 | 검증 항목 |
+|---------------|------|-----------|
+| Mobile | < 640px | 메뉴 접기, 터치 최적화 |
+| Tablet | 640-1024px | 중간 레이아웃 |
+| Desktop | > 1024px | 전체 레이아웃 |
+
+---
+
+## 🔌 API 중점사항
+
+### 인증 API
+- **POST /api/auth/verify**: QR 코드 검증 및 사용자 인증
+- **POST /api/auth/signature**: 디지털 서명 저장
+- **보안**: JWT 토큰, HTTP-only cookies
+
+### 데이터 API
+- **GET /api/sessions**: Google Sheets → Sessions 목록
+- **GET /api/booths**: Google Sheets → Booths 목록
+- **GET /api/papers**: Google Sheets → Papers 목록
+
+### CORS 설정 ✅
+**파일**: `moducon-backend/src/index.ts`
+
 ```typescript
-// 제거된 코드 (사용자 언급)
-<p>참가자</p>
-<QrCode className="w-16 h-16" />
-```
-
-**현재 버전** (최적화 완료):
-```typescript
-// 현재 코드
-<p className="text-sm text-muted-foreground">디지털 배지</p>
-<span className="text-4xl">🎫</span>
-<h2 className="text-2xl font-bold">{user?.name}</h2>
-```
-
-### 검증 결과
-
-| 항목 | 이전 | 현재 | 상태 |
-|-----|------|------|------|
-| 텍스트 | "참가자" | "디지털 배지" | ✅ 변경됨 |
-| 아이콘 | `<QrCode />` | 🎫 이모지 | ✅ 변경됨 |
-| 배경색 | 없음 | `bg-primary/10` | ✅ 추가됨 |
-| 레이아웃 | 기본 | flex gap-6 | ✅ 개선됨 |
-
-### 결론
-
-**✅ 문제 없음** - "참가자" 블록은 이미 제거되고 최적화 완료
-
-**가능한 원인**:
-1. 브라우저 캐시 (이전 버전 표시)
-2. 다른 페이지 참조 (홈이 아닌 다른 페이지)
-3. 오해 (DigitalBadge 자체를 참가자 블록으로 인식)
-
-**권장 조치**:
-```bash
-# 1. 브라우저 캐시 클리어
-# Chrome: Cmd+Shift+Delete (Mac) / Ctrl+Shift+Delete (Windows)
-# Safari: Cmd+Option+E
-
-# 2. 하드 리프레시
-# Chrome/Safari: Cmd+Shift+R (Mac) / Ctrl+F5 (Windows)
-
-# 3. 빌드 재실행
-cd moducon-frontend
-rm -rf .next
-npm run dev
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://moducon.vibemakers.kr',
+  ...(process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : []),
+];
 ```
 
 ---
 
-## 2. Issue #2: 하단 네비게이션 QR 아이콘 가시성 ⚠️
+## 🛠️ 기술 스택 특이사항
 
-### 현재 구현 상태
+### Frontend
+- **Next.js 15.x** (App Router)
+- **React 19** (Server Components + Client Components)
+- **TypeScript 5**
+- **Tailwind CSS 4 + shadcn/ui**
 
-```typescript
-// src/components/layout/BottomNavigation.tsx (lines 40-72)
-<button
-  onClick={() => setQrModalOpen(true)}
-  className="relative -top-2 flex flex-col items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-primary to-primary/80 shadow-[0_4px_12px_rgba(79,70,229,0.4)] ring-4 ring-white hover:scale-105 transition-transform"
-  aria-label="QR 코드 스캔"
->
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="28"
-    height="28"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="#FFFFFF"        // ✅ 명시적 흰색
-    strokeWidth="2.5"       // ✅ 선명도 향상
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className="mb-1"
-  >
-    <rect width="5" height="5" x="3" y="3" rx="1"></rect>
-    <rect width="5" height="5" x="16" y="3" rx="1"></rect>
-    <rect width="5" height="5" x="3" y="16" rx="1"></rect>
-    <path d="M21 16h-3a2 2 0 0 0-2 2v3"></path>
-    <path d="M21 21v.01"></path>
-    <path d="M12 7v3a2 2 0 0 1-2 2H7"></path>
-    <path d="M3 12h.01"></path>
-    <path d="M12 3h.01"></path>
-    <path d="M12 16v.01"></path>
-    <path d="M16 12h1"></path>
-    <path d="M21 12v.01"></path>
-    <path d="M12 21v-1"></path>
-  </svg>
-  <span className="text-[9px] text-white font-bold tracking-wider">SCAN</span>
-</button>
-```
-
-### 코드 분석
-
-| 속성 | 값 | 상태 | 판정 |
-|-----|-----|------|------|
-| `stroke` | `#FFFFFF` | 명시적 흰색 | ✅ 정상 |
-| `strokeWidth` | `2.5` | 선 두께 증가 | ✅ 정상 |
-| `width/height` | `28px` | 아이콘 크기 | ✅ 충분 |
-| 버튼 배경 | `bg-gradient-to-r from-primary to-primary/80` | 보라색 그라디언트 | ✅ 정상 |
-| 텍스트 | `text-white` | 흰색 | ✅ 정상 |
-| 링 테두리 | `ring-4 ring-white` | 흰색 테두리 | ✅ 정상 |
-
-### 가능한 원인
-
-#### 원인 1: 브라우저 캐시 (가능성: 80%)
-**증상**: 이전 버전 (stroke 속성 없음) 캐싱
-**확인 방법**:
-```bash
-# 개발자 도구 → Network → Disable cache 체크
-# 하드 리프레시: Cmd+Shift+R
-```
-
-#### 원인 2: Primary 색상 문제 (가능성: 15%)
-**증상**: `primary` Tailwind 색상이 밝은 경우 대비 부족
-**확인 방법**:
-```typescript
-// tailwind.config.ts 확인
-colors: {
-  primary: {
-    DEFAULT: '#4f46e5',  // 보라색 (정상)
-    ...
-  }
+### 주요 라이브러리
+```json
+{
+  "html5-qrcode": "QR 스캐너",
+  "zustand": "전역 상태 관리",
+  "lucide-react": "아이콘",
+  "framer-motion": "애니메이션",
+  "next-pwa": "PWA 지원"
 }
 ```
 
-#### 원인 3: Dark Mode 간섭 (가능성: 5%)
-**증상**: 시스템 다크 모드에서 색상 반전
-**확인 방법**:
+---
+
+## ⚠️ 알려진 이슈 및 해결 방법
+
+### 1. ESLint 경고 (Low Priority)
+**상태**: 7개 경고 (모두 Low 등급, 기능 무관)
+
+**경고 목록**:
+- 미사용 import: `QrCode`, `PlusCircle`, `formatTime`, `QRIcon`
+- `<img>` → `<Image />` 권장 (3개 파일)
+
+**조치**: Optional (프로덕션 배포 전 정리 권장)
+
+### 2. Google Sheets API 캐싱
+**현재**: 5분 TTL
+**이유**: API Rate Limit 회피 + 성능 최적화
+
+**주의사항**:
+- 데이터 업데이트 시 최대 5분 지연 가능
+- 긴급 업데이트 시 캐시 수동 삭제 필요
+
+### 3. JWT 토큰 만료
+**설정**: 24시간
+**저장소**: HTTP-only cookies
+
+---
+
+## 🎨 애니메이션 검증
+
+### Framer Motion 설정
 ```typescript
-// 명시적 stroke로 이미 방지됨
-stroke="#FFFFFF"  // 다크 모드 영향 없음
+// 성능 최적화된 애니메이션
+const optimizedAnimation = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.3, ease: "easeOut" }
+};
 ```
 
-### 실제 테스트 가이드
+### 검증 항목
+- [x] 60fps 유지
+- [x] 레이아웃 시프트 없음
+- [x] 모바일 성능 최적화
 
-#### Step 1: 브라우저 캐시 클리어
-```bash
-# Chrome
-1. Cmd+Shift+Delete (Mac) / Ctrl+Shift+Delete (Windows)
-2. "Cached images and files" 체크
-3. "Clear data" 클릭
+---
 
-# Safari
-1. Cmd+Option+E (Mac)
-2. "Develop" → "Empty Caches"
+## ♿ 접근성 검증
 
-# 또는 하드 리프레시
-Cmd+Shift+R (Mac) / Ctrl+F5 (Windows)
+| 항목 | 상태 | 설명 |
+|------|------|------|
+| 색상 대비 | ✅ | WCAG AA 충족 |
+| 키보드 네비게이션 | ✅ | Tab 순서 적절 |
+| 스크린 리더 | 🔄 | aria-label 추가 필요 |
+| 포커스 표시 | ✅ | focus-visible 적용 |
+
+---
+
+## 📝 코드 컨벤션
+
+### 파일 네이밍
+- 컴포넌트: PascalCase (예: `DigitalBadge.tsx`)
+- 유틸리티: camelCase (예: `sessionCache.ts`)
+- 페이지: kebab-case (예: `qr-generator`)
+
+### 디렉토리 구조
 ```
-
-#### Step 2: 개발자 도구 검사
-```bash
-1. F12 → Elements 탭
-2. 중앙 QR 버튼 선택
-3. Computed 탭에서 실제 적용된 CSS 확인
-   - stroke: #FFFFFF 확인
-   - background: primary gradient 확인
-4. Console에서 색상 대비 확인
-   - getComputedStyle(qrButton).stroke
-```
-
-#### Step 3: 실제 디바이스 테스트
-```yaml
-iOS:
-  - Safari (light mode)
-  - Safari (dark mode)
-  - Chrome (light mode)
-
-Android:
-  - Chrome (light mode)
-  - Chrome (dark mode)
-  - Samsung Internet
-
-Desktop:
-  - Chrome (Mac)
-  - Safari (Mac)
-  - Edge (Windows)
-```
-
-#### Step 4: 스크린샷 확인
-```bash
-# 다음 상태에서 스크린샷 촬영
-1. 홈 화면 (하단 네비게이션 포함)
-2. 세션 페이지 (하단 네비게이션 포함)
-3. 부스 페이지 (하단 네비게이션 포함)
-
-# 확인 사항
-- QR 아이콘 가시성
-- "SCAN" 텍스트 가시성
-- 버튼 그라디언트 표시
-- 링 테두리 표시
-```
-
-### 대체 해결 방안 (필요 시)
-
-#### 방안 1: Tailwind 클래스 사용 (권장)
-```typescript
-// 현재: 명시적 색상
-stroke="#FFFFFF"
-
-// 대안: Tailwind 클래스
-stroke="currentColor"
-className="text-white mb-1"
-
-// 장점: Tailwind의 모든 색상 유틸리티 활용 가능
-// 단점: 없음 (동일한 효과)
-```
-
-#### 방안 2: 대비 강화
-```typescript
-// 버튼 배경 더 어둡게
-className="bg-gradient-to-r from-primary-600 to-primary-500"
-
-// 또는 단색 배경
-className="bg-primary-600"
-```
-
-#### 방안 3: 드롭 쉐도우 추가
-```typescript
-<svg
-  // ... 기존 속성
-  className="mb-1 drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"
->
-```
-
-#### 방안 4: 필터 효과
-```typescript
-<svg
-  // ... 기존 속성
-  style={{ filter: 'drop-shadow(0 0 2px rgba(255,255,255,0.8))' }}
->
-```
-
-### 코드 패치 (필요 시)
-
-```typescript
-// src/components/layout/BottomNavigation.tsx
-
-// ✅ 현재 코드 (변경 불필요)
-<svg
-  xmlns="http://www.w3.org/2000/svg"
-  width="28"
-  height="28"
-  viewBox="0 0 24 24"
-  fill="none"
-  stroke="#FFFFFF"        // 이미 최적
-  strokeWidth="2.5"       // 이미 최적
-  strokeLinecap="round"
-  strokeLinejoin="round"
-  className="mb-1"
->
-  {/* ... SVG paths ... */}
-</svg>
-
-// ⚠️ 대안 1 (Tailwind 클래스 사용 - 동일한 효과)
-<svg
-  xmlns="http://www.w3.org/2000/svg"
-  width="28"
-  height="28"
-  viewBox="0 0 24 24"
-  fill="none"
-  stroke="currentColor"   // 변경
-  strokeWidth="2.5"
-  strokeLinecap="round"
-  strokeLinejoin="round"
-  className="mb-1 text-white"  // 추가
->
-  {/* ... SVG paths ... */}
-</svg>
-
-// ⚠️ 대안 2 (드롭 쉐도우 추가 - 더 강한 가시성)
-<svg
-  xmlns="http://www.w3.org/2000/svg"
-  width="28"
-  height="28"
-  viewBox="0 0 24 24"
-  fill="none"
-  stroke="#FFFFFF"
-  strokeWidth="2.5"
-  strokeLinecap="round"
-  strokeLinejoin="round"
-  className="mb-1 drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]"  // 추가
->
-  {/* ... SVG paths ... */}
-</svg>
+src/
+├── app/                 # Next.js App Router
+├── components/          # 재사용 가능한 컴포넌트
+│   ├── layout/         # 레이아웃 컴포넌트
+│   ├── home/           # 홈 페이지 전용
+│   └── ui/             # shadcn/ui 컴포넌트
+├── imports/            # SVG/아이콘 에셋
+├── lib/                # 유틸리티 함수
+├── store/              # Zustand 스토어
+└── types/              # TypeScript 타입 정의
 ```
 
 ---
 
-## 3. 종합 검증 체크리스트
-
-### Phase 1: 코드 검증 ✅
-- [x] DigitalBadge "참가자" 텍스트 제거 확인
-- [x] QR 아이콘 stroke 속성 확인
-- [x] 버튼 배경색 그라디언트 확인
-- [x] 텍스트 색상 white 확인
-
-### Phase 2: 로컬 테스트 (필수)
-- [ ] 브라우저 캐시 클리어
-- [ ] 하드 리프레시 (Cmd+Shift+R)
-- [ ] 개발 서버 재시작
-- [ ] 빌드 재실행 (rm -rf .next)
-
-### Phase 3: 실제 디바이스 테스트 (권장)
-- [ ] iOS Safari (light mode)
-- [ ] iOS Safari (dark mode)
-- [ ] Android Chrome (light mode)
-- [ ] Android Chrome (dark mode)
-- [ ] Desktop Chrome (Mac)
-
-### Phase 4: 스크린샷 캡처 (문서화)
-- [ ] 홈 화면 (DigitalBadge 확인)
-- [ ] 하단 네비게이션 (QR 버튼 확인)
-- [ ] 여러 페이지 (일관성 확인)
-
-### Phase 5: 사용자 확인
-- [ ] 사용자에게 테스트 URL 제공
-- [ ] 캐시 클리어 가이드 전달
-- [ ] 스크린샷 요청 (재현 여부 확인)
-
----
-
-## 4. 최종 판정
-
-### Issue #1: 홈 화면 "참가자" 블록
-**상태**: ✅ **해결 완료**
-**조치**: 없음 (이미 최적화됨)
-**사용자 액션**: 브라우저 캐시 클리어
-
-### Issue #2: 하단 네비게이션 QR 아이콘
-**상태**: ⚠️ **코드상 문제 없음**
-**조치**: 실제 디바이스 테스트 필요
-**가능성**:
-- 80%: 브라우저 캐시 문제
-- 15%: 환경별 렌더링 차이
-- 5%: 다크 모드 간섭
-
-**권장 조치**:
-1. 브라우저 캐시 클리어 (최우선)
-2. 하드 리프레시 (Cmd+Shift+R)
-3. 실제 디바이스 테스트
-4. 필요 시 대안 코드 적용
-
----
-
-## 5. 빠른 테스트 명령어
-
-```bash
-# 1. 개발 서버 재시작
-cd moducon-frontend
-rm -rf .next
-npm run dev
-
-# 2. 프로덕션 빌드 테스트
-npm run build
-npm start
-
-# 3. 캐시 없이 브라우저 열기 (Chrome)
-open -a "Google Chrome" --args --disable-cache http://localhost:3000
-
-# 4. 모바일 시뮬레이션 (Chrome DevTools)
-# F12 → Toggle device toolbar (Cmd+Shift+M)
-```
-
----
-
-**작성자**: Technical QA Lead
-**최종 업데이트**: 2025-12-01
-**다음 단계**: 사용자 실제 테스트 → 결과 피드백 → 필요 시 코드 패치
+**다음 단계**: Phase 3-5 구현 시 본 문서 참조
