@@ -124,7 +124,7 @@ export default function BoothsPage() {
           {filteredBooths.map((booth) => (
             <Link
               key={booth.id}
-              href={`/booths/${booth.id}`}
+              href={`/booths/${booth.code}`}
               className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all overflow-hidden group"
             >
               {/* 이미지 영역 */}

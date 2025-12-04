@@ -1,12 +1,12 @@
-import { fetchPapers } from '@/lib/googleSheets';
+import { fetchPapersWithCache, fetchPaperByCode } from '@/lib/paperCache';
 import PaperDetailClient from './PaperDetailClient';
 import Link from 'next/link';
 
 // Static Export를 위한 generateStaticParams
 export async function generateStaticParams() {
-  const papers = await fetchPapers();
+  const papers = await fetchPapersWithCache();
   return papers.map(paper => ({
-    id: paper.id,
+    id: paper.code,
   }));
 }
 
@@ -17,8 +17,14 @@ interface PaperDetailPageProps {
 }
 
 export default async function PaperDetailPage({ params }: PaperDetailPageProps) {
-  const papers = await fetchPapers();
-  const paper = papers.find(p => p.id === params.id);
+  // code 또는 id로 조회 시도
+  let paper = await fetchPaperByCode(params.id);
+
+  // code로 못 찾으면 id로 다시 시도
+  if (!paper) {
+    const papers = await fetchPapersWithCache();
+    paper = papers.find(p => p.id === params.id || p.code === params.id) || null;
+  }
 
   if (!paper) {
     return (

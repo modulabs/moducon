@@ -2,6 +2,7 @@
  * QR 코드 데이터 형식 파서
  *
  * 지원하는 QR 형식:
+ * - URL 형식: https://moducon.vibemakers.kr/checkin?type=session&id=00-01
  * - moducon://session/{sessionId}     (세션 QR)
  * - moducon://booth/{boothId}         (부스 QR)
  * - moducon://paper/{paperId}         (포스터 QR)
@@ -13,9 +14,9 @@
  */
 
 export interface QRCodeData {
-  type: 'session' | 'booth' | 'paper' | 'checkin' | 'quiz' | 'hidden';
+  type: 'session' | 'booth' | 'paper' | 'checkin' | 'quiz' | 'hidden' | 'registration';
   id: string;
-  action: 'navigate' | 'record' | 'quiz' | 'badge';
+  action: 'navigate' | 'record' | 'quiz' | 'badge' | 'registration';
   route?: string;
   data?: Record<string, unknown>;
 }
@@ -28,6 +29,48 @@ export interface QRCodeData {
 export function parseQRCode(qrData: string): QRCodeData | null {
   try {
     const trimmed = qrData.trim();
+
+    // 0. URL 형식 파싱 (최우선)
+    // 예: https://moducon.vibemakers.kr/checkin?type=session&id=00-01
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+      try {
+        const url = new URL(trimmed);
+        const type = url.searchParams.get('type');
+        const id = url.searchParams.get('id');
+
+        if (type && id) {
+          // registration 타입 처리
+          if (type === 'registration') {
+            return {
+              type: 'registration',
+              id,
+              action: 'registration',
+              route: '/login',
+              data: { registrationId: id }
+            };
+          }
+
+          // session, booth, paper 타입 처리
+          if (['session', 'booth', 'paper'].includes(type)) {
+            const routeMap: Record<string, string> = {
+              session: 'sessions',
+              booth: 'booths',
+              paper: 'papers'
+            };
+
+            return {
+              type: 'checkin',
+              id,
+              action: 'record',
+              route: `/${routeMap[type]}/${id}?checkin=true`,
+              data: { checkinType: type, targetId: id }
+            };
+          }
+        }
+      } catch {
+        // URL 파싱 실패 시 다른 형식으로 계속 진행
+      }
+    }
 
     // 1. 체크인 QR 파싱 (우선순위: 높음)
     if (trimmed.startsWith('checkin-session-')) {

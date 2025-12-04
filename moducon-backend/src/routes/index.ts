@@ -6,6 +6,7 @@ import sessionRoutes from './sessions';
 import checkinRoutes from './checkin';
 import quizRoutes from './quiz';
 import adminRoutes from './admin';
+import questionRoutes from './questions';
 
 const router = Router();
 
@@ -16,6 +17,7 @@ router.use('/sessions', sessionRoutes);
 router.use('/checkin', checkinRoutes);
 router.use('/quiz', quizRoutes);
 router.use('/admin', adminRoutes);
+router.use('/questions', questionRoutes);
 
 // Health check
 router.get('/health', (req, res) => {

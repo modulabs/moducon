@@ -17,7 +17,9 @@ async function fetchFromAPI(endpoint: string): Promise<Paper[]> {
   if (!response.ok) {
     throw new Error(`API 요청 실패: ${response.status}`);
   }
-  return response.json();
+  const json = await response.json();
+  // API 응답 형식: {success: true, data: [...]} 또는 직접 배열
+  return Array.isArray(json) ? json : (json.data || []);
 }
 
 /**
@@ -82,6 +84,32 @@ export async function fetchPapersWithCache(): Promise<Paper[]> {
 export async function fetchPaperByCode(code: string): Promise<Paper | null> {
   const papers = await fetchPapersWithCache();
   return papers.find(paper => paper.code === code) || null;
+}
+
+/**
+ * 포스터 검색 (제목, 연구자, 소속, 해시태그)
+ */
+export function searchPapers(papers: Paper[], query: string): Paper[] {
+  const q = query.toLowerCase();
+  return papers.filter(p =>
+    p.title.toLowerCase().includes(q) ||
+    p.researcher?.toLowerCase().includes(q) ||
+    p.affiliation?.toLowerCase().includes(q) ||
+    p.hashtags?.some(tag => tag.toLowerCase().includes(q))
+  );
+}
+
+/**
+ * 포스터 필터링 (발표 시간 기준)
+ */
+export function filterPapers(papers: Paper[], presentationTime?: string): Paper[] {
+  if (!presentationTime) return papers;
+
+  if (presentationTime === '발표X') {
+    return papers.filter(p => !p.presentationTime || p.presentationTime === '발표X');
+  }
+
+  return papers.filter(p => p.presentationTime === presentationTime);
 }
 
 /**

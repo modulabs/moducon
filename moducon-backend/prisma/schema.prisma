@@ -22,6 +22,9 @@ model User {
   signatures       Signature?
   checkins         UserCheckin[]
   quizAttempts     UserQuizAttempt[]
+  questions        Question[]
+  questionLikes    QuestionLike[]
+  favorites        UserFavorite[]
 
   @@unique([name, phoneLast4], name: "unique_user")
   @@index([name, phoneLast4], map: "idx_users_name_phone")
@@ -168,4 +171,77 @@ model Poster {
 
   @@index([code], map: "idx_posters_code")
   @@map("posters")
+}
+
+// =============================================
+// Q&A 시스템 모델
+// =============================================
+
+model Question {
+  id          String   @id @default(dbgenerated("uuid_v7()")) @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  targetType  String   @map("target_type") @db.VarChar(20) // 'session', 'booth', 'paper'
+  targetId    String   @map("target_id") @db.VarChar(50)
+  content     String   @db.Text
+  isAnonymous Boolean  @default(false) @map("is_anonymous")
+  isAnswered  Boolean  @default(false) @map("is_answered")
+  isPinned    Boolean  @default(false) @map("is_pinned")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user   User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  likes  QuestionLike[]
+  answer QuestionAnswer?
+
+  @@index([targetType, targetId], map: "idx_questions_target")
+  @@index([userId], map: "idx_questions_user")
+  @@index([createdAt], map: "idx_questions_created")
+  @@map("questions")
+}
+
+model QuestionLike {
+  id         String   @id @default(dbgenerated("uuid_v7()")) @db.Uuid
+  questionId String   @map("question_id") @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([questionId, userId], name: "unique_question_like")
+  @@index([questionId], map: "idx_likes_question")
+  @@index([userId], map: "idx_likes_user")
+  @@map("question_likes")
+}
+
+model QuestionAnswer {
+  id         String   @id @default(dbgenerated("uuid_v7()")) @db.Uuid
+  questionId String   @unique @map("question_id") @db.Uuid
+  content    String   @db.Text
+  answeredBy String?  @map("answered_by") @db.VarChar(100)
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@map("question_answers")
+}
+
+// =============================================
+// 관심 등록 (즐겨찾기) 모델
+// =============================================
+
+model UserFavorite {
+  id         String   @id @default(dbgenerated("uuid_v7()")) @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  targetType String   @map("target_type") @db.VarChar(20) // 'session', 'booth', 'paper'
+  targetId   String   @map("target_id") @db.VarChar(50)
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, targetType, targetId], name: "unique_favorite")
+  @@index([userId], map: "idx_favorites_user")
+  @@index([targetType, targetId], map: "idx_favorites_target")
+  @@map("user_favorites")
 }

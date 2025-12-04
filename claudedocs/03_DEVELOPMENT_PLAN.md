@@ -1,4 +1,4 @@
-# 개발 계획 및 다음 단계
+# 개발 계획 총괄 문서
 
 ## 📅 최종 업데이트
 **날짜**: 2025-12-03
@@ -6,231 +6,235 @@
 
 ---
 
-## 📊 개발 현황
+## 📊 개발 현황 요약
 
-### ✅ 완료된 작업
+| Phase | 작업 | 상태 | 진행률 | 문서 |
+|-------|------|------|--------|------|
+| Phase 1 | 기획 & 문서화 | ✅ 완료 | 100% | - |
+| Phase 2 | 기본 UI 구현 | ✅ 완료 | 100% | - |
+| Phase 3 | DB 구축 및 API 연동 | ✅ 완료 | 100% | - |
+| Phase 4 | QR 체크인 시스템 | 🚧 대기 | 0% | [03-01](03-01_QR_CHECKIN_DEV_PLAN.md) |
+| Phase 5 | 마이페이지 & 관심 등록 | 🚧 대기 | 0% | [03-02](03-02_MYPAGE_FAVORITES_DEV_PLAN.md) |
+| Phase 6 | 세션 Q&A 시스템 | 🚧 대기 | 0% | [03-03](03-03_SESSION_QA_DEV_PLAN.md) |
 
-#### Phase 1: 기획 & 문서화
-- [x] PRD, 개발 계획, DB 설계, API 명세 완료
-- [x] 대화 내역 문서 claudedocs/ 정리 완료
-- [x] 핵심 문서 루트에 유지
-
-#### Phase 2: 기본 UI 구현
-- [x] 프론트엔드 기본 구조
-- [x] 사용자 인증 & 세션 관리
-- [x] 홈/세션/부스/포스터 페이지
-- [x] 모바일 PWA 최적화
-
-#### UI 개선 완료 (2025-12-02)
-- [x] **Header 브랜드 디자인 적용**
-  - 그라데이션 배경: `#FF6B9D` → `#FF8B5A` → `#FFA94D`
-  - ModulabsLogo 통합 (w-20 h-8, 비율 2.25:1)
-  - Tailwind: `bg-gradient-to-r from-[#FF6B9D] via-[#FF8B5A] to-[#FFA94D]`
-
-- [x] **CORS 설정 완료**
-  - 프론트엔드 도메인: `moducon.vibemakers.kr`
-  - 개발 환경: `localhost:3000`
-
-#### Phase 3: Database 구축 및 프론트엔드 연동 완료 (2025-12-03) ✅
-- [x] **PostgreSQL DB 스키마 구축**
-  - Session, Booth, Poster 모델 (uuid_v7 ID)
-  - User, UserCheckin, Quiz 모델
-  - 전체 스키마 Prisma ORM 적용
-
-- [x] **xlsx 데이터 → DB 마이그레이션**
-  - 세션: 32개
-  - 부스: 15개
-  - 포스터: 33개
-
-- [x] **백엔드 API 업데이트**
-  - `/api/sessions` - Prisma DB 조회
-  - `/api/booths` - Prisma DB 조회
-  - `/api/papers` - Prisma DB 조회
-
-- [x] **프론트엔드 DB API 연동**
-  - `sessionCache.ts` - 백엔드 API 연동
-  - `boothCache.ts` - 백엔드 API 연동
-  - `paperCache.ts` - 백엔드 API 연동
-  - 타입 정의 DB 스키마 반영 (Session, Booth, Paper)
-  - 페이지 컴포넌트 필드명 업데이트
+**전체 진행률**: 50% (3/6 Phase 완료)
 
 ---
 
-## 🎯 Phase 4-5 개발 계획
+## ✅ 완료된 작업
 
-### 예상 소요 시간: 2-3시간
+### Phase 1-3 요약
 
----
+#### 인증 시스템 ✅
+- 로그인 (이름 + 전화번호 뒷4자리) → JWT 토큰 발급
+- 디지털 서명 (Canvas 기반)
+- 인증 미들웨어 및 상태 관리 (Zustand)
 
-## Phase 4: 체크인 + 퀴즈 API (2시간)
+#### UI/UX ✅
+- 홈/세션/부스/포스터 페이지
+- 모바일 PWA 최적화
+- 브랜드 그라데이션 헤더
+- 하단 네비게이션
 
-### 목표
-체크인 및 퀴즈 API 엔드포인트 구현
+#### 데이터베이스 ✅
+- PostgreSQL + Prisma ORM
+- Session (32개), Booth (15개), Poster (33개)
+- User, UserCheckin, Quiz 모델
 
-### API 엔드포인트 (5개)
-
-#### 1. POST /api/checkin
-**기능**: 부스 체크인 생성
-
-#### 2. GET /api/checkin/user/:userId
-**기능**: 사용자별 체크인 목록 조회
-
-#### 3. POST /api/quiz
-**기능**: 퀴즈 답변 제출 및 정답 확인
-
-#### 4. GET /api/quiz/user/:userId
-**기능**: 사용자별 퀴즈 답변 목록
-
-#### 5. GET /api/stats/user/:userId
-**기능**: 사용자 통계 (체크인 수, 퀴즈 정답률)
-
-### 보안
-- JWT 인증 미들웨어 적용
-- 요청 검증 (Zod 스키마)
-- Rate limiting
+#### QR 코드 ✅
+- 81개 QR 코드 이미지 생성 (세션 32, 부스 15, 포스터 33, 등록 1)
+- 출력용 HTML 페이지 (`qr_codes/index.html`)
 
 ---
 
-## Phase 5: 마이페이지 UI (1-1.5시간)
+## 🎯 다음 단계 (Phase 4-6)
 
-### 페이지 구조
-**경로**: `/mypage`
+### Phase 4: QR 체크인 시스템
+**예상 소요**: 3-4시간
+**문서**: [03-01_QR_CHECKIN_DEV_PLAN.md](03-01_QR_CHECKIN_DEV_PLAN.md)
 
-### 4개 주요 컴포넌트
+**핵심 작업**:
+1. `/checkin` 라우트 페이지 구현
+2. QR 타입별 분기 처리 (registration, session, booth, paper)
+3. 체크인 API 연동 및 UI 피드백
+4. 퀴즈 연동 체크인 (옵션)
 
-#### 1. ProfileCard
-**기능**: 사용자 프로필 정보 표시
-
-#### 2. BadgeCollection
-**기능**: 획득한 배지 컬렉션
-
-#### 3. CheckInStats
-**기능**: 체크인 통계 대시보드
-
-#### 4. CheckpointList
-**기능**: 체크포인트 목록 (최근 활동)
-
-### API 연동
-- `GET /api/stats/user/:userId` → CheckInStats
-- `GET /api/checkin/user/:userId` → CheckpointList
-- `GET /api/quiz/user/:userId` → BadgeCollection
+**QR 처리 플로우**:
+```
+[QR 스캔] → [URL 파싱] → [로그인 확인] → [퀴즈 확인] → [체크인] → [상세페이지]
+```
 
 ---
 
-## 📊 진행률
+### Phase 5: 마이페이지 & 관심 등록
+**예상 소요**: 2-3시간
+**문서**: [03-02_MYPAGE_FAVORITES_DEV_PLAN.md](03-02_MYPAGE_FAVORITES_DEV_PLAN.md)
 
-| Phase | 작업 | 상태 | 진행률 |
-|-------|------|------|--------|
-| Phase 1 | 기획 & 문서화 | ✅ 완료 | 100% |
-| Phase 2 | 기본 UI 구현 | ✅ 완료 | 100% |
-| Phase 3 | DB 구축 및 프론트엔드 연동 | ✅ 완료 | 100% |
-| Phase 4 | 체크인 + 퀴즈 API | 🚧 대기 | 0% |
-| Phase 5 | 마이페이지 UI | 🚧 대기 | 0% |
+**핵심 작업**:
+1. `UserFavorite` 모델 추가 (DB 스키마)
+2. 관심 등록 API (POST/DELETE/GET)
+3. 마이페이지 통합 API
+4. 마이페이지 UI 컴포넌트 5개
 
-**전체 진행률**: 60% (3/5 Phase 완료)
-
----
-
-## ✅ 체크리스트
-
-### Phase 3 ✅
-- [x] PostgreSQL DB 스키마 구축
-- [x] Session, Booth, Poster 모델 구현
-- [x] xlsx 데이터 → DB 마이그레이션
-- [x] 백엔드 API Prisma DB 연동
-- [x] 프론트엔드 타입 정의 업데이트
-- [x] 프론트엔드 캐시 레이어 API 연동
-- [x] 빌드 성공 검증 (62개 페이지)
-
-### Phase 4
-- [ ] POST /api/checkin 구현
-- [ ] GET /api/checkin/user/:userId 구현
-- [ ] POST /api/quiz 구현
-- [ ] GET /api/quiz/user/:userId 구현
-- [ ] GET /api/stats/user/:userId 구현
-- [ ] JWT 미들웨어 적용
-- [ ] API 테스트 (Postman/Thunder Client)
-
-### Phase 5
-- [ ] ProfileCard 컴포넌트 구현
-- [ ] BadgeCollection 컴포넌트 구현
-- [ ] CheckInStats 컴포넌트 구현
-- [ ] CheckpointList 컴포넌트 구현
-- [ ] API 연동 및 테스트
-- [ ] 반응형 디자인 검증
+**마이페이지 구성**:
+```
+/mypage
+├── ProfileCard (프로필 + 서명)
+├── VisitHistory (방문 기록)
+├── FavoritesList (관심 목록)
+├── BadgeCollection (배지)
+└── ActivityStats (통계)
+```
 
 ---
 
-## 🔧 최근 수정 사항
+### Phase 6: 세션 Q&A 시스템
+**예상 소요**: 3-4시간
+**문서**: [03-03_SESSION_QA_DEV_PLAN.md](03-03_SESSION_QA_DEV_PLAN.md)
 
-### 2025-12-03: DB API 연동 (Phase 3 완료)
-**변경 내용**:
-- PostgreSQL DB 스키마 구축 (Session, Booth, Poster, User 등)
-- xlsx 데이터 마이그레이션 완료 (32 세션, 15 부스, 33 포스터)
-- 백엔드 API Prisma DB 연동 (`/api/sessions`, `/api/booths`, `/api/papers`)
-- 프론트엔드 캐시 레이어 업데이트 (sessionCache, boothCache, paperCache)
-- 프론트엔드 타입 정의 DB 스키마 반영
-- 페이지 컴포넌트 필드명 업데이트 (home, sessions, booths 등)
+**핵심 작업**:
+1. DB 스키마 4개 모델 추가
+   - `SessionQuestion` (질문)
+   - `QuestionLike` (좋아요)
+   - `QuestionAnswer` (답변)
+   - `UserNotification` (알림)
+2. Q&A API 구현
+3. 알림 시스템 구현
+4. Q&A UI 컴포넌트
 
-### 2025-12-02: UI/UX 디자인 적용
-**파일**: `moducon-frontend/src/components/layout/Header.tsx`
-
-**변경 내용**:
-- 브랜드 그라데이션 배경 적용
-- ModulabsLogo 컴포넌트 통합
-- 로고 비율 수정 (w-8 h-8 → w-20 h-8)
-
-### 2025-12-02: CORS 설정
-**파일**: `moducon-backend/src/index.ts`
-
-**변경 내용**:
-- 프로덕션 도메인 `moducon.vibemakers.kr` 추가
-- 동적 CORS origin 설정
+**Q&A 기능**:
+- 질문 작성 (익명 옵션)
+- 좋아요 기능
+- 답변 시 알림 발송
 
 ---
 
-## 📂 프로젝트 구조
+## 🗄️ DB 스키마 변경 요약
+
+### 추가 예정 모델
+
+```prisma
+// Phase 5
+model UserFavorite {
+  id, userId, targetType, targetId, createdAt
+}
+
+// Phase 6
+model SessionQuestion {
+  id, sessionId, userId, content, isAnonymous, isAnswered, isPinned, createdAt
+}
+
+model QuestionLike {
+  id, questionId, userId, createdAt
+}
+
+model QuestionAnswer {
+  id, questionId, content, answeredBy, createdAt
+}
+
+model UserNotification {
+  id, userId, type, title, message, data, isRead, createdAt
+}
+```
+
+---
+
+## 📂 프로젝트 구조 (변경 예정)
 
 ```
 moducon_dev/
-├── claudedocs/                 # 프로젝트 문서
+├── claudedocs/
 │   ├── 01_PRD.md
 │   ├── 02_TECHNICAL_REQUIREMENTS.md
 │   ├── 03_DEVELOPMENT_PLAN.md (본 문서)
-│   ├── 04_UI_VERIFICATION_GUIDE.md
-│   ├── 05_API_SPEC.md
-│   ├── 06_DEPLOYMENT_GUIDE.md
-│   ├── 07_FINAL_QA_REPORT.md
-│   └── archive/               # 이전 문서 보관
-├── moducon-frontend/           # Next.js + TypeScript
+│   ├── 03-01_QR_CHECKIN_DEV_PLAN.md ← 신규
+│   ├── 03-02_MYPAGE_FAVORITES_DEV_PLAN.md ← 신규
+│   ├── 03-03_SESSION_QA_DEV_PLAN.md ← 신규
+│   └── ...
+├── moducon-frontend/
 │   └── src/
 │       ├── app/
-│       │   ├── home/          ✅
-│       │   ├── sessions/      ✅
-│       │   ├── booths/        ✅
-│       │   ├── papers/        ✅
-│       │   └── mypage/        🚧
+│       │   ├── checkin/page.tsx ← 신규 (Phase 4)
+│       │   └── mypage/
+│       │       ├── page.tsx ← 수정 (Phase 5)
+│       │       └── components/ ← 신규
 │       └── components/
-│           ├── layout/
-│           │   └── Header.tsx  ✅ (브랜드 디자인 적용)
-│           └── home/
-├── moducon-backend/            # Express + Prisma
-│   ├── src/
-│   │   └── index.ts           ✅ (CORS 설정)
-│   └── prisma/
-│       └── schema.prisma
-└── README.md
+│           ├── checkin/ ← 신규 (Phase 4)
+│           ├── qa/ ← 신규 (Phase 6)
+│           └── notifications/ ← 신규 (Phase 6)
+├── moducon-backend/
+│   └── src/
+│       └── routes/
+│           ├── favorites.ts ← 신규 (Phase 5)
+│           ├── mypage.ts ← 신규 (Phase 5)
+│           ├── questions.ts ← 신규 (Phase 6)
+│           └── notifications.ts ← 신규 (Phase 6)
+└── qr_codes/
+    ├── index.html ✅
+    ├── sessions/ ✅
+    ├── booths/ ✅
+    ├── posters/ ✅
+    └── registration/ ✅
 ```
 
 ---
 
-## 🚀 배포 계획
+## 🔧 기술 스택
 
-### 단계별 배포
-1. **Phase 3 완료 후**: DB 마이그레이션만 Railway 배포
-2. **Phase 4 완료 후**: Backend API Vercel/Railway 배포
-3. **Phase 5 완료 후**: Frontend Vercel 배포 (전체 완성)
+| 영역 | 기술 | 버전 |
+|------|------|------|
+| Frontend | Next.js | 15.x |
+| Frontend | TypeScript | 5.x |
+| Frontend | Tailwind CSS | 3.x |
+| Frontend | Zustand | 4.x |
+| Backend | Express.js | 4.x |
+| Backend | Prisma ORM | 5.x |
+| Database | PostgreSQL | 15.x |
+| Auth | JWT | - |
+| QR | html5-qrcode | 2.x |
 
 ---
 
-**다음 담당자**: hands-on worker (Phase 3-5 구현)
+## 📅 개발 일정 (권장)
+
+| 일자 | Phase | 작업 |
+|------|-------|------|
+| Day 1 | Phase 4 | QR 체크인 시스템 |
+| Day 2 | Phase 5 | 마이페이지 & 관심 등록 |
+| Day 3 | Phase 6 | 세션 Q&A (MVP) |
+| Day 4 | Phase 6 | 알림 시스템 |
+| Day 5 | QA | 통합 테스트 |
+
+**총 예상 소요**: 8-11시간 (작업 시간 기준)
+
+---
+
+## ✅ 전체 체크리스트
+
+### Phase 4: QR 체크인
+- [ ] `/checkin` 라우트 페이지
+- [ ] 타입별 분기 처리
+- [ ] 체크인 API 연동
+- [ ] 퀴즈 모달 (옵션)
+- [ ] 상세페이지 리다이렉트
+
+### Phase 5: 마이페이지
+- [ ] `UserFavorite` DB 모델
+- [ ] 관심 등록 API 3개
+- [ ] 마이페이지 통합 API
+- [ ] UI 컴포넌트 5개
+- [ ] 상세페이지 하트 버튼
+
+### Phase 6: Q&A 시스템
+- [ ] DB 모델 4개
+- [ ] 질문 API
+- [ ] 좋아요 API
+- [ ] 답변 API (관리자)
+- [ ] 알림 API
+- [ ] Q&A UI 컴포넌트
+- [ ] 알림 UI 컴포넌트
+
+---
+
+**다음 담당자**: hands-on worker
+**시작 추천**: Phase 4 (QR 체크인 시스템)

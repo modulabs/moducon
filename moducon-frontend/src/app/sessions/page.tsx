@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -119,48 +120,46 @@ export default function SessionsPage() {
           sessions.map(session => {
             const { startTime, endTime } = parseTimeSlot(session.timeSlot);
             return (
-              <Card key={session.id}>
-                <CardContent className="p-6 grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <div className="md:col-span-3">
-                    <div className="flex gap-2 mb-2">
-                      <Badge variant="secondary">{session.track}</Badge>
-                    </div>
-                    <h3 className="text-xl font-semibold mb-1">{session.title}</h3>
-                    <p className="text-muted-foreground mb-2">
-                      <strong>{session.speakerName}</strong>{session.speakerOrg ? ` · ${session.speakerOrg}` : ''}
-                    </p>
-                    <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                      {session.description}
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {session.keywords.map((keyword: string) => (
-                        <Badge key={keyword} variant="outline">#{keyword}</Badge>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="flex flex-col items-start md:items-end justify-between">
-                    <div className="text-right">
-                      <p className="font-mono text-sm">
-                        {startTime} - {endTime}
+              <Link key={session.id} href={`/sessions/${session.code}`}>
+                <Card className="cursor-pointer hover:shadow-lg transition-shadow">
+                  <CardContent className="p-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div className="md:col-span-3">
+                      <div className="flex gap-2 mb-2">
+                        <Badge variant="secondary">{session.track}</Badge>
+                      </div>
+                      <h3 className="text-xl font-semibold mb-1">{session.title}</h3>
+                      <p className="text-muted-foreground mb-2">
+                        <strong>{session.speakerName}</strong>{session.speakerOrg ? ` · ${session.speakerOrg}` : ''}
                       </p>
-                      <p className="text-sm text-muted-foreground">
-                        {session.location}
+                      <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                        {session.description}
                       </p>
+                      <div className="flex flex-wrap gap-2">
+                        {session.keywords.map((keyword: string) => (
+                          <Badge key={keyword} variant="outline">#{keyword}</Badge>
+                        ))}
+                      </div>
                     </div>
-
-                    {session.pageUrl && (
+                    <div className="flex flex-col items-start md:items-end justify-between">
+                      <div className="text-right">
+                        <p className="font-mono text-sm">
+                          {startTime} - {endTime}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {session.location}
+                        </p>
+                      </div>
                       <Button
                         variant="ghost"
                         size="sm"
                         className="mt-4 md:mt-0"
-                        onClick={() => window.open(session.pageUrl!, '_blank')}
                       >
                         상세 보기 →
                       </Button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
             );
           })
         )}

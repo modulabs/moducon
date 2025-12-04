@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import type { Booth } from '@/types/booth';
+import { QASection } from '@/components/qa';
 
 interface BoothDetailClientProps {
   booth: Booth;
@@ -170,6 +171,9 @@ export default function BoothDetailClient({ booth }: BoothDetailClientProps) {
               <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{booth.demoContent}</p>
             </div>
           )}
+
+          {/* Q&A 섹션 */}
+          <QASection targetType="booth" targetId={booth.code} />
         </div>
 
         {/* 하단 액션 */}

@@ -3,8 +3,9 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import type { Paper } from '@/lib/googleSheets';
+import type { Paper } from '@/types/paper';
 import SignatureDisplay from '@/components/papers/SignatureDisplay';
+import { QASection } from '@/components/qa';
 
 interface PaperDetailClientProps {
   paper: Paper;
@@ -26,16 +27,6 @@ export default function PaperDetailClient({ paper }: PaperDetailClientProps) {
             >
               ← 뒤로 가기
             </button>
-            {paper.fileUrl && (
-              <a
-                href={paper.fileUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                포스터 보기
-              </a>
-            )}
           </div>
         </div>
       </div>
@@ -43,23 +34,20 @@ export default function PaperDetailClient({ paper }: PaperDetailClientProps) {
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* 포스터 헤더 */}
         <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-          {/* 학회 정보 */}
+          {/* 발표 정보 배지 */}
           <div className="flex flex-wrap items-center gap-2 mb-4">
-            <span className="px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-full">
-              {paper.conference}
-            </span>
             {paper.presentationTime && (
-              <span className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-full">
+              <span className={`px-4 py-2 text-sm font-medium rounded-full ${
+                paper.presentationTime === '발표X'
+                  ? 'bg-gray-100 text-gray-600'
+                  : 'bg-blue-600 text-white'
+              }`}>
                 {paper.presentationTime}
               </span>
             )}
-            {paper.willPresent && (
-              <span className={`px-4 py-2 text-sm font-medium rounded-full ${
-                paper.willPresent === '발표X'
-                  ? 'bg-gray-100 text-gray-600'
-                  : 'bg-green-100 text-green-600'
-              }`}>
-                {paper.willPresent}
+            {paper.location && (
+              <span className="px-4 py-2 bg-purple-100 text-purple-700 text-sm font-medium rounded-full">
+                {paper.location}
               </span>
             )}
           </div>
@@ -69,73 +57,64 @@ export default function PaperDetailClient({ paper }: PaperDetailClientProps) {
             {paper.title}
           </h1>
 
-          {/* 저자 및 소속 */}
+          {/* 연구자 및 소속 */}
           <div className="space-y-2">
-            <div className="flex items-start gap-2">
-              <span className="text-sm font-medium text-gray-500 min-w-16">저자:</span>
-              <span className="text-base font-medium text-gray-900">{paper.author}</span>
-            </div>
+            {paper.researcher && (
+              <div className="flex items-start gap-2">
+                <span className="text-sm font-medium text-gray-500 min-w-16">연구자:</span>
+                <span className="text-base font-medium text-gray-900">{paper.researcher}</span>
+              </div>
+            )}
             {paper.affiliation && (
               <div className="flex items-start gap-2">
                 <span className="text-sm font-medium text-gray-500 min-w-16">소속:</span>
                 <span className="text-base text-gray-700">{paper.affiliation}</span>
               </div>
             )}
-            {paper.category && (
-              <div className="flex items-start gap-2">
-                <span className="text-sm font-medium text-gray-500 min-w-16">분류:</span>
-                <span className="text-base text-gray-700">{paper.category}</span>
-              </div>
-            )}
           </div>
+
+          {/* 해시태그 */}
+          {paper.hashtags && paper.hashtags.length > 0 && (
+            <div className="mt-4 flex flex-wrap gap-2">
+              {paper.hashtags.map((tag, idx) => (
+                <span
+                  key={idx}
+                  className="px-3 py-1 bg-purple-50 text-purple-600 text-sm rounded-full"
+                >
+                  #{tag}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* 상세 정보 */}
         <div className="space-y-6">
-          {/* 서명 섹션 */}
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <span className="text-2xl">✍️</span>
-              저자 서명
-            </h2>
-            <div className="flex justify-center p-4 bg-gray-50 rounded-lg">
-              <SignatureDisplay
-                authorName={paper.author}
-                className="h-20 w-auto"
-              />
-            </div>
-          </div>
-
-          {/* 연락처 정보 */}
-          {(paper.email || paper.phone) && (
+          {/* 초록 */}
+          {paper.abstract && (
             <div className="bg-white rounded-xl shadow-sm p-6">
               <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <span className="text-2xl">📧</span>
-                연락처
+                <span className="text-2xl">📝</span>
+                초록
               </h2>
-              <div className="space-y-2">
-                {paper.email && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-gray-500 min-w-20">이메일:</span>
-                    <a
-                      href={`mailto:${paper.email}`}
-                      className="text-blue-600 hover:underline"
-                    >
-                      {paper.email}
-                    </a>
-                  </div>
-                )}
-                {paper.phone && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-gray-500 min-w-20">전화번호:</span>
-                    <a
-                      href={`tel:${paper.phone}`}
-                      className="text-blue-600 hover:underline"
-                    >
-                      {paper.phone}
-                    </a>
-                  </div>
-                )}
+              <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
+                {paper.abstract}
+              </p>
+            </div>
+          )}
+
+          {/* 서명 섹션 */}
+          {paper.researcher && (
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <span className="text-2xl">✍️</span>
+                연구자 서명
+              </h2>
+              <div className="flex justify-center p-4 bg-gray-50 rounded-lg">
+                <SignatureDisplay
+                  authorName={paper.researcher}
+                  className="h-20 w-auto"
+                />
               </div>
             </div>
           )}
@@ -150,6 +129,11 @@ export default function PaperDetailClient({ paper }: PaperDetailClientProps) {
               <div className="bg-blue-50 border-l-4 border-blue-600 p-4 rounded">
                 <p className="text-sm font-medium text-blue-900 mb-1">발표 시간</p>
                 <p className="text-lg font-bold text-blue-600">{paper.presentationTime}</p>
+                {paper.location && (
+                  <p className="text-sm text-blue-700 mt-2">
+                    장소: {paper.location}
+                  </p>
+                )}
                 <p className="text-sm text-blue-700 mt-2">
                   포스터 발표장에서 직접 만나보세요!
                 </p>
@@ -157,59 +141,8 @@ export default function PaperDetailClient({ paper }: PaperDetailClientProps) {
             </div>
           )}
 
-          {/* 파일 링크 */}
-          {(paper.fileUrl || paper.paperUrl) && (
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <span className="text-2xl">📎</span>
-                자료
-              </h2>
-              <div className="space-y-3">
-                {paper.fileUrl && (
-                  <a
-                    href={paper.fileUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-between p-4 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors group"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center">
-                        <span className="text-white text-xl">📄</span>
-                      </div>
-                      <div>
-                        <p className="font-medium text-gray-900">포스터 파일</p>
-                        <p className="text-sm text-gray-600">Google Drive에서 보기</p>
-                      </div>
-                    </div>
-                    <svg className="w-5 h-5 text-purple-600 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </a>
-                )}
-                {paper.paperUrl && (
-                  <a
-                    href={paper.paperUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-between p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors group"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-                        <span className="text-white text-xl">📃</span>
-                      </div>
-                      <div>
-                        <p className="font-medium text-gray-900">논문 링크</p>
-                        <p className="text-sm text-gray-600">원문 보기</p>
-                      </div>
-                    </div>
-                    <svg className="w-5 h-5 text-blue-600 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </a>
-                )}
-              </div>
-            </div>
-          )}
+          {/* Q&A 섹션 - code를 targetId로 사용 */}
+          <QASection targetType="paper" targetId={paper.code} />
         </div>
 
         {/* 하단 액션 */}

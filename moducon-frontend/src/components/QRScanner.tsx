@@ -66,7 +66,8 @@ export default function QRScanner({ onClose, onScan }: QRScannerProps) {
         paper: '포스터',
         checkin: '체크인',
         quiz: '퀴즈',
-        hidden: '히든 배지'
+        hidden: '히든 배지',
+        registration: '등록'
       };
       const message = `${typeMessages[parsed.type]} 페이지로 이동합니다.`;
 
