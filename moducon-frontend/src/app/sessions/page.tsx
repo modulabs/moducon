@@ -144,7 +144,7 @@ export default function SessionsPage() {
 
 
   return (
-    <div className="container mx-auto p-4 sm:p-6 lg:p-8">
+    <div className="w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
       {/* 헤더 */}
       <div className="mb-8 flex justify-between items-center">
         <div>
@@ -201,7 +201,7 @@ export default function SessionsPage() {
         )}
       </div>
 
-      <div className="flex flex-col gap-6">
+      <div className="space-y-6">
         {loading ? (
           <div className="text-center py-12">
             <RefreshCw className="mx-auto h-8 w-8 animate-spin text-muted-foreground" />
@@ -234,8 +234,9 @@ export default function SessionsPage() {
             const { startTime, endTime } = parseTimeSlot(session.timeSlot);
             const isFavorite = favorites.has(session.code);
             return (
-              <Link key={session.id} href={`/sessions/${session.code}`}>
-                <Card className="cursor-pointer hover:shadow-lg transition-shadow">
+              <div key={session.id} className="block">
+                <Link href={`/sessions/${session.code}`}>
+                  <Card className="cursor-pointer hover:shadow-lg transition-shadow">
                   <CardContent className="p-6 grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div className="md:col-span-3">
                       <div className="flex gap-2 mb-2 items-center">
@@ -285,8 +286,9 @@ export default function SessionsPage() {
                       </div>
                     </div>
                   </CardContent>
-                </Card>
-              </Link>
+                  </Card>
+                </Link>
+              </div>
             );
           })
         )}
