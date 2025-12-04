@@ -11,15 +11,18 @@ interface QuestionCardProps {
 }
 
 export default function QuestionCard({ question, onLikeToggle, onDelete }: QuestionCardProps) {
-  const { isAuthenticated, token } = useAuthStore();
+  const { isAuthenticated, token, isHydrated } = useAuthStore();
   const [isLiking, setIsLiking] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showAnswer, setShowAnswer] = useState(false);
 
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
+  // hydrate 전에는 로그인 상태를 알 수 없으므로 대기
+  const canInteract = isHydrated && isAuthenticated;
+
   const handleLike = async () => {
-    if (!isAuthenticated || isLiking) return;
+    if (!canInteract || isLiking) return;
 
     setIsLiking(true);
     try {
@@ -111,12 +114,12 @@ export default function QuestionCard({ question, onLikeToggle, onDelete }: Quest
           {/* 좋아요 버튼 */}
           <button
             onClick={handleLike}
-            disabled={!isAuthenticated || isLiking}
+            disabled={!canInteract || isLiking}
             className={`flex items-center gap-1 px-2 py-1 rounded-md transition-colors ${
               question.isLiked
                 ? 'text-red-500 bg-red-50'
                 : 'text-gray-500 hover:bg-gray-100'
-            } ${!isAuthenticated ? 'cursor-not-allowed opacity-50' : ''}`}
+            } ${!canInteract ? 'cursor-not-allowed opacity-50' : ''}`}
           >
             <svg
               className="w-4 h-4"
