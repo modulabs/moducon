@@ -33,8 +33,9 @@ export default function QASection({ targetType, targetId, title = 'Q&A' }: QASec
       // 로컬 스토리지에서 토큰 가져오기 (좋아요 상태 확인용)
       const token = typeof window !== 'undefined' ? localStorage.getItem('moducon_token') : null;
 
+      // 세션 Q&A만 지원 - /api/sessions/:sessionId/questions
       const response = await fetch(
-        `${API_BASE}/api/questions/${targetType}/${targetId}?sort=${sortBy}&page=${pagination.page}`,
+        `${API_BASE}/api/sessions/${targetId}/questions?sort=${sortBy}&page=${pagination.page}`,
         {
           headers: token ? { 'Authorization': `Bearer ${token}` } : {},
         }

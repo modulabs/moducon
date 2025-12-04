@@ -4,12 +4,12 @@ import { useState, useEffect } from 'react';
 import { useAuthStore } from '@/store/authStore';
 
 interface QuestionFormProps {
-  targetType: 'session' | 'booth' | 'paper';
+  targetType?: 'session' | 'booth' | 'paper'; // 현재 session만 지원, 향후 확장용
   targetId: string;
   onQuestionSubmit: (question: any) => void;
 }
 
-export default function QuestionForm({ targetType, targetId, onQuestionSubmit }: QuestionFormProps) {
+export default function QuestionForm({ targetId, onQuestionSubmit }: QuestionFormProps) {
   const { isAuthenticated, token } = useAuthStore();
   const [content, setContent] = useState('');
   const [isAnonymous, setIsAnonymous] = useState(false);
@@ -45,7 +45,8 @@ export default function QuestionForm({ targetType, targetId, onQuestionSubmit }:
     setSuccess(null);
 
     try {
-      const response = await fetch(`${API_BASE}/api/questions/${targetType}/${targetId}`, {
+      // 세션 Q&A만 지원 - /api/sessions/:sessionId/questions
+      const response = await fetch(`${API_BASE}/api/sessions/${targetId}/questions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -22,7 +22,9 @@ export default function QuestionCard({ question, onLikeToggle, onDelete }: Quest
   const canInteract = isHydrated && isAuthenticated;
 
   const handleLike = async () => {
-    if (!canInteract || isLiking) return;
+    if (!canInteract || isLiking) {
+      return;
+    }
 
     setIsLiking(true);
     try {
