@@ -7,6 +7,7 @@ import checkinRoutes from './checkin';
 import quizRoutes from './quiz';
 import adminRoutes from './admin';
 import questionRoutes from './questions';
+import favoriteRoutes from './favorites';
 
 const router = Router();
 
@@ -18,6 +19,7 @@ router.use('/checkin', checkinRoutes);
 router.use('/quiz', quizRoutes);
 router.use('/admin', adminRoutes);
 router.use('/questions', questionRoutes);
+router.use('/favorites', favoriteRoutes);
 
 // Health check
 router.get('/health', (req, res) => {

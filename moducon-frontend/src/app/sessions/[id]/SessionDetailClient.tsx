@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import type { Session } from '@/types/session';
 import { parseTimeSlot } from '@/types/session';
 import { QASection } from '@/components/qa';
+import { useAuthStore } from '@/store/authStore';
 
 interface SessionDetailClientProps {
   session: Session;
@@ -13,8 +14,61 @@ interface SessionDetailClientProps {
 
 export default function SessionDetailClient({ session }: SessionDetailClientProps) {
   const router = useRouter();
+  const { isAuthenticated, token, isHydrated } = useAuthStore();
   const [isCheckedIn, setIsCheckedIn] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [isFavoriteLoading, setIsFavoriteLoading] = useState(false);
   const { startTime, endTime } = parseTimeSlot(session.timeSlot);
+
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
+  // 관심 등록 상태 확인
+  useEffect(() => {
+    if (!isHydrated || !isAuthenticated || !token) return;
+
+    const checkFavorite = async () => {
+      try {
+        const response = await fetch(
+          `${API_BASE}/api/favorites/check/session/${session.code}`,
+          {
+            headers: { 'Authorization': `Bearer ${token}` },
+          }
+        );
+        const data = await response.json();
+        if (response.ok) {
+          setIsFavorite(data.data.isFavorite);
+        }
+      } catch (error) {
+        console.error('관심 등록 확인 실패:', error);
+      }
+    };
+
+    checkFavorite();
+  }, [isHydrated, isAuthenticated, token, session.code, API_BASE]);
+
+  // 관심 등록/해제 토글
+  const handleFavoriteToggle = async () => {
+    if (!isAuthenticated || !token || isFavoriteLoading) return;
+
+    setIsFavoriteLoading(true);
+    try {
+      const response = await fetch(
+        `${API_BASE}/api/favorites/session/${session.code}`,
+        {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
+        }
+      );
+      const data = await response.json();
+      if (response.ok) {
+        setIsFavorite(data.data.isFavorite);
+      }
+    } catch (error) {
+      console.error('관심 등록 실패:', error);
+    } finally {
+      setIsFavoriteLoading(false);
+    }
+  };
 
   // 트랙별 색상 설정
   const trackColors: Record<string, { bg: string; text: string; gradient: string }> = {
@@ -41,10 +95,21 @@ export default function SessionDetailClient({ session }: SessionDetailClientProp
             </button>
             <div className="flex gap-2">
               <button
-                className="p-2 text-gray-500 hover:text-red-500 transition-colors"
-                title="관심 등록"
+                onClick={handleFavoriteToggle}
+                disabled={!isHydrated || !isAuthenticated || isFavoriteLoading}
+                className={`p-2 transition-colors ${
+                  isFavorite
+                    ? 'text-red-500'
+                    : 'text-gray-500 hover:text-red-500'
+                } ${(!isHydrated || !isAuthenticated) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                title={isFavorite ? '관심 해제' : '관심 등록'}
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg
+                  className={`w-6 h-6 ${isFavoriteLoading ? 'animate-pulse' : ''}`}
+                  fill={isFavorite ? 'currentColor' : 'none'}
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                 </svg>
               </button>
