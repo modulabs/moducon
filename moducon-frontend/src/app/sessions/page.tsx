@@ -16,8 +16,7 @@ const tracks = ['Track 00', 'Track 01', 'Track 10', 'Track i', 'Track 101'];
 export default function SessionsPage() {
   const { isAuthenticated, token, isHydrated } = useAuthStore();
   const [sessions, setSessions] = useState<Session[]>([]);
-  const [activeTrack, setActiveTrack] = useState<string | null>(null);
-  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<string | null>(null); // null = 전체, 트랙명 또는 'favorites'
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [favoriteLoading, setFavoriteLoading] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -43,24 +42,42 @@ export default function SessionsPage() {
     }
   }, [isAuthenticated, token, API_BASE]);
 
-  const loadSessions = async (track?: string) => {
+  const loadSessions = useCallback(async (track?: string, isFavoritesFilter?: boolean) => {
     setLoading(true);
     setError(null);
 
     try {
-      const data = await fetchSessionsWithCache(track || undefined);
-      setSessions(data);
+      // 전체 세션 로드
+      const data = await fetchSessionsWithCache();
+
+      // 필터 적용
+      if (isFavoritesFilter) {
+        // 관심 세션 필터: favorites가 비어있으면 빈 배열 반환
+        setSessions(data.filter((s: Session) => favorites.has(s.code)));
+      } else if (track) {
+        setSessions(data.filter((s: Session) => s.track === track));
+      } else {
+        setSessions(data);
+      }
     } catch (err) {
       console.error('세션 로딩 실패:', err);
       setError('세션 데이터를 불러올 수 없습니다. 네트워크를 확인해주세요.');
     } finally {
       setLoading(false);
     }
-  };
+  }, [favorites]);
 
+  // 필터 변경 시 세션 로드
   useEffect(() => {
-    loadSessions(activeTrack || undefined);
-  }, [activeTrack]);
+    if (activeFilter === 'favorites') {
+      // 관심 세션은 favorites Set이 로드된 후에만 필터링
+      if (isHydrated) {
+        loadSessions(undefined, true);
+      }
+    } else {
+      loadSessions(activeFilter || undefined, false);
+    }
+  }, [activeFilter, isHydrated, loadSessions]);
 
   // 로그인 상태 변경 시 관심 세션 로드
   useEffect(() => {
@@ -68,20 +85,26 @@ export default function SessionsPage() {
       loadFavorites();
     } else {
       setFavorites(new Set());
-      setShowFavoritesOnly(false);
+      if (activeFilter === 'favorites') {
+        setActiveFilter(null); // 로그아웃 시 favorites 필터 해제
+      }
     }
   }, [isHydrated, isAuthenticated, loadFavorites]);
 
   const handleRefresh = () => {
     invalidateSessionsCache();
-    loadSessions(activeTrack || undefined);
+    if (activeFilter === 'favorites') {
+      loadSessions(undefined, true);
+    } else {
+      loadSessions(activeFilter || undefined, false);
+    }
     if (isAuthenticated) {
       loadFavorites();
     }
   };
 
-  const filterByTrack = (track: string | null) => {
-    setActiveTrack(track);
+  const handleFilterChange = (filter: string | null) => {
+    setActiveFilter(filter);
   };
 
   // 관심 등록/해제 토글
@@ -116,10 +139,8 @@ export default function SessionsPage() {
     }
   };
 
-  // 필터링된 세션 목록
-  const filteredSessions = showFavoritesOnly
-    ? sessions.filter(s => favorites.has(s.code))
-    : sessions;
+  // 세션 목록 (API에서 이미 필터링된 데이터를 받음)
+  const filteredSessions = sessions;
 
 
   return (
@@ -145,48 +166,42 @@ export default function SessionsPage() {
         </Button>
       </div>
 
-      <div className="mb-6 space-y-3">
-        {/* 트랙 필터 */}
-        <div className="flex flex-wrap gap-2">
+      {/* 통합 필터 (트랙 + 관심 세션) */}
+      <div className="mb-6 flex flex-wrap gap-2">
+        <Button
+          variant={activeFilter === null ? 'default' : 'outline'}
+          onClick={() => handleFilterChange(null)}
+        >
+          All
+        </Button>
+        {tracks.map(track => (
           <Button
-            variant={activeTrack === null ? 'default' : 'outline'}
-            onClick={() => filterByTrack(null)}
+            key={track}
+            variant={activeFilter === track ? 'default' : 'outline'}
+            onClick={() => handleFilterChange(track)}
           >
-            All
+            {track}
           </Button>
-          {tracks.map(track => (
-            <Button
-              key={track}
-              variant={activeTrack === track ? 'default' : 'outline'}
-              onClick={() => filterByTrack(track)}
-            >
-              {track}
-            </Button>
-          ))}
-        </div>
-
+        ))}
         {/* 관심 세션 필터 (로그인 시에만 표시) */}
         {isHydrated && isAuthenticated && (
-          <div className="flex items-center gap-2">
-            <Button
-              variant={showFavoritesOnly ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
-              className="gap-2"
-            >
-              <Heart className={`h-4 w-4 ${showFavoritesOnly ? 'fill-current' : ''}`} />
-              관심 세션만 보기
-              {favorites.size > 0 && (
-                <Badge variant="secondary" className="ml-1">
-                  {favorites.size}
-                </Badge>
-              )}
-            </Button>
-          </div>
+          <Button
+            variant={activeFilter === 'favorites' ? 'default' : 'outline'}
+            onClick={() => handleFilterChange('favorites')}
+            className="gap-2"
+          >
+            <Heart className={`h-4 w-4 ${activeFilter === 'favorites' ? 'fill-current' : ''}`} />
+            관심 세션
+            {favorites.size > 0 && (
+              <Badge variant="secondary" className="ml-1">
+                {favorites.size}
+              </Badge>
+            )}
+          </Button>
         )}
       </div>
 
-      <div className="space-y-6">
+      <div className="flex flex-col gap-6">
         {loading ? (
           <div className="text-center py-12">
             <RefreshCw className="mx-auto h-8 w-8 animate-spin text-muted-foreground" />
@@ -206,10 +221,10 @@ export default function SessionsPage() {
         ) : filteredSessions.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-muted-foreground">
-              {showFavoritesOnly
+              {activeFilter === 'favorites'
                 ? '관심 등록한 세션이 없습니다.'
-                : activeTrack
-                  ? `${activeTrack} 세션이 없습니다.`
+                : activeFilter
+                  ? `${activeFilter} 세션이 없습니다.`
                   : '세션 데이터가 없습니다.'
               }
             </p>
@@ -225,9 +240,6 @@ export default function SessionsPage() {
                     <div className="md:col-span-3">
                       <div className="flex gap-2 mb-2 items-center">
                         <Badge variant="secondary">{session.track}</Badge>
-                        {isFavorite && (
-                          <Heart className="h-4 w-4 text-red-500 fill-red-500" />
-                        )}
                       </div>
                       <h3 className="text-xl font-semibold mb-1">{session.title}</h3>
                       <p className="text-muted-foreground mb-2">

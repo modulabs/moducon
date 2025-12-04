@@ -1,9 +1,39 @@
 # 마이페이지 및 관심 등록 시스템 개발 계획
 
 ## 📅 최종 업데이트
-**날짜**: 2025-12-03
+**날짜**: 2025-12-04
 **작성자**: Technical Lead
 **문서 번호**: 03-02
+
+---
+
+## 🚀 현재 진행 상황
+
+### 완료된 작업 (2025-12-04)
+
+#### 1. 관심 세션 백엔드 API 구현 완료
+- `moducon-backend/src/routes/favorites.ts` 생성
+- API 엔드포인트:
+  - `GET /api/favorites` - 사용자 관심 목록 조회
+  - `GET /api/favorites/sessions` - 관심 세션 목록 (세션 정보 포함)
+  - `POST /api/favorites/:targetType/:targetId` - 관심 등록/해제 토글
+  - `GET /api/favorites/check/:targetType/:targetId` - 관심 등록 여부 확인
+  - `DELETE /api/favorites/:targetType/:targetId` - 관심 해제
+
+#### 2. 세션 상세 페이지 관심 기능 구현 완료
+- `SessionDetailClient.tsx`에 하트 버튼 추가
+- 로그인 시에만 관심 버튼 활성화
+- 관심 등록/해제 토글 기능
+
+#### 3. 세션 목록 페이지 관심 기능 구현 (진행 중)
+- 필터 통합: All, Track 00~101, 관심 세션을 한 줄에 배치
+- 각 세션 카드에 하트 버튼 추가
+- 관심 세션 필터 클릭 시 관심 등록한 세션만 표시
+
+### 알려진 이슈 (수정 필요)
+1. **UI 레이아웃 문제**: 세션 1개 이하일 때와 2개 이상일 때 마진/정렬이 다르게 표시됨
+   - 원인: CSS `space-y-6` 또는 flex 레이아웃 관련 이슈로 추정
+   - 상태: 조사 중
 
 ---
 
@@ -268,14 +298,16 @@ src/app/mypage/
 ## ✅ 체크리스트
 
 ### Phase 5.1: DB 스키마
-- [ ] `UserFavorite` 모델 추가
-- [ ] Prisma 마이그레이션 실행
-- [ ] User 모델 관계 업데이트
+- [x] `UserFavorite` 모델 추가
+- [x] Prisma 마이그레이션 실행
+- [x] User 모델 관계 업데이트
 
 ### Phase 5.2: 관심 등록 API
-- [ ] POST /api/favorites
-- [ ] DELETE /api/favorites/:type/:id
-- [ ] GET /api/favorites/user/:userId
+- [x] POST /api/favorites/:targetType/:targetId (토글 방식)
+- [x] DELETE /api/favorites/:type/:id
+- [x] GET /api/favorites (사용자 관심 목록)
+- [x] GET /api/favorites/sessions (관심 세션 목록 with 세션 정보)
+- [x] GET /api/favorites/check/:targetType/:targetId (관심 여부 확인)
 
 ### Phase 5.3: 마이페이지 API
 - [ ] GET /api/mypage/:userId
@@ -289,9 +321,12 @@ src/app/mypage/
 - [ ] ActivityStats 컴포넌트
 
 ### Phase 5.5: 관심 등록 UI
-- [ ] 상세페이지에 하트 버튼 추가
-- [ ] 관심 등록/해제 토글
-- [ ] 관심 상태 실시간 반영
+- [x] 상세페이지에 하트 버튼 추가
+- [x] 관심 등록/해제 토글
+- [x] 관심 상태 실시간 반영
+- [x] 세션 목록 페이지에 관심 필터 추가
+- [x] 세션 카드에 관심 버튼 추가
+- [ ] UI 레이아웃 버그 수정 (세션 1개일 때 정렬 이슈)
 
 ---
 
@@ -301,5 +336,5 @@ src/app/mypage/
 
 ---
 
-**문서 버전**: v1.0
-**최종 수정일**: 2025-12-03
+**문서 버전**: v1.1
+**최종 수정일**: 2025-12-04
