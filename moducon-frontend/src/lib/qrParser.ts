@@ -50,19 +50,13 @@ export function parseQRCode(qrData: string): QRCodeData | null {
             };
           }
 
-          // session, booth, paper 타입 처리
+          // session, booth, paper 타입 처리 → /checkin 페이지에서 DB 체크인 후 상세페이지로 이동
           if (['session', 'booth', 'paper'].includes(type)) {
-            const routeMap: Record<string, string> = {
-              session: 'sessions',
-              booth: 'booths',
-              paper: 'papers'
-            };
-
             return {
               type: 'checkin',
               id,
               action: 'record',
-              route: `/${routeMap[type]}/${id}?checkin=true`,
+              route: `/checkin?type=${type}&id=${id}`,
               data: { checkinType: type, targetId: id }
             };
           }
@@ -72,14 +66,14 @@ export function parseQRCode(qrData: string): QRCodeData | null {
       }
     }
 
-    // 1. 체크인 QR 파싱 (우선순위: 높음)
+    // 1. 체크인 QR 파싱 (우선순위: 높음) → /checkin 페이지에서 DB 체크인 후 상세페이지로 이동
     if (trimmed.startsWith('checkin-session-')) {
       const id = trimmed.replace('checkin-session-', '');
       return {
         type: 'checkin',
         id,
         action: 'record',
-        route: `/sessions/${id}?checkin=true`,
+        route: `/checkin?type=session&id=${id}`,
         data: { checkinType: 'session', targetId: id }
       };
     }
@@ -90,7 +84,7 @@ export function parseQRCode(qrData: string): QRCodeData | null {
         type: 'checkin',
         id,
         action: 'record',
-        route: `/booths/${id}?checkin=true`,
+        route: `/checkin?type=booth&id=${id}`,
         data: { checkinType: 'booth', targetId: id }
       };
     }
@@ -101,7 +95,7 @@ export function parseQRCode(qrData: string): QRCodeData | null {
         type: 'checkin',
         id,
         action: 'record',
-        route: `/papers/${id}?checkin=true`,
+        route: `/checkin?type=paper&id=${id}`,
         data: { checkinType: 'paper', targetId: id }
       };
     }
@@ -190,7 +184,12 @@ export function parseQRCode(qrData: string): QRCodeData | null {
  * @returns Next.js 라우트 경로
  */
 export function getRouteFromQRData(qrData: QRCodeData): string {
-  const { type, id } = qrData;
+  // route가 이미 설정되어 있으면 그대로 사용
+  if (qrData.route) {
+    return qrData.route;
+  }
+
+  const { type, id, data } = qrData;
 
   switch (type) {
     case 'session':
@@ -199,6 +198,16 @@ export function getRouteFromQRData(qrData: QRCodeData): string {
       return `/booths/${id}`;
     case 'paper':
       return `/papers/${id}`;
+    case 'checkin':
+      // checkin 타입은 체크인 페이지로 라우팅
+      const checkinType = data?.checkinType as string;
+      return `/checkin?type=${checkinType}&id=${id}`;
+    case 'registration':
+      return `/checkin?type=registration&id=${id}`;
+    case 'quiz':
+      return `/quiz/${id}`;
+    case 'hidden':
+      return `/badge/${id}`;
     default:
       throw new Error(`Unknown QR type: ${type}`);
   }

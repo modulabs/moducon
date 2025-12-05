@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import type { Paper } from '@/types/paper';
 import SignatureDisplay from '@/components/papers/SignatureDisplay';
-import { QASection } from '@/components/qa';
 
 interface PaperDetailClientProps {
   paper: Paper;
@@ -141,8 +140,6 @@ export default function PaperDetailClient({ paper }: PaperDetailClientProps) {
             </div>
           )}
 
-          {/* Q&A 섹션 - code를 targetId로 사용 */}
-          <QASection targetType="paper" targetId={paper.code} />
         </div>
 
         {/* 하단 액션 */}

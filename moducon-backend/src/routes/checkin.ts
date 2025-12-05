@@ -59,7 +59,18 @@ router.post('/', authenticate, async (req: AuthRequest, res: Response) => {
     );
 
     return successResponse(res, { checkin }, '체크인이 완료되었습니다.', 201);
-  } catch (error) {
+  } catch (error: unknown) {
+    // Prisma unique constraint violation (race condition 대응)
+    if (
+      error &&
+      typeof error === 'object' &&
+      'code' in error &&
+      error.code === 'P2002'
+    ) {
+      logger.info(`Duplicate checkin attempt (race condition) for user ${req.user?.userId}`);
+      return errorResponse(res, '이미 체크인하셨습니다.', 409, 'DUPLICATE_CHECKIN');
+    }
+
     logger.error('체크인 생성 실패:', error);
     return errorResponse(res, '체크인 처리 중 오류가 발생했습니다.', 500, 'CHECKIN_FAILED');
   }
