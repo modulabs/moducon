@@ -1,6 +1,9 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import https from 'https';
+import fs from 'fs';
+import path from 'path';
 import routes from './routes';
 import { errorHandler } from './middleware/errorHandler';
 import { logger } from './utils/logger';
@@ -9,14 +12,15 @@ import { logger } from './utils/logger';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3001;
 
 // CORS 허용 도메인 설정 (프론트엔드 도메인만)
 const allowedOrigins = [
   'http://localhost:3000',
+  'https://localhost:3000',
   'http://192.168.10.182:3000',
+  'https://192.168.10.182:3000',
   'https://moducon.vibemakers.kr',
-  'https://ed62fe53e0aa.ngrok-free.app',
   ...(process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : []),
 ];
 
@@ -50,10 +54,16 @@ app.use('/api', routes);
 // 에러 핸들러
 app.use(errorHandler);
 
-// 서버 시작 (모든 네트워크 인터페이스에서 수신)
-app.listen(PORT, '0.0.0.0', () => {
-  logger.info(`🚀 Server running on http://localhost:${PORT}`);
-  logger.info(`🌐 Network: http://192.168.10.182:${PORT}`);
+// HTTPS 인증서 설정
+const httpsOptions = {
+  key: fs.readFileSync(path.join(__dirname, '../../certs/localhost-key.pem')),
+  cert: fs.readFileSync(path.join(__dirname, '../../certs/localhost-cert.pem')),
+};
+
+// 서버 시작 (HTTPS, 모든 네트워크 인터페이스에서 수신)
+https.createServer(httpsOptions, app).listen(PORT, '0.0.0.0', () => {
+  logger.info(`🚀 Server running on https://localhost:${PORT}`);
+  logger.info(`🌐 Network: https://192.168.10.182:${PORT}`);
   logger.info(`📝 Environment: ${process.env.NODE_ENV || 'development'}`);
   logger.info(`🌐 CORS origins: ${allowedOrigins.join(', ')}`);
 });
