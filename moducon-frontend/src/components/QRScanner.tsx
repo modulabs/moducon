@@ -16,6 +16,7 @@ export default function QRScanner({ onClose, onScan }: QRScannerProps) {
   const onCloseRef = useRef(onClose);
   const onScanRef = useRef(onScan);
   const scannerStartedRef = useRef(false);
+  const scanProcessedRef = useRef(false); // ★ 스캔 처리 완료 플래그
   const handleScanSuccessRef = useRef<((text: string) => void) | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<string | null>(null);
@@ -51,12 +52,19 @@ export default function QRScanner({ onClose, onScan }: QRScannerProps) {
   }, []);
 
   const handleScanSuccess = useCallback((decodedText: string) => {
+    // ★ 이미 처리된 스캔이면 무시 (중복 실행 방지)
+    if (scanProcessedRef.current) {
+      return;
+    }
+
     console.log('QR Scan Success:', decodedText);
-    setResult(decodedText);
 
     // QR 값 파싱
     const parsed = parseQRCode(decodedText);
     if (parsed) {
+      // ★ 스캔 처리 완료 표시 (이후 콜백 무시)
+      scanProcessedRef.current = true;
+
       // 햅틱 피드백
       triggerHaptic();
 

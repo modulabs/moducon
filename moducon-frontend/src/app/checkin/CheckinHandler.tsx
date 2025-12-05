@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 
 // 체크인 타입 정의
@@ -50,41 +50,27 @@ interface CheckinResult {
 }
 
 export default function CheckinHandler() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const authStore = useAuthStore();
 
   const [status, setStatus] = useState<CheckinStatus>('idle');
   const [message, setMessage] = useState<string>('');
   const [checkinType, setCheckinType] = useState<CheckinType | null>(null);
-  const [targetId, setTargetId] = useState<string | null>(null);
 
-  // URL 파라미터 (초기값만 사용)
+  // URL 파라미터
   const type = searchParams.get('type') as CheckinType | null;
   const id = searchParams.get('id');
 
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
-  // Refs for preventing double execution (React Strict Mode safe)
-  const isExecutingRef = useRef(false);
-  const abortControllerRef = useRef<AbortController | null>(null);
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      // Cancel any pending requests when component unmounts
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
-    };
-  }, []);
+  // 중복 실행 방지 ref
+  const checkinExecutedRef = useRef(false);
 
   // 체크인 API 호출
   const performCheckin = async (
     targetType: CheckinType,
     checkinTargetId: string,
-    authToken: string,
-    signal: AbortSignal
+    authToken: string
   ): Promise<CheckinResult> => {
     try {
       const response = await fetch(`${API_BASE}/api/checkin`, {
@@ -97,7 +83,6 @@ export default function CheckinHandler() {
           targetType: targetType === 'registration' ? 'session' : targetType,
           targetId: checkinTargetId,
         }),
-        signal, // AbortController signal
       });
 
       const data = await response.json();
@@ -112,10 +97,6 @@ export default function CheckinHandler() {
 
       return { success: false, message: data.message || '체크인에 실패했습니다.' };
     } catch (error) {
-      // Abort된 경우는 무시
-      if (error instanceof Error && error.name === 'AbortError') {
-        return { success: false, message: '요청이 취소되었습니다.' };
-      }
       console.error('체크인 API 오류:', error);
       return { success: false, message: '네트워크 오류가 발생했습니다.' };
     }
@@ -127,60 +108,44 @@ export default function CheckinHandler() {
     checkinIdParam: string,
     authToken: string
   ) => {
-    // 새 AbortController 생성
-    abortControllerRef.current = new AbortController();
-    const signal = abortControllerRef.current.signal;
-
     if (!TYPE_CONFIG[checkinTypeParam]) {
       setStatus('error');
       setMessage(`지원하지 않는 체크인 타입입니다: ${checkinTypeParam}`);
-      isExecutingRef.current = false;
       return;
     }
 
     setCheckinType(checkinTypeParam);
-    setTargetId(checkinIdParam);
     setStatus('processing');
 
     // 체크인 처리
-    const result = await performCheckin(checkinTypeParam, checkinIdParam, authToken, signal);
-
-    // Abort된 경우 상태 업데이트 하지 않음
-    if (signal.aborted) {
-      return;
-    }
+    const result = await performCheckin(checkinTypeParam, checkinIdParam, authToken);
 
     if (result.success) {
       setStatus(result.isDuplicate ? 'duplicate' : 'success');
       setMessage(result.message);
-      isExecutingRef.current = false;
 
-      // 1.5초 후 상세 페이지로 이동 (window.location 사용하여 확실히 이동)
+      // 1.5초 후 상세 페이지로 이동
       setTimeout(() => {
-        if (!signal.aborted) {
-          setStatus('redirecting');
-          const config = TYPE_CONFIG[checkinTypeParam];
-          const redirectUrl = config.redirectPath(checkinIdParam);
-          // router.replace 대신 window.location 사용 (더 확실한 네비게이션)
-          window.location.href = redirectUrl;
-        }
+        setStatus('redirecting');
+        const config = TYPE_CONFIG[checkinTypeParam];
+        const redirectUrl = config.redirectPath(checkinIdParam);
+        window.location.href = redirectUrl;
       }, 1500);
     } else {
       setStatus('error');
       setMessage(result.message);
-      isExecutingRef.current = false;
     }
   };
 
   // 메인 Effect - hydration 완료 후 한 번만 실행
   useEffect(() => {
-    // 아직 hydration 안됨
+    // 아직 hydration 안됨 → 대기
     if (!authStore.isHydrated) {
       return;
     }
 
-    // 이미 실행 중이면 무시 (Strict Mode 대응)
-    if (isExecutingRef.current) {
+    // 이미 실행됨 → 스킵
+    if (checkinExecutedRef.current) {
       return;
     }
 
@@ -198,20 +163,19 @@ export default function CheckinHandler() {
       return;
     }
 
-    // 실행 시작 표시
-    isExecutingRef.current = true;
+    // 실행 시작 마킹
+    checkinExecutedRef.current = true;
     setStatus('loading');
 
     // 체크인 실행
     executeCheckin(type, id, authStore.token);
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authStore.isHydrated, authStore.isAuthenticated]);
+  }, [authStore.isHydrated, authStore.isAuthenticated, type, id]);
 
   // 다시 시도 버튼용 핸들러
   const handleRetry = () => {
     if (type && id && authStore.token) {
-      isExecutingRef.current = false;
+      checkinExecutedRef.current = false;
       setStatus('loading');
       executeCheckin(type, id, authStore.token);
     }
@@ -314,6 +278,7 @@ export default function CheckinHandler() {
             <p><strong>ID:</strong> {id}</p>
             <p><strong>Status:</strong> {status}</p>
             <p><strong>Authenticated:</strong> {authStore.isAuthenticated ? 'Yes' : 'No'}</p>
+            <p><strong>Hydrated:</strong> {authStore.isHydrated ? 'Yes' : 'No'}</p>
           </div>
         )}
       </div>
