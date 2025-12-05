@@ -1,12 +1,16 @@
 'use client';
 
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/authStore';
 import ModulabsLogo from '@/imports/Group-53-445';
 
 export function Header() {
-  const { user, logout } = useAuthStore();
+  const { user } = useAuthStore();
+
+  // 이름에서 성(첫 글자) 추출
+  const getInitial = (name: string) => {
+    return name.charAt(0);
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full bg-gradient-to-r from-[#FF6B9D] via-[#FF8B5A] to-[#FFA94D] shadow-lg">
@@ -19,17 +23,14 @@ export function Header() {
         </Link>
 
         {user && (
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-white/90">{user.name}</span>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={logout}
-              className="text-white hover:bg-white/20 hover:text-white"
-            >
-              로그아웃
-            </Button>
-          </div>
+          <Link
+            href="/mypage"
+            className="w-9 h-9 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors border-2 border-white/50"
+          >
+            <span className="text-white font-bold text-sm">
+              {getInitial(user.name)}
+            </span>
+          </Link>
         )}
       </div>
     </header>

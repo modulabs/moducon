@@ -8,6 +8,7 @@ import quizRoutes from './quiz';
 import adminRoutes from './admin';
 import questionRoutes from './questions';
 import favoriteRoutes from './favorites';
+import mypageRoutes from './mypage';
 
 const router = Router();
 
@@ -20,6 +21,7 @@ router.use('/quiz', quizRoutes);
 router.use('/admin', adminRoutes);
 router.use('/questions', questionRoutes);
 router.use('/favorites', favoriteRoutes);
+router.use('/mypage', mypageRoutes);
 
 // Health check
 router.get('/health', (req, res) => {
