@@ -13,8 +13,18 @@ interface QRScannerProps {
 export default function QRScanner({ onClose, onScan }: QRScannerProps) {
   const router = useRouter();
   const scannerRef = useRef<Html5Qrcode | null>(null);
+  const onCloseRef = useRef(onClose);
+  const onScanRef = useRef(onScan);
+  const scannerStartedRef = useRef(false);
+  const handleScanSuccessRef = useRef<((text: string) => void) | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<string | null>(null);
+
+  // ref 업데이트
+  useEffect(() => {
+    onCloseRef.current = onClose;
+    onScanRef.current = onScan;
+  }, [onClose, onScan]);
 
   /**
    * 햅틱 피드백 (모바일)
@@ -25,16 +35,16 @@ export default function QRScanner({ onClose, onScan }: QRScannerProps) {
     }
   }, []);
 
-  const stopScanner = useCallback(async () => {
+  const stopScanner = useCallback(() => {
     if (scannerRef.current) {
       try {
         const state = scannerRef.current.getState();
         // 2 = SCANNING, 3 = PAUSED (these states can be stopped)
         if (state === 2 || state === 3) {
-          await scannerRef.current.stop();
+          scannerRef.current.stop();
         }
         scannerRef.current.clear();
-      } catch (err) {
+      } catch {
         // Ignore stop errors - scanner may already be stopped
       }
     }
@@ -53,10 +63,10 @@ export default function QRScanner({ onClose, onScan }: QRScannerProps) {
       // 라우트 생성
       const route = getRouteFromQRData(parsed);
 
-      // 스캐너 정지 및 이동
+      // 스캐너 정지
       stopScanner();
-      if (onScan) {
-        onScan(decodedText);
+      if (onScanRef.current) {
+        onScanRef.current(decodedText);
       }
 
       // 타입별 메시지
@@ -71,12 +81,13 @@ export default function QRScanner({ onClose, onScan }: QRScannerProps) {
       };
       const message = `${typeMessages[parsed.type]} 페이지로 이동합니다.`;
 
-      // 성공 표시 (알림은 토스트 라이브러리 추가 시 활용)
+      // 성공 표시
       console.log(`✅ ${message}`);
       setResult(`${message} (${parsed.id})`);
 
-      // 페이지 이동
+      // 카메라 닫고 페이지 이동
       setTimeout(() => {
+        onCloseRef.current();
         router.push(route);
       }, 500);
     } else {
@@ -86,15 +97,18 @@ export default function QRScanner({ onClose, onScan }: QRScannerProps) {
       }
       setError('유효하지 않은 QR 코드입니다.');
     }
-  }, [router, onScan, stopScanner, triggerHaptic]);
+  }, [router, stopScanner, triggerHaptic]);
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleScanError = useCallback((_errorMessage: string) => {
-    // QR 코드를 찾지 못한 경우는 무시 (너무 많은 로그 방지)
-    // console.error('QR Scan Error:', errorMessage);
-  }, []);
+  // handleScanSuccess를 ref에 저장 (최신 상태 유지)
+  useEffect(() => {
+    handleScanSuccessRef.current = handleScanSuccess;
+  }, [handleScanSuccess]);
 
   useEffect(() => {
+    // 이미 시작된 경우 중복 실행 방지
+    if (scannerStartedRef.current) return;
+    scannerStartedRef.current = true;
+
     const startScanner = async () => {
       try {
         setError(null);
@@ -108,21 +122,40 @@ export default function QRScanner({ onClose, onScan }: QRScannerProps) {
             fps: 10,
             qrbox: { width: 250, height: 250 },
           },
-          handleScanSuccess,
-          handleScanError
+          (decodedText) => {
+            // ref를 통해 최신 handleScanSuccess 호출
+            if (handleScanSuccessRef.current) {
+              handleScanSuccessRef.current(decodedText);
+            }
+          },
+          () => {
+            // QR 코드를 찾지 못한 경우는 무시
+          }
         );
       } catch (err) {
         console.error('Scanner start error:', err);
         setError('카메라를 시작할 수 없습니다. 카메라 권한을 확인해주세요.');
+        scannerStartedRef.current = false;
       }
     };
 
     startScanner();
 
     return () => {
-      stopScanner();
+      if (scannerRef.current) {
+        try {
+          const state = scannerRef.current.getState();
+          if (state === 2 || state === 3) {
+            scannerRef.current.stop();
+          }
+          scannerRef.current.clear();
+        } catch {
+          // Ignore cleanup errors
+        }
+      }
+      scannerStartedRef.current = false;
     };
-  }, [handleScanSuccess, handleScanError, stopScanner]);
+  }, []);
 
   return (
     <div className="fixed inset-0 bg-black z-50 flex flex-col items-center justify-center">
