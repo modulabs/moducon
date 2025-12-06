@@ -91,8 +91,12 @@ const floors = [
   { id: 'B1', name: 'B1', color: 'bg-[#F8DF96]', description: '세미나실 (B144, B146)' },
 ];
 
+// 시설 필터 타입
+type FacilityFilter = 'all' | 'EV' | 'WC';
+
 export default function MapPage() {
   const [selectedFloor, setSelectedFloor] = useState<'B4' | 'B2' | 'B1' | 'all'>('all');
+  const [facilityFilter, setFacilityFilter] = useState<FacilityFilter>('all');
   const [showLegend, setShowLegend] = useState(false);
   const [selectedMarker, setSelectedMarker] = useState<string | null>(null);
   const [zoomTarget, setZoomTarget] = useState<{ x: number; y: number } | null>(null);
@@ -102,9 +106,19 @@ export default function MapPage() {
     ? locations
     : locations.filter(loc => loc.floor === selectedFloor);
 
-  const filteredMarkers = selectedFloor === 'all'
-    ? markerPositions
-    : markerPositions.filter(marker => marker.floor === selectedFloor);
+  // 마커 필터링 (층 + 시설)
+  const filteredMarkers = markerPositions.filter(marker => {
+    // 층 필터
+    const floorMatch = selectedFloor === 'all' || marker.floor === selectedFloor;
+
+    // 시설 필터
+    if (facilityFilter === 'all') {
+      return floorMatch;
+    } else {
+      // EV나 WC 필터 선택 시 해당 시설만 표시
+      return floorMatch && marker.label === facilityFilter;
+    }
+  });
 
   // 마커 클릭 시 해당 영역으로 확대
   const handleMarkerClick = (marker: MarkerPosition) => {
@@ -139,7 +153,7 @@ export default function MapPage() {
         </div>
 
         {/* 층 선택 탭 */}
-        <div className="px-4 pb-3 flex gap-2">
+        <div className="px-4 pb-2 flex gap-2">
           <Button
             variant={selectedFloor === 'all' ? 'default' : 'outline'}
             size="sm"
@@ -161,93 +175,38 @@ export default function MapPage() {
             </Button>
           ))}
         </div>
+
+        {/* 시설 필터 */}
+        <div className="px-4 pb-3 flex gap-2">
+          <Button
+            variant={facilityFilter === 'all' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setFacilityFilter('all')}
+            className={facilityFilter === 'all' ? 'bg-[#7BA0FF]' : ''}
+          >
+            전체 시설
+          </Button>
+          <Button
+            variant={facilityFilter === 'EV' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setFacilityFilter('EV')}
+            className={`gap-1 ${facilityFilter === 'EV' ? 'bg-[#7BA0FF]' : ''}`}
+          >
+            🛗 엘레베이터
+          </Button>
+          <Button
+            variant={facilityFilter === 'WC' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setFacilityFilter('WC')}
+            className={`gap-1 ${facilityFilter === 'WC' ? 'bg-[#7BA0FF]' : ''}`}
+          >
+            🚻 화장실
+          </Button>
+        </div>
       </div>
 
       <div className="px-4 py-4 space-y-4">
-        {/* 층별 안내 */}
-        <Card>
-          <CardContent className="p-4">
-            <div className="space-y-3">
-              {floors.map(floor => (
-                <div key={floor.id} className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-lg ${floor.color} flex items-center justify-center font-bold text-gray-800`}>
-                    {floor.name}
-                  </div>
-                  <div>
-                    <p className="font-semibold">{floor.name}층</p>
-                    <p className="text-sm text-gray-500">{floor.description}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* 레전드 토글 */}
-        <button
-          onClick={() => setShowLegend(!showLegend)}
-          className="w-full flex items-center justify-between p-3 bg-white rounded-lg shadow-sm"
-        >
-          <span className="font-semibold text-gray-700">장소 안내</span>
-          {showLegend ? <ChevronUp className="w-5 h-5 text-gray-400" /> : <ChevronDown className="w-5 h-5 text-gray-400" />}
-        </button>
-
-        {showLegend && (
-          <div className="space-y-4">
-            {/* 트랙 */}
-            <Card>
-              <CardContent className="p-4">
-                <h3 className="font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                  <span className="w-6 h-6 bg-black rounded-full flex items-center justify-center text-white text-xs font-bold">T</span>
-                  세션 트랙
-                </h3>
-                <div className="space-y-2">
-                  {trackLocations.map(loc => (
-                    <div key={loc.id} className="flex items-center gap-3 py-2 border-b border-gray-100 last:border-0">
-                      <div className={`w-10 h-10 rounded-full ${loc.color} ${loc.textColor} flex items-center justify-center font-bold text-sm`}>
-                        {loc.label}
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-medium">{loc.name}</p>
-                        <div className="flex items-center gap-2 text-sm text-gray-500">
-                          <span className={`w-3 h-3 rounded ${loc.floor === 'B4' ? 'bg-[#F4BFD7]' : loc.floor === 'B2' ? 'bg-[#B8E6C1]' : 'bg-[#F8DF96]'}`}></span>
-                          {loc.floor} · {loc.description}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* 시설 */}
-            <Card>
-              <CardContent className="p-4">
-                <h3 className="font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                  <MapPin className="w-5 h-5 text-[#7BA0FF]" />
-                  편의시설
-                </h3>
-                <div className="grid grid-cols-2 gap-3">
-                  {facilityLocations.map(loc => (
-                    <div key={loc.id} className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
-                      <div className={`w-8 h-8 rounded-full ${loc.color} ${loc.textColor} flex items-center justify-center font-bold text-xs ring-2 ring-white`}>
-                        {loc.label}
-                      </div>
-                      <div>
-                        <p className="font-medium text-sm">{loc.name}</p>
-                        {loc.description && (
-                          <p className="text-xs text-gray-500">{loc.description}</p>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
-        {/* 실제 지도 이미지 영역 */}
+        {/* 실제 지도 이미지 영역 - 필터 바로 아래 */}
         <Card className="overflow-hidden">
           <CardContent className="p-0">
             <div className="relative">
@@ -355,6 +314,89 @@ export default function MapPage() {
             </div>
           </CardContent>
         </Card>
+
+        {/* 층별 안내 */}
+        <Card>
+          <CardContent className="p-4">
+            <div className="space-y-3">
+              {floors.map(floor => (
+                <div key={floor.id} className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-lg ${floor.color} flex items-center justify-center font-bold text-gray-800`}>
+                    {floor.name}
+                  </div>
+                  <div>
+                    <p className="font-semibold">{floor.name}층</p>
+                    <p className="text-sm text-gray-500">{floor.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* 레전드 토글 */}
+        <button
+          onClick={() => setShowLegend(!showLegend)}
+          className="w-full flex items-center justify-between p-3 bg-white rounded-lg shadow-sm"
+        >
+          <span className="font-semibold text-gray-700">장소 안내</span>
+          {showLegend ? <ChevronUp className="w-5 h-5 text-gray-400" /> : <ChevronDown className="w-5 h-5 text-gray-400" />}
+        </button>
+
+        {showLegend && (
+          <div className="space-y-4">
+            {/* 트랙 */}
+            <Card>
+              <CardContent className="p-4">
+                <h3 className="font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                  <span className="w-6 h-6 bg-black rounded-full flex items-center justify-center text-white text-xs font-bold">T</span>
+                  세션 트랙
+                </h3>
+                <div className="space-y-2">
+                  {trackLocations.map(loc => (
+                    <div key={loc.id} className="flex items-center gap-3 py-2 border-b border-gray-100 last:border-0">
+                      <div className={`w-10 h-10 rounded-full ${loc.color} ${loc.textColor} flex items-center justify-center font-bold text-sm`}>
+                        {loc.label}
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium">{loc.name}</p>
+                        <div className="flex items-center gap-2 text-sm text-gray-500">
+                          <span className={`w-3 h-3 rounded ${loc.floor === 'B4' ? 'bg-[#F4BFD7]' : loc.floor === 'B2' ? 'bg-[#B8E6C1]' : 'bg-[#F8DF96]'}`}></span>
+                          {loc.floor} · {loc.description}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* 시설 */}
+            <Card>
+              <CardContent className="p-4">
+                <h3 className="font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                  <MapPin className="w-5 h-5 text-[#7BA0FF]" />
+                  편의시설
+                </h3>
+                <div className="grid grid-cols-2 gap-3">
+                  {facilityLocations.map(loc => (
+                    <div key={loc.id} className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
+                      <div className={`w-8 h-8 rounded-full ${loc.color} ${loc.textColor} flex items-center justify-center font-bold text-xs ring-2 ring-white`}>
+                        {loc.label}
+                      </div>
+                      <div>
+                        <p className="font-medium text-sm">{loc.name}</p>
+                        {loc.description && (
+                          <p className="text-xs text-gray-500">{loc.description}</p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* 안내 문구 */}
         <div className="text-center text-sm text-gray-500 py-4">
