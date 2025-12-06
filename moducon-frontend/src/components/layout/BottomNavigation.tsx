@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, Calendar, Store, FileText, Map, QrCode } from 'lucide-react';
+import { Calendar, Store, FileText, Map, QrCode } from 'lucide-react';
 import { QRScannerModal } from '@/components/qr/QRScannerModal';
 import { motion } from 'motion/react';
 
@@ -12,11 +12,11 @@ export function BottomNavigation() {
   const [qrModalOpen, setQrModalOpen] = useState(false);
 
   const tabs = [
-    { label: '홈', icon: Home, path: '/home' },
-    { label: '세션', icon: Calendar, path: '/sessions' },
+    { label: '세션', icon: Calendar, path: '/sessions', position: 'left' },
+    { label: '부스', icon: Store, path: '/booths', position: 'center-left' },
     { label: 'QR', icon: QrCode, path: 'qr', isCenter: true },
-    { label: '부스', icon: Store, path: '/booths' },
-    { label: '지도', icon: Map, path: '/map' },
+    { label: '포스터', icon: FileText, path: '/papers', position: 'center-right' },
+    { label: '지도', icon: Map, path: '/map', position: 'right' },
   ];
 
   return (
@@ -35,7 +35,7 @@ export function BottomNavigation() {
                   onClick={() => setQrModalOpen(true)}
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
-                  className="absolute left-1/2 -translate-x-1/2 -top-8 z-10"
+                  className="absolute left-1/2 -translate-x-1/2 -top-5 z-10"
                   aria-label="QR 코드 스캔"
                 >
                   <div className="relative">
@@ -50,7 +50,7 @@ export function BottomNavigation() {
                     />
 
                     {/* Main button */}
-                    <div className="relative w-16 h-16 rounded-full shadow-2xl flex flex-col items-center justify-center bg-white text-[#FF8B5A] border-4 border-[#FF8B5A] hover:bg-gradient-to-br hover:from-[#FF6B9D] hover:via-[#FF8B5A] hover:to-[#FFA94D] hover:text-white hover:border-white transition-all">
+                    <div className="relative w-16 h-16 rounded-full shadow-2xl flex flex-col items-center justify-center bg-white/80 text-[#FF8B5A] border-4 border-[#FF8B5A]/80 hover:bg-gradient-to-br hover:from-[#FF6B9D] hover:via-[#FF8B5A] hover:to-[#FFA94D] hover:text-white hover:border-white transition-all">
                       <Icon className="w-7 h-7" />
                     </div>
                   </div>
@@ -58,13 +58,20 @@ export function BottomNavigation() {
               );
             }
 
+            // 부스/포스터 버튼은 QR 버튼과 간격 추가
+            const spacingClass = tab.position === 'center-left'
+              ? 'mr-6'
+              : tab.position === 'center-right'
+                ? 'ml-6'
+                : '';
+
             return (
               <motion.button
                 key={tab.path}
                 onClick={() => router.push(tab.path)}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
-                className={`flex flex-col items-center justify-center flex-1 h-full transition-all relative ${
+                className={`flex flex-col items-center justify-center flex-1 h-full transition-all relative ${spacingClass} ${
                   isActive ? 'text-white scale-110' : 'text-black/60'
                 }`}
               >
