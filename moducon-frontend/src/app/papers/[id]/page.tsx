@@ -1,11 +1,31 @@
 import PaperDetailWrapper from './PaperDetailWrapper';
 
-// 빌드 시 정적 페이지 틀 생성 (P01~P99 범위)
-// 실제 데이터는 클라이언트에서 API 호출로 로드
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
+
+// 빌드 시 API에서 포스터 코드 목록을 가져와 정적 페이지 생성
 export async function generateStaticParams() {
-  return Array.from({ length: 99 }, (_, i) => ({
-    id: `P${String(i + 1).padStart(2, '0')}`
-  }));
+  if (!API_BASE) {
+    console.warn('API_URL not set, skipping static generation for papers');
+    return [];
+  }
+
+  try {
+    const response = await fetch(`${API_BASE}/api/papers`);
+    if (!response.ok) {
+      console.warn('Failed to fetch papers for static generation');
+      return [];
+    }
+
+    const data = await response.json();
+    const papers = data.data || [];
+
+    return papers
+      .filter((p: { code?: string }) => p.code)
+      .map((p: { code: string }) => ({ id: p.code }));
+  } catch (error) {
+    console.warn('Error generating static params for papers:', error);
+    return [];
+  }
 }
 
 export default function PaperDetailPage() {

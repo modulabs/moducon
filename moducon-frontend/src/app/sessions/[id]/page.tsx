@@ -1,11 +1,31 @@
 import SessionDetailWrapper from './SessionDetailWrapper';
 
-// 빌드 시 정적 페이지 틀 생성 (S01~S99 범위)
-// 실제 데이터는 클라이언트에서 API 호출로 로드
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
+
+// 빌드 시 API에서 세션 코드 목록을 가져와 정적 페이지 생성
 export async function generateStaticParams() {
-  return Array.from({ length: 99 }, (_, i) => ({
-    id: `S${String(i + 1).padStart(2, '0')}`
-  }));
+  if (!API_BASE) {
+    console.warn('API_URL not set, skipping static generation for sessions');
+    return [];
+  }
+
+  try {
+    const response = await fetch(`${API_BASE}/api/sessions`);
+    if (!response.ok) {
+      console.warn('Failed to fetch sessions for static generation');
+      return [];
+    }
+
+    const data = await response.json();
+    const sessions = data.data || [];
+
+    return sessions
+      .filter((s: { code?: string }) => s.code)
+      .map((s: { code: string }) => ({ id: s.code }));
+  } catch (error) {
+    console.warn('Error generating static params for sessions:', error);
+    return [];
+  }
 }
 
 export default function SessionDetailPage() {
