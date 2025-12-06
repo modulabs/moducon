@@ -14,7 +14,7 @@ export async function apiCall<T>(
   options?: RequestInit
 ): Promise<T> {
   const token = typeof window !== 'undefined'
-    ? localStorage.getItem('token')
+    ? localStorage.getItem('moducon_token')
     : null;
 
   const response = await fetch(`${API_BASE}${endpoint}`, {
