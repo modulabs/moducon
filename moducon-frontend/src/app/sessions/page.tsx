@@ -146,31 +146,38 @@ export default function SessionsPage() {
   return (
     <div className="w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
       {/* 헤더 */}
-      <div className="mb-8 flex justify-between items-center">
+      <div className="mb-6 md:mb-8 flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">전체 세션</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl md:text-3xl font-bold">전체 세션</h1>
+          {/* PC: 전체 문구, 모바일: 간단히 */}
+          <p className="text-muted-foreground hidden md:block">
             관심 있는 세션을 찾아보세요. (총 {sessions.length}개)
+          </p>
+          <p className="text-muted-foreground text-sm md:hidden">
+            총 {sessions.length}개
           </p>
         </div>
 
-        {/* 새로고침 버튼 */}
+        {/* 새로고침 버튼: PC는 텍스트 포함, 모바일은 아이콘만 */}
         <Button
           variant="outline"
           size="sm"
           onClick={handleRefresh}
           disabled={loading}
+          className="px-2 md:px-3"
         >
-          <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-          새로고침
+          <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+          <span className="hidden md:inline ml-2">새로고침</span>
         </Button>
       </div>
 
       {/* 통합 필터 (트랙 + 관심 세션) */}
-      <div className="mb-6 flex flex-wrap gap-2">
+      {/* 모바일: 가로 스크롤, PC: 줄바꿈 */}
+      <div className="mb-6 flex gap-2 overflow-x-auto pb-2 md:overflow-visible md:flex-wrap md:pb-0 scrollbar-hide">
         <Button
           variant={activeFilter === null ? 'default' : 'outline'}
           onClick={() => handleFilterChange(null)}
+          className="shrink-0 text-sm md:text-base"
         >
           All
         </Button>
@@ -179,6 +186,7 @@ export default function SessionsPage() {
             key={track}
             variant={activeFilter === track ? 'default' : 'outline'}
             onClick={() => handleFilterChange(track)}
+            className="shrink-0 text-sm md:text-base"
           >
             {track}
           </Button>
@@ -188,10 +196,11 @@ export default function SessionsPage() {
           <Button
             variant={activeFilter === 'favorites' ? 'default' : 'outline'}
             onClick={() => handleFilterChange('favorites')}
-            className="gap-2"
+            className="gap-2 shrink-0 text-sm md:text-base"
           >
             <Heart className={`h-4 w-4 ${activeFilter === 'favorites' ? 'fill-current' : ''}`} />
-            관심 세션
+            <span className="hidden md:inline">관심 세션</span>
+            <span className="md:hidden">관심</span>
             {favorites.size > 0 && (
               <Badge variant="secondary" className="ml-1">
                 {favorites.size}
@@ -237,25 +246,49 @@ export default function SessionsPage() {
               <div key={session.id} className="block">
                 <Link href={`/sessions/${session.code}`}>
                   <Card className="cursor-pointer hover:shadow-lg transition-shadow">
-                  <CardContent className="p-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <CardContent className="p-4 md:p-6 grid grid-cols-1 md:grid-cols-4 gap-3 md:gap-4">
                     <div className="md:col-span-3">
-                      <div className="flex gap-2 mb-2 items-center">
+                      {/* 트랙 배지 + 하트 버튼 (모바일에서는 같은 줄) */}
+                      <div className="flex gap-2 mb-2 items-center justify-between md:justify-start">
                         <Badge variant="secondary">{session.track}</Badge>
+                        {/* 모바일: 하트 버튼을 상단에 배치 */}
+                        {isHydrated && isAuthenticated && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => handleFavoriteToggle(e, session.code)}
+                            disabled={favoriteLoading === session.code}
+                            className={`md:hidden p-1 h-auto ${isFavorite ? 'text-red-500 hover:text-red-600' : 'text-gray-500 hover:text-red-500'}`}
+                          >
+                            <Heart className={`h-5 w-5 ${isFavorite ? 'fill-current' : ''} ${favoriteLoading === session.code ? 'animate-pulse' : ''}`} />
+                          </Button>
+                        )}
                       </div>
-                      <h3 className="text-xl font-semibold mb-1">{session.title}</h3>
-                      <p className="text-muted-foreground mb-2">
-                        <strong>{session.speakerName}</strong>{session.speakerOrg ? ` · ${session.speakerOrg}` : ''}
+                      <h3 className="text-lg md:text-xl font-semibold mb-1 line-clamp-2">{session.title}</h3>
+                      {/* 모바일: 발표자 + 시간 + 장소를 한 줄에 */}
+                      <p className="text-muted-foreground text-sm md:text-base mb-2">
+                        <strong>{session.speakerName}</strong>
+                        {/* PC: 소속 표시 */}
+                        <span className="hidden md:inline">{session.speakerOrg ? ` · ${session.speakerOrg}` : ''}</span>
+                        {/* 모바일: 시간/장소 같이 표시 */}
+                        <span className="md:hidden text-muted-foreground"> · {startTime}-{endTime} · {session.location}</span>
                       </p>
-                      <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                      {/* 설명: PC만 표시 */}
+                      <p className="hidden md:block text-sm text-muted-foreground mb-3 line-clamp-2">
                         {session.description}
                       </p>
-                      <div className="flex flex-wrap gap-2">
+                      {/* 키워드: 모바일은 2개까지, PC는 전체 */}
+                      <div className="flex flex-wrap gap-1 md:gap-2">
+                        {session.keywords.slice(0, 2).map((keyword: string) => (
+                          <Badge key={keyword} variant="outline" className="text-xs md:text-sm md:hidden">#{keyword}</Badge>
+                        ))}
                         {session.keywords.map((keyword: string) => (
-                          <Badge key={keyword} variant="outline">#{keyword}</Badge>
+                          <Badge key={keyword} variant="outline" className="hidden md:inline-flex">#{keyword}</Badge>
                         ))}
                       </div>
                     </div>
-                    <div className="flex flex-col items-start md:items-end justify-between">
+                    {/* PC 전용: 우측 시간/장소 및 버튼 */}
+                    <div className="hidden md:flex flex-col items-end justify-between">
                       <div className="text-right">
                         <p className="font-mono text-sm">
                           {startTime} - {endTime}
@@ -264,7 +297,7 @@ export default function SessionsPage() {
                           {session.location}
                         </p>
                       </div>
-                      <div className="flex items-center gap-2 mt-4 md:mt-0">
+                      <div className="flex items-center gap-2">
                         {/* 관심 버튼 (로그인 시에만) */}
                         {isHydrated && isAuthenticated && (
                           <Button
