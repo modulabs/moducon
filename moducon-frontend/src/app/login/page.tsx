@@ -121,7 +121,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-100 dark:bg-gray-900 p-4">
+    <div className="flex min-h-[calc(100vh-7.5rem)] items-center justify-center bg-gray-100 dark:bg-gray-900 p-4">
       <Suspense fallback={
         <Card className="w-full max-w-md">
           <CardContent className="p-6">
