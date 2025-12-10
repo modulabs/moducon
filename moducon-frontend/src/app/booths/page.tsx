@@ -1,23 +1,37 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { fetchBoothsWithCache } from '@/lib/boothCache';
 import type { Booth } from '@/types/booth';
 import Link from 'next/link';
+import BoothMap from '@/components/booths/BoothMap';
+import { Map, List } from 'lucide-react';
+
+// 부스 코드 → 로컬 이미지 매핑
+const boothImages: Record<string, string> = {
+  'B01': '',
+  'B02': '/images/booths/khp.webp',
+  'B03': '',
+  'B04': '/images/booths/bizteam.webp',
+  'B05': '/images/booths/nvidia-rapids-lab.webp',
+  'B06': '/images/booths/dao-lab.webp',
+  'B07': '/images/booths/tenstorrent.webp',
+  'B08': '/images/booths/genai-finance.webp',
+  'B09': '',
+  'B10': '/images/booths/ai-agent-lab.webp',
+  'B11': '',
+  'B12': '',
+  'B13': '/images/booths/what2eat.webp',
+  'B14': '/images/booths/persona-lab.webp',
+  'B15': '/images/booths/gabangssa.webp',
+  'B16': '/images/booths/dongjeop.webp',
+  'B17': '/images/booths/ieul-lab.webp',
+};
 
 export default function BoothsPage() {
   const [booths, setBooths] = useState<Booth[]>([]);
-  const [selectedType, setSelectedType] = useState<string>('');
-  const [searchQuery, setSearchQuery] = useState<string>('');
   const [loading, setLoading] = useState(true);
-
-  const boothTypes = [
-    '전체',
-    '기업',
-    '모두의연구소 LAB',
-    '모두의연구소 교육사업팀',
-    '테크포임팩트 부스',
-  ];
+  const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
 
   useEffect(() => {
     const loadData = async () => {
@@ -34,33 +48,11 @@ export default function BoothsPage() {
     loadData();
   }, []);
 
-  const filteredBooths = useMemo(() => {
-    let result = booths;
-
-    // 타입 필터 (orgType 필드 사용)
-    if (selectedType && selectedType !== '전체') {
-      result = result.filter(booth => booth.orgType === selectedType);
-    }
-
-    // 검색
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      result = result.filter(booth =>
-        booth.name.toLowerCase().includes(query) ||
-        booth.description?.toLowerCase().includes(query) ||
-        booth.boothDescription?.toLowerCase().includes(query) ||
-        booth.hashtags.some(tag => tag.toLowerCase().includes(query))
-      );
-    }
-
-    return result;
-  }, [booths, selectedType, searchQuery]);
-
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 flex items-center justify-center">
+      <div className="min-h-screen bg-[#fafafa] flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF6B9D] mx-auto"></div>
           <p className="mt-4 text-gray-600">부스 정보를 불러오는 중...</p>
         </div>
       </div>
@@ -68,129 +60,102 @@ export default function BoothsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
+    <div className="min-h-screen bg-[#fafafa]">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 py-4">
+      <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-sm border-b">
+        <div className="max-w-md mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">부스 안내</h1>
-              <p className="text-sm text-gray-600 mt-1">MODUCON 2025 참가 부스를 만나보세요</p>
+              <h1 className="text-xl font-bold text-gray-900">부스 안내</h1>
+              <p className="text-xs text-gray-500">부스를 터치해서 정보를 확인하세요</p>
             </div>
-            <Link
-              href="/home"
-              className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              ← 홈으로
-            </Link>
+
+            {/* 뷰 모드 토글 */}
+            <div className="flex bg-gray-100 rounded-lg p-1">
+              <button
+                onClick={() => setViewMode('map')}
+                className={`px-3 py-1.5 rounded-md text-sm font-medium flex items-center gap-1 transition-colors ${
+                  viewMode === 'map'
+                    ? 'bg-white text-[#FF6B9D] shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <Map className="w-4 h-4" />
+                지도
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                className={`px-3 py-1.5 rounded-md text-sm font-medium flex items-center gap-1 transition-colors ${
+                  viewMode === 'list'
+                    ? 'bg-white text-[#FF6B9D] shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <List className="w-4 h-4" />
+                목록
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* 검색 및 필터 */}
-        <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-          {/* 검색바 */}
-          <div className="mb-4">
-            <input
-              type="text"
-              placeholder="부스 이름, 설명, 해시태그로 검색..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-            />
+      <div className="max-w-md mx-auto">
+        {viewMode === 'map' ? (
+          /* 맵 뷰 */
+          <div className="px-4 py-4">
+            <BoothMap booths={booths} />
           </div>
-
-          {/* 타입 필터 */}
-          <div className="flex flex-wrap gap-2">
-            {boothTypes.map((type) => (
-              <button
-                key={type}
-                onClick={() => setSelectedType(type === '전체' ? '' : type)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                  (type === '전체' && !selectedType) || selectedType === type
-                    ? 'bg-purple-600 text-white shadow-md'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
+        ) : (
+          /* 리스트 뷰 */
+          <div className="px-4 py-4 space-y-3">
+            {booths.map((booth) => (
+              <Link
+                key={booth.id}
+                href={`/booths/${booth.code}`}
+                className="block bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow"
               >
-                {type}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* 부스 목록 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredBooths.map((booth) => (
-            <Link
-              key={booth.id}
-              href={`/booths/${booth.code}`}
-              className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all overflow-hidden group"
-            >
-              {/* 이미지 영역 */}
-              <div className="h-48 bg-gradient-to-br from-purple-100 to-blue-100 relative overflow-hidden">
-                {booth.imageUrl ? (
-                  <img
-                    src={booth.imageUrl}
-                    alt={booth.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <div className="text-center">
-                      <div className="text-4xl mb-2">🏢</div>
-                      <p className="text-gray-600 font-medium">{booth.name}</p>
-                    </div>
+                <div className="flex gap-4">
+                  {/* 이미지 */}
+                  <div className="w-20 h-20 rounded-lg bg-gradient-to-br from-[#FF6B9D]/20 to-[#FF8B5A]/20 flex-shrink-0 overflow-hidden">
+                    {(() => {
+                      const localImage = booth.code ? boothImages[booth.code] : '';
+                      const imageUrl = localImage || booth.imageUrl;
+                      return imageUrl ? (
+                        <img
+                          src={imageUrl}
+                          alt={booth.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-2xl">
+                          🏢
+                        </div>
+                      );
+                    })()}
                   </div>
-                )}
-                {/* 타입 배지 */}
-                {booth.orgType && (
-                  <div className="absolute top-3 left-3">
-                    <span className="px-3 py-1 bg-white/90 backdrop-blur-sm rounded-full text-xs font-medium text-purple-600 shadow-sm">
-                      {booth.orgType}
-                    </span>
-                  </div>
-                )}
-              </div>
 
-              {/* 내용 영역 */}
-              <div className="p-5">
-                <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-purple-600 transition-colors">
-                  {booth.name}
-                </h3>
-                <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-                  {booth.boothDescription || booth.description}
-                </p>
-
-                {/* 해시태그 */}
-                {booth.hashtags.length > 0 && (
-                  <div className="flex flex-wrap gap-1">
-                    {booth.hashtags.slice(0, 3).map((tag, idx) => (
-                      <span
-                        key={idx}
-                        className="px-2 py-1 bg-purple-50 text-purple-600 text-xs rounded-full"
-                      >
-                        #{tag}
-                      </span>
-                    ))}
-                    {booth.hashtags.length > 3 && (
-                      <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
-                        +{booth.hashtags.length - 3}
+                  {/* 내용 */}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-bold text-gray-900 truncate">{booth.name}</h3>
+                    {booth.orgType && (
+                      <span className="inline-block mt-1 px-2 py-0.5 bg-[#FF6B9D]/10 text-[#FF6B9D] text-xs rounded-full">
+                        {booth.orgType}
                       </span>
                     )}
+                    <p className="mt-1 text-sm text-gray-600 line-clamp-2">
+                      {booth.boothDescription || booth.description}
+                    </p>
                   </div>
-                )}
-              </div>
-            </Link>
-          ))}
-        </div>
+                </div>
+              </Link>
+            ))}
 
-        {/* 결과 없음 */}
-        {filteredBooths.length === 0 && (
-          <div className="text-center py-12">
-            <div className="text-6xl mb-4">🔍</div>
-            <p className="text-gray-600 text-lg">검색 결과가 없습니다.</p>
-            <p className="text-gray-500 text-sm mt-2">다른 검색어를 시도해보세요.</p>
+            {booths.length === 0 && (
+              <div className="text-center py-12">
+                <span className="text-4xl">📭</span>
+                <p className="mt-2 text-gray-600">등록된 부스가 없습니다.</p>
+              </div>
+            )}
           </div>
         )}
       </div>
