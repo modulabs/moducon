@@ -30,6 +30,11 @@ async function importBooths() {
   console.log('🚀 부스 데이터 임포트 시작...');
   console.log(`📁 엑셀 파일: ${EXCEL_PATH}`);
 
+  // 기존 부스 데이터 전체 삭제
+  console.log('🗑️ 기존 부스 데이터 삭제 중...');
+  const deleted = await prisma.booth.deleteMany({});
+  console.log(`   삭제된 부스: ${deleted.count}개`);
+
   // 엑셀 파일 읽기
   const workbook = XLSX.readFile(EXCEL_PATH);
   const sheet = workbook.Sheets['부스'];

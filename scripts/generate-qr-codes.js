@@ -13,22 +13,18 @@ const sessionCodes = [
   'i-01', 'i-02', 'i-03', 'i-04', 'i-05', 'i-06'
 ];
 
-// Booth codes from DB
+// Booth codes from DB (B01~B17)
 const boothCodes = [
-  'booth_1', 'booth_2', 'booth_3', 'booth_4', 'booth_5',
-  'booth_6', 'booth_7', 'booth_8', 'booth_9', 'booth_10',
-  'booth_11', 'booth_12', 'booth_13', 'booth_14', 'booth_15'
+  'B01', 'B02', 'B03', 'B04', 'B05', 'B06', 'B07', 'B08', 'B09',
+  'B10', 'B11', 'B12', 'B13', 'B14', 'B15', 'B16', 'B17'
 ];
 
-// Paper codes from DB
+// Paper codes from DB (P01~P32)
 const paperCodes = [
-  'paper_1', 'paper_2', 'paper_3', 'paper_4', 'paper_5',
-  'paper_6', 'paper_7', 'paper_8', 'paper_9', 'paper_10',
-  'paper_11', 'paper_12', 'paper_13', 'paper_14', 'paper_15',
-  'paper_16', 'paper_17', 'paper_18', 'paper_19', 'paper_20',
-  'paper_21', 'paper_22', 'paper_23', 'paper_24', 'paper_25',
-  'paper_26', 'paper_27', 'paper_28', 'paper_29', 'paper_30',
-  'paper_31', 'paper_32', 'paper_33'
+  'P01', 'P02', 'P03', 'P04', 'P05', 'P06', 'P07', 'P08', 'P09', 'P10',
+  'P11', 'P12', 'P13', 'P14', 'P15', 'P16', 'P17', 'P18', 'P19', 'P20',
+  'P21', 'P22', 'P23', 'P24', 'P25', 'P26', 'P27', 'P28', 'P29', 'P30',
+  'P31', 'P32'
 ];
 
 // Registration desk
