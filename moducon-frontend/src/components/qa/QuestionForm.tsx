@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 
 interface QuestionFormProps {
@@ -10,6 +11,7 @@ interface QuestionFormProps {
 }
 
 export default function QuestionForm({ targetId, onQuestionSubmit }: QuestionFormProps) {
+  const pathname = usePathname();
   const { isAuthenticated, token } = useAuthStore();
   const [content, setContent] = useState('');
   const [isAnonymous, setIsAnonymous] = useState(false);
@@ -74,11 +76,12 @@ export default function QuestionForm({ targetId, onQuestionSubmit }: QuestionFor
   };
 
   if (!isAuthenticated) {
+    const loginUrl = `/login?redirect=${encodeURIComponent(pathname)}`;
     return (
       <div className="bg-gray-50 rounded-xl p-6 text-center">
         <p className="text-gray-600 mb-3">질문을 작성하려면 로그인이 필요합니다.</p>
         <a
-          href="/login"
+          href={loginUrl}
           className="inline-block px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
         >
           로그인하기
