@@ -7,12 +7,190 @@ import type { Booth } from '@/types/booth';
 
 interface BoothDetailClientProps {
   booth: Booth;
+  isModal?: boolean;
+  onClose?: () => void;
+  imageUrl?: string; // 로컬 이미지 URL 우선 사용
 }
 
-export default function BoothDetailClient({ booth }: BoothDetailClientProps) {
+export default function BoothDetailClient({ booth, isModal, onClose, imageUrl }: BoothDetailClientProps) {
   const router = useRouter();
   const [showQRScanner, setShowQRScanner] = useState(false);
 
+  const displayImageUrl = imageUrl || booth.imageUrl;
+
+  // 모달 모드일 때
+  if (isModal) {
+    return (
+      <div className="bg-white rounded-2xl overflow-hidden max-h-[85vh] overflow-y-auto">
+        {/* 모달 헤더 */}
+        <div className="sticky top-0 bg-white/95 backdrop-blur-sm border-b z-10">
+          <div className="px-4 py-3 flex items-center justify-between">
+            <button
+              onClick={onClose}
+              className="px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              ← 닫기
+            </button>
+            <button
+              onClick={() => setShowQRScanner(true)}
+              className="px-3 py-1.5 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+            >
+              QR 인증
+            </button>
+          </div>
+        </div>
+
+        {/* 이미지 */}
+        <div className="h-48 bg-gradient-to-br from-purple-100 to-blue-100 relative">
+          {displayImageUrl ? (
+            <img
+              src={displayImageUrl}
+              alt={booth.name}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <div className="text-center">
+                <div className="text-5xl mb-2">🏢</div>
+                <p className="text-xl font-bold text-gray-700">{booth.name}</p>
+              </div>
+            </div>
+          )}
+          {booth.orgType && (
+            <div className="absolute top-3 left-3">
+              <span className="px-3 py-1.5 bg-white/90 backdrop-blur-sm rounded-full text-xs font-medium text-purple-600 shadow-md">
+                {booth.orgType}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* 기본 정보 */}
+        <div className="p-4">
+          <h1 className="text-2xl font-bold text-gray-900 mb-3">{booth.name}</h1>
+
+          {booth.hashtags.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mb-3">
+              {booth.hashtags.map((tag, idx) => (
+                <span
+                  key={idx}
+                  className="px-2 py-0.5 bg-purple-50 text-purple-600 text-xs rounded-full font-medium"
+                >
+                  #{tag}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {booth.managerName && (
+            <div className="flex items-center gap-2 text-gray-600 mb-3 text-sm">
+              <span className="font-medium">담당자:</span>
+              <span>{booth.managerName}</span>
+            </div>
+          )}
+        </div>
+
+        {/* 상세 정보 */}
+        <div className="px-4 pb-4 space-y-4">
+          {booth.description && (
+            <div className="bg-gray-50 rounded-xl p-4">
+              <h2 className="text-base font-bold text-gray-900 mb-2 flex items-center gap-2">
+                <span>ℹ️</span> 단체 소개
+              </h2>
+              <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">{booth.description}</p>
+            </div>
+          )}
+
+          {booth.boothDescription && (
+            <div className="bg-gray-50 rounded-xl p-4">
+              <h2 className="text-base font-bold text-gray-900 mb-2 flex items-center gap-2">
+                <span>🏢</span> 부스 소개
+              </h2>
+              <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">{booth.boothDescription}</p>
+            </div>
+          )}
+
+          {booth.solutions && (
+            <div className="bg-gray-50 rounded-xl p-4">
+              <h2 className="text-base font-bold text-gray-900 mb-2 flex items-center gap-2">
+                <span>💡</span> 제공 솔루션
+              </h2>
+              <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">{booth.solutions}</p>
+            </div>
+          )}
+
+          {booth.coreTech && (
+            <div className="bg-gray-50 rounded-xl p-4">
+              <h2 className="text-base font-bold text-gray-900 mb-2 flex items-center gap-2">
+                <span>⚙️</span> 핵심 기술
+              </h2>
+              <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">{booth.coreTech}</p>
+            </div>
+          )}
+
+          {booth.researchGoals && (
+            <div className="bg-gray-50 rounded-xl p-4">
+              <h2 className="text-base font-bold text-gray-900 mb-2 flex items-center gap-2">
+                <span>🎯</span> 연구 주제 및 목표
+              </h2>
+              <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">{booth.researchGoals}</p>
+            </div>
+          )}
+
+          {booth.mainProducts && (
+            <div className="bg-gray-50 rounded-xl p-4">
+              <h2 className="text-base font-bold text-gray-900 mb-2 flex items-center gap-2">
+                <span>📦</span> 주요 제품
+              </h2>
+              <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">{booth.mainProducts}</p>
+            </div>
+          )}
+
+          {booth.demoContent && (
+            <div className="bg-gray-50 rounded-xl p-4">
+              <h2 className="text-base font-bold text-gray-900 mb-2 flex items-center gap-2">
+                <span>🎬</span> 부스 내용 (데모)
+              </h2>
+              <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">{booth.demoContent}</p>
+            </div>
+          )}
+
+          {/* 하단 액션 */}
+          <div className="flex gap-3 pt-2">
+            <button
+              onClick={() => setShowQRScanner(true)}
+              className="flex-1 px-4 py-3 bg-purple-600 text-white rounded-xl font-bold hover:bg-purple-700 transition-all text-sm"
+            >
+              QR 코드로 방문 인증
+            </button>
+          </div>
+        </div>
+
+        {/* QR 스캐너 모달 */}
+        {showQRScanner && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4">
+            <div className="bg-white rounded-xl p-6 max-w-md w-full">
+              <h3 className="text-xl font-bold mb-4">QR 스캔</h3>
+              <p className="text-gray-600 mb-4">
+                부스의 QR 코드를 스캔하여 방문을 인증하세요.
+              </p>
+              <div className="bg-gray-100 h-64 rounded-lg flex items-center justify-center mb-4">
+                <p className="text-gray-500">카메라 화면</p>
+              </div>
+              <button
+                onClick={() => setShowQRScanner(false)}
+                className="w-full px-4 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors"
+              >
+                닫기
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // 일반 페이지 모드
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
       {/* Header */}
