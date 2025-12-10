@@ -210,7 +210,7 @@ export default function SessionsPage() {
         )}
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-2">
         {loading ? (
           <div className="text-center py-12">
             <RefreshCw className="mx-auto h-8 w-8 animate-spin text-muted-foreground" />

@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -21,8 +21,16 @@ type LoginForm = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { login } = useAuthStore();
   const [error, setError] = useState('');
+  const [expiredMessage, setExpiredMessage] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get('expired') === 'true') {
+      setExpiredMessage(true);
+    }
+  }, [searchParams]);
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
@@ -82,9 +90,17 @@ export default function LoginPage() {
               )}
             </div>
 
+            {expiredMessage && (
+              <div className="rounded-md bg-yellow-50 dark:bg-yellow-900/20 p-3">
+                <p className="text-sm text-yellow-700 dark:text-yellow-400">
+                  로그인이 만료되었습니다. 다시 로그인해주세요.
+                </p>
+              </div>
+            )}
+
             {error && (
-              <div className="rounded-md bg-red-50 p-3">
-                <p className="text-sm text-red-700">{error}</p>
+              <div className="rounded-md bg-red-50 dark:bg-red-900/20 p-3">
+                <p className="text-sm text-red-700 dark:text-red-400">{error}</p>
               </div>
             )}
 

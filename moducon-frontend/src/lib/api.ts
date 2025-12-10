@@ -29,6 +29,16 @@ export async function apiCall<T>(
   const data = await response.json();
 
   if (!response.ok) {
+    // JWT 만료 또는 인증 실패 시 로그아웃 처리
+    if (response.status === 401) {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('moducon_token');
+        localStorage.removeItem('moducon_user');
+        window.location.href = '/login?expired=true';
+      }
+      throw new Error('인증이 만료되었습니다. 다시 로그인해주세요.');
+    }
+
     const errorMessage = data.error?.message || `API Error (${response.status})`;
     console.error('[API Error]', {
       url: `${API_BASE}${endpoint}`,
