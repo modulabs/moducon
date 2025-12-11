@@ -240,7 +240,7 @@ export default function BoothMap({ booths, onBoothSelect }: BoothMapProps) {
                 damping: 25,
                 stiffness: 300,
               }}
-              className="fixed left-2 right-2 top-[5vh] bottom-[5vh] z-50 max-w-lg mx-auto overflow-hidden"
+              className="fixed left-2 right-2 top-[5dvh] bottom-[5dvh] z-50 max-w-lg mx-auto overflow-hidden"
             >
               <BoothDetailClient
                 booth={selectedBooth.booth}

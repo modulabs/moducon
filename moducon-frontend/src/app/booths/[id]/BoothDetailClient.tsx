@@ -19,7 +19,7 @@ export default function BoothDetailClient({ booth, isModal, onClose, imageUrl }:
   // 모달 모드일 때
   if (isModal) {
     return (
-      <div className="bg-white rounded-2xl overflow-hidden max-h-[85vh] overflow-y-auto">
+      <div className="bg-white rounded-2xl overflow-hidden max-h-[85dvh] overflow-y-auto">
         {/* 모달 헤더 */}
         <div className="sticky top-0 bg-white/95 backdrop-blur-sm border-b z-10">
           <div className="px-4 py-3 flex items-center justify-between">
