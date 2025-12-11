@@ -39,13 +39,13 @@ export function parseQRCode(qrData: string): QRCodeData | null {
         const id = url.searchParams.get('id');
 
         if (type && id) {
-          // registration 타입 처리
+          // registration 타입 처리 → /checkin 페이지에서 로그인 체크 후 서명으로 이동
           if (type === 'registration') {
             return {
               type: 'registration',
               id,
               action: 'registration',
-              route: '/login',
+              route: `/checkin?type=registration&id=${id}`,
               data: { registrationId: id }
             };
           }
