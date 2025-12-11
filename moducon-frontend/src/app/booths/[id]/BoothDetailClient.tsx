@@ -46,7 +46,7 @@ export default function BoothDetailClient({ booth, isModal, onClose, imageUrl }:
             <img
               src={displayImageUrl}
               alt={booth.name}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
@@ -222,7 +222,7 @@ export default function BoothDetailClient({ booth, isModal, onClose, imageUrl }:
               <img
                 src={booth.imageUrl}
                 alt={booth.name}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center">

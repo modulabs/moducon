@@ -24,18 +24,18 @@ interface BoothPosition {
 
 // 부스 코드 → 로컬 이미지 매핑
 const boothImages: Record<string, string> = {
-  'B01': '', // 클라비 - 이미지 없음
+  'B01': '/images/booths/clabi.webp', // 클라비
   'B02': '/images/booths/khp.webp', // K-HP
-  'B03': '', // 아이펠 - 이미지 없음
+  'B03': '/images/booths/aiffel.webp', // 아이펠
   'B04': '/images/booths/bizteam.webp', // 비즈팀
   'B05': '/images/booths/nvidia-rapids-lab.webp', // NVIDIA RAPIDS
   'B06': '/images/booths/dao-lab.webp', // DAO LAB
   'B07': '/images/booths/tenstorrent.webp', // Tenstorrent
   'B08': '/images/booths/genai-finance.webp', // GenAI Finance
-  'B09': '', // Hell Maker - 이미지 없음
+  'B09': '/images/booths/hell-maker-lab.webp', // Hell Maker
   'B10': '/images/booths/ai-agent-lab.webp', // AI에이전트
-  'B11': '', // B-Peach - 이미지 없음
-  'B12': '', // 온소리 - 이미지 없음 (나중에 추가)
+  'B11': '/images/booths/b-peach.webp', // B-Peach
+  'B12': '/images/booths/onsori.webp', // 온소리
   'B13': '/images/booths/what2eat.webp', // 쩝쩝LAB
   'B14': '/images/booths/persona-lab.webp', // 페르소나
   'B15': '/images/booths/gabangssa.webp', // 가방싸

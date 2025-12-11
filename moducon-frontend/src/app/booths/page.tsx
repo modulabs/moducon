@@ -9,18 +9,18 @@ import { Map, List } from 'lucide-react';
 
 // 부스 코드 → 로컬 이미지 매핑
 const boothImages: Record<string, string> = {
-  'B01': '',
+  'B01': '/images/booths/clabi.webp',
   'B02': '/images/booths/khp.webp',
-  'B03': '',
+  'B03': '/images/booths/aiffel.webp',
   'B04': '/images/booths/bizteam.webp',
   'B05': '/images/booths/nvidia-rapids-lab.webp',
   'B06': '/images/booths/dao-lab.webp',
   'B07': '/images/booths/tenstorrent.webp',
   'B08': '/images/booths/genai-finance.webp',
-  'B09': '',
+  'B09': '/images/booths/hell-maker-lab.webp',
   'B10': '/images/booths/ai-agent-lab.webp',
-  'B11': '',
-  'B12': '',
+  'B11': '/images/booths/b-peach.webp',
+  'B12': '/images/booths/onsori.webp',
   'B13': '/images/booths/what2eat.webp',
   'B14': '/images/booths/persona-lab.webp',
   'B15': '/images/booths/gabangssa.webp',
