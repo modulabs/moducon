@@ -29,8 +29,9 @@ export async function apiCall<T>(
   const data = await response.json();
 
   if (!response.ok) {
-    // JWT 만료 또는 인증 실패 시 로그아웃 처리
-    if (response.status === 401) {
+    // JWT 만료 시 로그아웃 처리 (로그인 API는 제외)
+    const isLoginEndpoint = endpoint === '/api/auth/login';
+    if (response.status === 401 && !isLoginEndpoint) {
       if (typeof window !== 'undefined') {
         localStorage.removeItem('moducon_token');
         localStorage.removeItem('moducon_user');
