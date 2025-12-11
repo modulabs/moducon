@@ -86,12 +86,12 @@ export default function SessionDetailClient({ session }: SessionDetailClientProp
       <div className="bg-white shadow-sm border-b sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <button
-              onClick={() => router.back()}
+            <Link
+              href="/sessions"
               className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
             >
-              ← 뒤로 가기
-            </button>
+              ← 목록으로
+            </Link>
             <div className="flex gap-2">
               <button
                 onClick={handleFavoriteToggle}

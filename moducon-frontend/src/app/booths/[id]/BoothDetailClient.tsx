@@ -159,12 +159,12 @@ export default function BoothDetailClient({ booth, isModal, onClose, imageUrl }:
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center">
-            <button
-              onClick={() => router.back()}
+            <Link
+              href="/booths?view=list"
               className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
             >
-              ← 뒤로 가기
-            </button>
+              ← 목록으로
+            </Link>
           </div>
         </div>
       </div>
