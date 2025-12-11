@@ -14,35 +14,30 @@ type CheckinStatus = 'idle' | 'loading' | 'processing' | 'success' | 'duplicate'
 const TYPE_CONFIG: Record<CheckinType, {
   label: string;
   redirectPath: (id: string) => string;
-  listPath: string;  // 뒤로가기 시 이동할 목록 페이지
   emoji: string;
   color: string;
 }> = {
   registration: {
     label: '등록',
     redirectPath: () => '/home',
-    listPath: '/home',
     emoji: '🎫',
     color: 'from-green-500 to-emerald-600',
   },
   session: {
     label: '세션',
     redirectPath: (id) => `/sessions/${id}`,
-    listPath: '/sessions',
     emoji: '🎤',
     color: 'from-purple-500 to-indigo-600',
   },
   booth: {
     label: '부스',
     redirectPath: (id) => `/booths/${id}`,
-    listPath: '/booths',
     emoji: '🏢',
     color: 'from-blue-500 to-cyan-600',
   },
   paper: {
     label: '포스터',
     redirectPath: (id) => `/papers/${id}`,
-    listPath: '/papers',
     emoji: '📄',
     color: 'from-orange-500 to-amber-600',
   },
@@ -134,9 +129,6 @@ export default function CheckinHandler() {
         setStatus('redirecting');
         const config = TYPE_CONFIG[checkinTypeParam];
         const redirectUrl = config.redirectPath(checkinIdParam);
-
-        // 현재 히스토리를 목록 페이지로 교체 (뒤로가기 시 목록으로 이동)
-        history.replaceState(null, '', config.listPath);
 
         // 서명 안 했으면 서명 페이지로 (서명 후 원래 페이지로 리디렉션)
         if (!authStore.user?.has_signature) {
