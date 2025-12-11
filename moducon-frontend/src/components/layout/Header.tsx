@@ -33,6 +33,7 @@ export function Header() {
               width={120}
               height={36}
               className="h-7 w-auto"
+              style={{ transform: 'scaleX(1.5)' }}
               priority
             />
           </Link>
