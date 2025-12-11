@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import type { Booth } from '@/types/booth';
@@ -14,7 +13,6 @@ interface BoothDetailClientProps {
 
 export default function BoothDetailClient({ booth, isModal, onClose, imageUrl }: BoothDetailClientProps) {
   const router = useRouter();
-  const [showQRScanner, setShowQRScanner] = useState(false);
 
   const displayImageUrl = imageUrl || booth.imageUrl;
 
@@ -30,12 +28,6 @@ export default function BoothDetailClient({ booth, isModal, onClose, imageUrl }:
               className="px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
             >
               ← 닫기
-            </button>
-            <button
-              onClick={() => setShowQRScanner(true)}
-              className="px-3 py-1.5 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-            >
-              QR 인증
             </button>
           </div>
         </div>
@@ -155,37 +147,7 @@ export default function BoothDetailClient({ booth, isModal, onClose, imageUrl }:
             </div>
           )}
 
-          {/* 하단 액션 */}
-          <div className="flex gap-3 pt-2">
-            <button
-              onClick={() => setShowQRScanner(true)}
-              className="flex-1 px-4 py-3 bg-purple-600 text-white rounded-xl font-bold hover:bg-purple-700 transition-all text-sm"
-            >
-              QR 코드로 방문 인증
-            </button>
-          </div>
         </div>
-
-        {/* QR 스캐너 모달 */}
-        {showQRScanner && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4">
-            <div className="bg-white rounded-xl p-6 max-w-md w-full">
-              <h3 className="text-xl font-bold mb-4">QR 스캔</h3>
-              <p className="text-gray-600 mb-4">
-                부스의 QR 코드를 스캔하여 방문을 인증하세요.
-              </p>
-              <div className="bg-gray-100 h-64 rounded-lg flex items-center justify-center mb-4">
-                <p className="text-gray-500">카메라 화면</p>
-              </div>
-              <button
-                onClick={() => setShowQRScanner(false)}
-                className="w-full px-4 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors"
-              >
-                닫기
-              </button>
-            </div>
-          </div>
-        )}
       </div>
     );
   }
@@ -196,18 +158,12 @@ export default function BoothDetailClient({ booth, isModal, onClose, imageUrl }:
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-4xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center">
             <button
               onClick={() => router.back()}
               className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
             >
               ← 뒤로 가기
-            </button>
-            <button
-              onClick={() => setShowQRScanner(true)}
-              className="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-            >
-              QR 인증하기
             </button>
           </div>
         </div>
@@ -352,42 +308,15 @@ export default function BoothDetailClient({ booth, isModal, onClose, imageUrl }:
         </div>
 
         {/* 하단 액션 */}
-        <div className="mt-8 flex gap-4">
-          <button
-            onClick={() => setShowQRScanner(true)}
-            className="flex-1 px-6 py-4 bg-purple-600 text-white rounded-xl font-bold hover:bg-purple-700 transition-all shadow-lg hover:shadow-xl"
-          >
-            QR 코드로 방문 인증하기
-          </button>
+        <div className="mt-8">
           <Link
             href="/booths"
-            className="px-6 py-4 bg-gray-100 text-gray-700 rounded-xl font-bold hover:bg-gray-200 transition-colors text-center"
+            className="block px-6 py-4 bg-gray-100 text-gray-700 rounded-xl font-bold hover:bg-gray-200 transition-colors text-center"
           >
             목록으로
           </Link>
         </div>
       </div>
-
-      {/* QR 스캐너 모달 (placeholder) */}
-      {showQRScanner && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl p-6 max-w-md w-full">
-            <h3 className="text-xl font-bold mb-4">QR 스캔</h3>
-            <p className="text-gray-600 mb-4">
-              부스의 QR 코드를 스캔하여 방문을 인증하세요.
-            </p>
-            <div className="bg-gray-100 h-64 rounded-lg flex items-center justify-center mb-4">
-              <p className="text-gray-500">카메라 화면</p>
-            </div>
-            <button
-              onClick={() => setShowQRScanner(false)}
-              className="w-full px-4 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors"
-            >
-              닫기
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

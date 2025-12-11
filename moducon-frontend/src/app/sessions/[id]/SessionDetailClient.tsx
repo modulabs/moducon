@@ -15,7 +15,6 @@ interface SessionDetailClientProps {
 export default function SessionDetailClient({ session }: SessionDetailClientProps) {
   const router = useRouter();
   const { isAuthenticated, token, isHydrated } = useAuthStore();
-  const [isCheckedIn, setIsCheckedIn] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [isFavoriteLoading, setIsFavoriteLoading] = useState(false);
   const { startTime, endTime } = parseTimeSlot(session.timeSlot);
@@ -223,39 +222,13 @@ export default function SessionDetailClient({ session }: SessionDetailClientProp
           <QASection targetType="session" targetId={session.code} />
         </div>
 
-        {/* 체크인 완료 표시 */}
-        {isCheckedIn && (
-          <div className="mt-6 bg-green-50 border border-green-200 rounded-xl p-4 flex items-center gap-3">
-            <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-              <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-            <div>
-              <p className="font-semibold text-green-800">체크인 완료!</p>
-              <p className="text-sm text-green-600">이 세션에 참석 인증되었습니다.</p>
-            </div>
-          </div>
-        )}
-
         {/* 하단 액션 */}
-        <div className="mt-8 flex gap-4">
-          <button
-            onClick={() => setIsCheckedIn(true)}
-            disabled={isCheckedIn}
-            className={`flex-1 px-6 py-4 rounded-xl font-bold transition-all shadow-lg hover:shadow-xl ${
-              isCheckedIn
-                ? 'bg-green-500 text-white cursor-default'
-                : 'bg-purple-600 text-white hover:bg-purple-700'
-            }`}
-          >
-            {isCheckedIn ? '✓ 체크인 완료' : 'QR 코드로 체크인하기'}
-          </button>
+        <div className="mt-8">
           <Link
             href="/sessions"
-            className="px-6 py-4 bg-gray-100 text-gray-700 rounded-xl font-bold hover:bg-gray-200 transition-colors text-center"
+            className="block px-6 py-4 bg-gray-100 text-gray-700 rounded-xl font-bold hover:bg-gray-200 transition-colors text-center"
           >
-            목록
+            목록으로
           </Link>
         </div>
       </div>
