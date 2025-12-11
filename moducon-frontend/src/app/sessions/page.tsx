@@ -42,7 +42,7 @@ export default function SessionsPage() {
     }
   }, [isAuthenticated, token, API_BASE]);
 
-  const loadSessions = useCallback(async (track?: string, isFavoritesFilter?: boolean) => {
+  const loadSessions = useCallback(async (track?: string, isFavoritesFilter?: boolean, currentFavorites?: Set<string>) => {
     setLoading(true);
     setError(null);
 
@@ -51,9 +51,9 @@ export default function SessionsPage() {
       const data = await fetchSessionsWithCache();
 
       // 필터 적용
-      if (isFavoritesFilter) {
+      if (isFavoritesFilter && currentFavorites) {
         // 관심 세션 필터: favorites가 비어있으면 빈 배열 반환
-        setSessions(data.filter((s: Session) => favorites.has(s.code)));
+        setSessions(data.filter((s: Session) => currentFavorites.has(s.code)));
       } else if (track) {
         setSessions(data.filter((s: Session) => s.track === track));
       } else {
@@ -65,18 +65,23 @@ export default function SessionsPage() {
     } finally {
       setLoading(false);
     }
-  }, [favorites]);
+  }, []);
 
   // 필터 변경 시 세션 로드
   useEffect(() => {
     if (activeFilter === 'favorites') {
       // 관심 세션은 favorites Set이 로드된 후에만 필터링
-      if (isHydrated) {
-        loadSessions(undefined, true);
+      if (isHydrated && favorites.size > 0) {
+        loadSessions(undefined, true, favorites);
+      } else if (isHydrated) {
+        // favorites가 비어있어도 빈 목록 표시
+        loadSessions(undefined, true, favorites);
       }
     } else {
       loadSessions(activeFilter || undefined, false);
     }
+    // favorites는 dependency에서 제외 - 관심 필터 선택 시에만 사용
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeFilter, isHydrated, loadSessions]);
 
   // 로그인 상태 변경 시 관심 세션 로드
@@ -94,7 +99,7 @@ export default function SessionsPage() {
   const handleRefresh = () => {
     invalidateSessionsCache();
     if (activeFilter === 'favorites') {
-      loadSessions(undefined, true);
+      loadSessions(undefined, true, favorites);
     } else {
       loadSessions(activeFilter || undefined, false);
     }
