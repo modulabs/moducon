@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { fetchBoothsWithCache } from '@/lib/boothCache';
 import type { Booth } from '@/types/booth';
 import Link from 'next/link';
@@ -28,10 +29,31 @@ const boothImages: Record<string, string> = {
   'B17': '/images/booths/ieul-lab.webp',
 };
 
-export default function BoothsPage() {
+// 필터 옵션 정의
+const filterOptions = [
+  { key: 'all', label: '전체', orgType: null },
+  { key: 'corp', label: '기업', orgType: '기업' },
+  { key: 'lab', label: '모두연 LAB', orgType: '모두의연구소 LAB' },
+  { key: 'tech', label: '테크포임팩트', orgType: '테크포임팩트 부스' },
+  { key: 'edu', label: '모두연 교육', orgType: '모두의연구소 교육사업팀' },
+];
+
+function BoothsContent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [booths, setBooths] = useState<Booth[]>([]);
   const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
+  const [filter, setFilter] = useState<string>('all');
+
+  // URL에서 뷰 모드 읽기
+  const viewMode = (searchParams.get('view') as 'map' | 'list') || 'map';
+
+  // 뷰 모드 변경 시 URL 업데이트
+  const setViewMode = (mode: 'map' | 'list') => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('view', mode);
+    router.replace(`/booths?${params.toString()}`, { scroll: false });
+  };
 
   useEffect(() => {
     const loadData = async () => {
@@ -107,8 +129,33 @@ export default function BoothsPage() {
           </div>
         ) : (
           /* 리스트 뷰 */
-          <div className="px-4 py-4 space-y-3">
-            {booths.map((booth) => (
+          <div className="px-4 py-4">
+            {/* 필터 칩 */}
+            <div className="flex gap-2 overflow-x-auto pb-3 mb-3 scrollbar-hide">
+              {filterOptions.map((opt) => (
+                <button
+                  key={opt.key}
+                  onClick={() => setFilter(opt.key)}
+                  className={`px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+                    filter === opt.key
+                      ? 'bg-[#FF6B9D] text-white'
+                      : 'bg-white text-gray-600 border border-gray-200 hover:border-[#FF6B9D]'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+
+            {/* 부스 목록 */}
+            <div className="space-y-3">
+            {booths
+              .filter((booth) => {
+                if (filter === 'all') return true;
+                const selectedFilter = filterOptions.find(f => f.key === filter);
+                return selectedFilter && booth.orgType === selectedFilter.orgType;
+              })
+              .map((booth) => (
               <Link
                 key={booth.id}
                 href={`/booths/${booth.code}`}
@@ -116,7 +163,7 @@ export default function BoothsPage() {
               >
                 <div className="flex gap-4">
                   {/* 이미지 */}
-                  <div className="w-20 h-20 rounded-lg bg-gradient-to-br from-[#FF6B9D]/20 to-[#FF8B5A]/20 flex-shrink-0 overflow-hidden">
+                  <div className="w-20 h-20 rounded-lg bg-gray-50 flex-shrink-0 overflow-hidden">
                     {(() => {
                       const localImage = booth.code ? boothImages[booth.code] : '';
                       const imageUrl = localImage || booth.imageUrl;
@@ -124,7 +171,7 @@ export default function BoothsPage() {
                         <img
                           src={imageUrl}
                           alt={booth.name}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-contain"
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-2xl">
@@ -150,15 +197,35 @@ export default function BoothsPage() {
               </Link>
             ))}
 
-            {booths.length === 0 && (
+            {booths.filter((booth) => {
+                if (filter === 'all') return true;
+                const selectedFilter = filterOptions.find(f => f.key === filter);
+                return selectedFilter && booth.orgType === selectedFilter.orgType;
+              }).length === 0 && (
               <div className="text-center py-12">
                 <span className="text-4xl">📭</span>
-                <p className="mt-2 text-gray-600">등록된 부스가 없습니다.</p>
+                <p className="mt-2 text-gray-600">해당 분류의 부스가 없습니다.</p>
               </div>
             )}
+            </div>
           </div>
         )}
       </div>
     </div>
+  );
+}
+
+export default function BoothsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#fafafa] flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF6B9D] mx-auto"></div>
+          <p className="mt-4 text-gray-600">부스 정보를 불러오는 중...</p>
+        </div>
+      </div>
+    }>
+      <BoothsContent />
+    </Suspense>
   );
 }
