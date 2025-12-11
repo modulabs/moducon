@@ -129,7 +129,13 @@ export default function CheckinHandler() {
         setStatus('redirecting');
         const config = TYPE_CONFIG[checkinTypeParam];
         const redirectUrl = config.redirectPath(checkinIdParam);
-        window.location.href = redirectUrl;
+
+        // 서명 안 했으면 서명 페이지로 (서명 후 원래 페이지로 리디렉션)
+        if (!authStore.user?.has_signature) {
+          window.location.href = `/signature?redirect=${encodeURIComponent(redirectUrl)}`;
+        } else {
+          window.location.href = redirectUrl;
+        }
       }, 1500);
     } else {
       setStatus('error');

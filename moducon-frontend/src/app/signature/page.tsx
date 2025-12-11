@@ -1,7 +1,7 @@
 'use client';
 
-import { useRef, useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRef, useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -9,8 +9,10 @@ import { Label } from '@/components/ui/label';
 import { authAPI } from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
 
-export default function SignaturePage() {
+function SignatureForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get('redirect') || '/home';
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -125,7 +127,7 @@ export default function SignaturePage() {
       if (user) {
         updateUser({ ...user, has_signature: true });
       }
-      router.push('/home');
+      router.push(redirectTo);
     } catch (error) {
       console.error('Failed to save signature:', error);
       alert('서명 저장에 실패했습니다. 다시 시도해주세요.');
@@ -194,5 +196,21 @@ export default function SignaturePage() {
         </CardFooter>
       </Card>
     </div>
+  );
+}
+
+export default function SignaturePage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center bg-gray-100 dark:bg-gray-900 p-4">
+        <Card className="w-full max-w-2xl">
+          <CardContent className="p-6">
+            <p className="text-center text-muted-foreground">로딩 중...</p>
+          </CardContent>
+        </Card>
+      </div>
+    }>
+      <SignatureForm />
+    </Suspense>
   );
 }

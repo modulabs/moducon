@@ -44,12 +44,8 @@ function LoginForm() {
       const result = await authAPI.login(data.name, data.phone_last4);
       login(result.token, result.user);
 
-      // Check if signature is required
-      if (!result.user.has_signature) {
-        router.push('/signature');
-      } else {
-        router.push(redirectTo);
-      }
+      // 로그인 성공 시 원래 페이지로 이동 (서명은 QR 체크인 시 확인)
+      router.push(redirectTo);
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : '로그인에 실패했습니다';
       setError(errorMessage);
