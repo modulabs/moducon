@@ -9,7 +9,7 @@ import { Home } from 'lucide-react';
 export function Header() {
   const pathname = usePathname();
   const { user } = useAuthStore();
-  const isHome = pathname === '/home' || pathname === '/';
+  const isHome = pathname === '/' || pathname?.startsWith('/home');
 
   // 이름에서 성(첫 글자) 추출
   const getInitial = (name: string) => {
@@ -22,11 +22,9 @@ export function Header() {
         {/* 왼쪽: 홈 아이콘 */}
         <Link
           href="/home"
-          className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${
-            isHome ? 'bg-white/30' : 'bg-white/10 hover:bg-white/20'
-          }`}
+          className="flex items-center justify-center transition-all"
         >
-          <Home className={`w-5 h-5 ${isHome ? 'text-white' : 'text-white/60'}`} />
+          <Home className={`w-6 h-6 ${isHome ? 'text-white scale-110' : 'text-black/60'}`} />
         </Link>
 
         {/* 가운데: 로고 */}
