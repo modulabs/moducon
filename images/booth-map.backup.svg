@@ -1,0 +1,56 @@
+<svg viewBox="0 0 400 700" xmlns="http://www.w3.org/2000/svg">
+  <!-- 배경 -->
+  <rect width="400" height="700" fill="#fafafa"/>
+
+  <!-- 섹션 1: 기둥 + 6개 부스 -->
+  <g id="section1" transform="translate(20, 80)">
+    <!-- 기둥 (정사각형) -->
+    <rect x="168" y="0" width="24" height="24" rx="2" fill="#d1d5db" stroke="#9ca3af" stroke-width="1"/>
+
+    <!-- 6개 부스 -->
+    <rect x="0" y="50" width="55" height="28" rx="4" fill="#f3f4f6" stroke="#e5e7eb" stroke-width="1" class="booth" data-id="1"/>
+    <rect x="60" y="50" width="55" height="28" rx="4" fill="#f3f4f6" stroke="#e5e7eb" stroke-width="1" class="booth" data-id="2"/>
+    <rect x="120" y="50" width="55" height="28" rx="4" fill="#f3f4f6" stroke="#e5e7eb" stroke-width="1" class="booth" data-id="3"/>
+    <rect x="185" y="50" width="55" height="28" rx="4" fill="#f3f4f6" stroke="#e5e7eb" stroke-width="1" class="booth" data-id="4"/>
+    <rect x="245" y="50" width="55" height="28" rx="4" fill="#f3f4f6" stroke="#e5e7eb" stroke-width="1" class="booth" data-id="5"/>
+    <rect x="305" y="50" width="55" height="28" rx="4" fill="#f3f4f6" stroke="#e5e7eb" stroke-width="1" class="booth" data-id="6"/>
+  </g>
+
+  <!-- 섹션 2: 기둥 + 6개 부스 (2줄) -->
+  <g id="section2" transform="translate(20, 260)">
+    <!-- 상단 6개 부스 -->
+    <rect x="0" y="0" width="55" height="28" rx="4" fill="#f3f4f6" stroke="#e5e7eb" stroke-width="1" class="booth" data-id="7"/>
+    <rect x="60" y="0" width="55" height="28" rx="4" fill="#f3f4f6" stroke="#e5e7eb" stroke-width="1" class="booth" data-id="8"/>
+    <rect x="120" y="0" width="55" height="28" rx="4" fill="#f3f4f6" stroke="#e5e7eb" stroke-width="1" class="booth" data-id="9"/>
+
+    <!-- 기둥 (정사각형) -->
+    <rect x="168" y="50" width="24" height="24" rx="2" fill="#d1d5db" stroke="#9ca3af" stroke-width="1"/>
+
+    <rect x="185" y="0" width="55" height="28" rx="4" fill="#f3f4f6" stroke="#e5e7eb" stroke-width="1" class="booth" data-id="10"/>
+    <rect x="245" y="0" width="55" height="28" rx="4" fill="#f3f4f6" stroke="#e5e7eb" stroke-width="1" class="booth" data-id="11"/>
+    <rect x="305" y="0" width="55" height="28" rx="4" fill="#f3f4f6" stroke="#e5e7eb" stroke-width="1" class="booth" data-id="12"/>
+
+    <!-- 하단 6개 부스 -->
+    <rect x="0" y="100" width="55" height="28" rx="4" fill="#f3f4f6" stroke="#e5e7eb" stroke-width="1" class="booth" data-id="13"/>
+    <rect x="60" y="100" width="55" height="28" rx="4" fill="#f3f4f6" stroke="#e5e7eb" stroke-width="1" class="booth" data-id="14"/>
+    <rect x="120" y="100" width="55" height="28" rx="4" fill="#f3f4f6" stroke="#e5e7eb" stroke-width="1" class="booth" data-id="15"/>
+    <rect x="185" y="100" width="55" height="28" rx="4" fill="#f3f4f6" stroke="#e5e7eb" stroke-width="1" class="booth" data-id="16"/>
+    <rect x="245" y="100" width="55" height="28" rx="4" fill="#f3f4f6" stroke="#e5e7eb" stroke-width="1" class="booth" data-id="17"/>
+    <rect x="305" y="100" width="55" height="28" rx="4" fill="#f3f4f6" stroke="#e5e7eb" stroke-width="1" class="booth" data-id="18"/>
+  </g>
+
+  <!-- 섹션 3: 기둥 + 6개 부스 -->
+  <g id="section3" transform="translate(20, 520)">
+    <!-- 기둥 (정사각형) -->
+    <rect x="168" y="0" width="24" height="24" rx="2" fill="#d1d5db" stroke="#9ca3af" stroke-width="1"/>
+
+    <!-- 6개 부스 -->
+    <rect x="0" y="50" width="55" height="28" rx="4" fill="#f3f4f6" stroke="#e5e7eb" stroke-width="1" class="booth" data-id="19"/>
+    <rect x="60" y="50" width="55" height="28" rx="4" fill="#f3f4f6" stroke="#e5e7eb" stroke-width="1" class="booth" data-id="20"/>
+    <rect x="120" y="50" width="55" height="28" rx="4" fill="#f3f4f6" stroke="#e5e7eb" stroke-width="1" class="booth" data-id="21"/>
+    <rect x="185" y="50" width="55" height="28" rx="4" fill="#f3f4f6" stroke="#e5e7eb" stroke-width="1" class="booth" data-id="22"/>
+    <rect x="245" y="50" width="55" height="28" rx="4" fill="#f3f4f6" stroke="#e5e7eb" stroke-width="1" class="booth" data-id="23"/>
+    <rect x="305" y="50" width="55" height="28" rx="4" fill="#f3f4f6" stroke="#e5e7eb" stroke-width="1" class="booth" data-id="24"/>
+  </g>
+
+</svg>
