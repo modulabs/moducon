@@ -190,7 +190,7 @@ export default function CheckinHandler() {
   // 로딩 중 (hydration 대기)
   if (!authStore.isHydrated) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-white to-blue-50">
+      <div className="min-h-[100dvh] flex items-center justify-center bg-gradient-to-br from-purple-50 via-white to-blue-50">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-gray-600">로딩 중...</p>
@@ -202,7 +202,7 @@ export default function CheckinHandler() {
   const config = checkinType ? TYPE_CONFIG[checkinType] : null;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-white to-blue-50 p-4">
+    <div className="min-h-[100dvh] flex items-center justify-center bg-gradient-to-br from-purple-50 via-white to-blue-50 p-4">
       <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
         {/* 상태별 UI */}
         {(status === 'idle' || status === 'loading' || status === 'processing') && (

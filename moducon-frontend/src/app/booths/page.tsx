@@ -72,7 +72,7 @@ function BoothsContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#fafafa] flex items-center justify-center">
+      <div className="min-h-[100dvh] bg-[#fafafa] flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF6B9D] mx-auto"></div>
           <p className="mt-4 text-gray-600">부스 정보를 불러오는 중...</p>
@@ -82,7 +82,7 @@ function BoothsContent() {
   }
 
   return (
-    <div className="min-h-screen bg-[#fafafa]">
+    <div className="min-h-[100dvh] bg-[#fafafa]">
       {/* Header */}
       <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-sm border-b">
         <div className="max-w-md mx-auto px-4 py-3">
@@ -218,7 +218,7 @@ function BoothsContent() {
 export default function BoothsPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-[#fafafa] flex items-center justify-center">
+      <div className="min-h-[100dvh] bg-[#fafafa] flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF6B9D] mx-auto"></div>
           <p className="mt-4 text-gray-600">부스 정보를 불러오는 중...</p>

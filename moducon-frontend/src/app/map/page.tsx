@@ -142,7 +142,7 @@ export default function MapPage() {
   const facilityLocations = filteredLocations.filter(loc => !loc.id.match(/^[0-9i]+$/));
 
   return (
-    <div className="min-h-screen pb-24 bg-gradient-to-br from-gray-50 via-orange-50/30 to-pink-50/20">
+    <div className="min-h-[100dvh] pb-24 bg-gradient-to-br from-gray-50 via-orange-50/30 to-pink-50/20">
       {/* 헤더 */}
       <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-sm border-b">
         <div className="px-4 py-3">

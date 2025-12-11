@@ -154,7 +154,7 @@ export default function BoothDetailClient({ booth, isModal, onClose, imageUrl }:
 
   // 일반 페이지 모드
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
+    <div className="min-h-[100dvh] bg-gradient-to-br from-purple-50 via-white to-blue-50">
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-4xl mx-auto px-4 py-4">

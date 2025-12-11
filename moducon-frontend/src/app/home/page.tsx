@@ -70,7 +70,7 @@ export default function HomePage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-50 via-orange-50/30 to-pink-50/20">
+      <div className="flex items-center justify-center min-h-[100dvh] bg-gradient-to-br from-gray-50 via-orange-50/30 to-pink-50/20">
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
@@ -81,7 +81,7 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen pb-24 bg-gradient-to-br from-gray-50 via-orange-50/30 to-pink-50/20 relative overflow-hidden">
+    <div className="min-h-[100dvh] pb-24 bg-gradient-to-br from-gray-50 via-orange-50/30 to-pink-50/20 relative overflow-hidden">
       {/* Static gradient background - optimized for performance */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -left-40 w-96 h-96 bg-gradient-to-br from-[#FF6B9D]/15 to-transparent rounded-full blur-2xl" />

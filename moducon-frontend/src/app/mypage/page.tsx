@@ -158,7 +158,7 @@ export default function MyPage() {
   // 로딩 중
   if (!isHydrated || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-orange-50/30 to-pink-50/20">
+      <div className="min-h-[100dvh] flex items-center justify-center bg-gradient-to-br from-gray-50 via-orange-50/30 to-pink-50/20">
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
@@ -171,7 +171,7 @@ export default function MyPage() {
   // 에러 상태
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-orange-50/30 to-pink-50/20 p-4">
+      <div className="min-h-[100dvh] flex items-center justify-center bg-gradient-to-br from-gray-50 via-orange-50/30 to-pink-50/20 p-4">
         <Card className="w-full max-w-md">
           <CardContent className="p-6 text-center">
             <p className="text-red-500 mb-4">{error}</p>
@@ -206,7 +206,7 @@ export default function MyPage() {
   };
 
   return (
-    <div className="min-h-screen pb-24 bg-gradient-to-br from-gray-50 via-orange-50/30 to-pink-50/20">
+    <div className="min-h-[100dvh] pb-24 bg-gradient-to-br from-gray-50 via-orange-50/30 to-pink-50/20">
       {/* 프로필 카드 */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}

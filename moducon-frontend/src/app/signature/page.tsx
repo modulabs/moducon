@@ -141,7 +141,7 @@ function SignatureForm() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-100 dark:bg-gray-900 p-4">
+    <div className="flex min-h-[100dvh] items-center justify-center bg-gray-100 dark:bg-gray-900 p-4">
       <Card className="w-full max-w-2xl">
         <CardHeader>
           <CardTitle className="text-2xl">디지털 서명 및 동의</CardTitle>
@@ -202,7 +202,7 @@ function SignatureForm() {
 export default function SignaturePage() {
   return (
     <Suspense fallback={
-      <div className="flex min-h-screen items-center justify-center bg-gray-100 dark:bg-gray-900 p-4">
+      <div className="flex min-h-[100dvh] items-center justify-center bg-gray-100 dark:bg-gray-900 p-4">
         <Card className="w-full max-w-2xl">
           <CardContent className="p-6">
             <p className="text-center text-muted-foreground">로딩 중...</p>
