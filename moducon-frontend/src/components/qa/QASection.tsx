@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useAuthStore } from '@/store/authStore';
 import QuestionForm from './QuestionForm';
 import QuestionCard from './QuestionCard';
 import type { Question, TargetType } from './types';
@@ -12,10 +13,13 @@ interface QASectionProps {
 }
 
 export default function QASection({ targetType, targetId, title = 'Q&A' }: QASectionProps) {
+  const { user, token, isAuthenticated } = useAuthStore();
   const [questions, setQuestions] = useState<Question[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<'popular' | 'recent'>('popular');
+  const [isCheckedIn, setIsCheckedIn] = useState(false);
+  const [checkinLoading, setCheckinLoading] = useState(true);
   const [pagination, setPagination] = useState({
     total: 0,
     page: 1,
@@ -24,6 +28,39 @@ export default function QASection({ targetType, targetId, title = 'Q&A' }: QASec
   });
 
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
+  // 체크인 여부 확인
+  useEffect(() => {
+    const checkCheckinStatus = async () => {
+      if (!isAuthenticated || !user?.id || !token) {
+        setCheckinLoading(false);
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE}/api/checkin/user/${user.id}`, {
+          headers: { 'Authorization': `Bearer ${token}` },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const checkins = data.data?.checkins || [];
+          // 해당 세션에 체크인했는지 확인
+          const hasCheckedIn = checkins.some(
+            (c: { targetType: string; targetId: string }) =>
+              c.targetType === targetType && c.targetId === targetId
+          );
+          setIsCheckedIn(hasCheckedIn);
+        }
+      } catch (err) {
+        console.error('체크인 상태 확인 실패:', err);
+      } finally {
+        setCheckinLoading(false);
+      }
+    };
+
+    checkCheckinStatus();
+  }, [API_BASE, isAuthenticated, user?.id, token, targetType, targetId]);
 
   const fetchQuestions = useCallback(async () => {
     setIsLoading(true);
@@ -122,6 +159,8 @@ export default function QASection({ targetType, targetId, title = 'Q&A' }: QASec
           targetType={targetType}
           targetId={targetId}
           onQuestionSubmit={handleQuestionSubmit}
+          isCheckedIn={isCheckedIn}
+          checkinLoading={checkinLoading}
         />
       </div>
 

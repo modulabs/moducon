@@ -8,9 +8,11 @@ interface QuestionFormProps {
   targetType?: 'session' | 'booth' | 'paper'; // 현재 session만 지원, 향후 확장용
   targetId: string;
   onQuestionSubmit: (question: any) => void;
+  isCheckedIn?: boolean;
+  checkinLoading?: boolean;
 }
 
-export default function QuestionForm({ targetId, onQuestionSubmit }: QuestionFormProps) {
+export default function QuestionForm({ targetId, onQuestionSubmit, isCheckedIn = false, checkinLoading = false }: QuestionFormProps) {
   const pathname = usePathname();
   const { isAuthenticated, token } = useAuthStore();
   const [content, setContent] = useState('');
@@ -86,6 +88,26 @@ export default function QuestionForm({ targetId, onQuestionSubmit }: QuestionFor
         >
           로그인하기
         </a>
+      </div>
+    );
+  }
+
+  // 체크인 로딩 중
+  if (checkinLoading) {
+    return (
+      <div className="bg-gray-50 rounded-xl p-6 text-center">
+        <div className="inline-block w-5 h-5 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  // 체크인 안 한 경우
+  if (!isCheckedIn) {
+    return (
+      <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 text-center">
+        <div className="text-3xl mb-2">📱</div>
+        <p className="text-amber-800 font-medium mb-1">QR 체크인 후 질문할 수 있습니다</p>
+        <p className="text-amber-600 text-sm">하단의 QR 버튼으로 이 세션에 체크인해주세요</p>
       </div>
     );
   }
