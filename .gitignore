@@ -46,3 +46,7 @@ next-env.d.ts
 # Misc
 .turbo
 certs/
+
+# Sensitive data
+*.csv
+사전등록자.csv
