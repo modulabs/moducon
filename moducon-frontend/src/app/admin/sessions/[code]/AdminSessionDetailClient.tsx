@@ -73,7 +73,7 @@ export default function AdminSessionDetailClient() {
     setQuestionsLoading(true);
     try {
       const response = await fetch(
-        `${API_BASE}/api/sessions/${session.id}/questions?sort=${sortBy}&limit=100`
+        `${API_BASE}/api/sessions/${session.code}/questions?sort=${sortBy}&limit=100`
       );
       const data = await response.json();
 
