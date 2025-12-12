@@ -10,92 +10,34 @@ import { logger } from '../utils/logger';
 
 const router = Router();
 
-// 배지 정의
+// 배지 정의 (3개)
 const BADGE_DEFINITIONS = [
   {
-    id: 'first_step',
-    name: '첫 발자국',
-    description: '첫 체크인 완료',
-    icon: '👣',
-    condition: (stats: Stats) => stats.totalCheckins >= 1,
-    progress: (stats: Stats) => Math.min(stats.totalCheckins, 1),
-    target: 1,
-  },
-  {
-    id: 'session_lover',
+    id: 'session_master',
     name: '세션 마스터',
-    description: '5개 세션 참석',
+    description: '3개 세션 참석',
     icon: '🎤',
-    condition: (stats: Stats) => stats.sessionCheckins >= 5,
-    progress: (stats: Stats) => Math.min(stats.sessionCheckins, 5),
-    target: 5,
+    condition: (stats: Stats) => stats.sessionCheckins >= 3,
+    progress: (stats: Stats) => Math.min(stats.sessionCheckins, 3),
+    target: 3,
   },
   {
     id: 'booth_explorer',
     name: '부스 탐험가',
-    description: '3개 부스 방문',
+    description: '5개 부스 방문',
     icon: '🏢',
-    condition: (stats: Stats) => stats.boothCheckins >= 3,
-    progress: (stats: Stats) => Math.min(stats.boothCheckins, 3),
-    target: 3,
+    condition: (stats: Stats) => stats.boothCheckins >= 5,
+    progress: (stats: Stats) => Math.min(stats.boothCheckins, 5),
+    target: 5,
   },
   {
-    id: 'paper_reader',
+    id: 'paper_researcher',
     name: '논문 연구원',
-    description: '3개 포스터 방문',
+    description: '5개 포스터 방문',
     icon: '📄',
-    condition: (stats: Stats) => stats.paperCheckins >= 3,
-    progress: (stats: Stats) => Math.min(stats.paperCheckins, 3),
-    target: 3,
-  },
-  {
-    id: 'quiz_challenger',
-    name: '퀴즈 도전자',
-    description: '5개 퀴즈 시도',
-    icon: '❓',
-    condition: (stats: Stats) => stats.quizAttempts >= 5,
-    progress: (stats: Stats) => Math.min(stats.quizAttempts, 5),
+    condition: (stats: Stats) => stats.paperCheckins >= 5,
+    progress: (stats: Stats) => Math.min(stats.paperCheckins, 5),
     target: 5,
-  },
-  {
-    id: 'quiz_master',
-    name: '퀴즈 마스터',
-    description: '5개 퀴즈 정답',
-    icon: '🏆',
-    condition: (stats: Stats) => stats.quizCorrect >= 5,
-    progress: (stats: Stats) => Math.min(stats.quizCorrect, 5),
-    target: 5,
-  },
-  {
-    id: 'all_rounder',
-    name: '올라운더',
-    description: '모든 타입 체크인',
-    icon: '🌟',
-    condition: (stats: Stats) =>
-      stats.sessionCheckins >= 1 && stats.boothCheckins >= 1 && stats.paperCheckins >= 1,
-    progress: (stats: Stats) =>
-      (stats.sessionCheckins >= 1 ? 1 : 0) +
-      (stats.boothCheckins >= 1 ? 1 : 0) +
-      (stats.paperCheckins >= 1 ? 1 : 0),
-    target: 3,
-  },
-  {
-    id: 'completionist',
-    name: '컨퍼런스 마스터',
-    description: '10개 총 체크인',
-    icon: '👑',
-    condition: (stats: Stats) => stats.totalCheckins >= 10,
-    progress: (stats: Stats) => Math.min(stats.totalCheckins, 10),
-    target: 10,
-  },
-  {
-    id: 'curious_mind',
-    name: '호기심 왕',
-    description: '3개 질문 작성',
-    icon: '💡',
-    condition: (stats: Stats) => stats.questionsAsked >= 3,
-    progress: (stats: Stats) => Math.min(stats.questionsAsked, 3),
-    target: 3,
   },
 ];
 
