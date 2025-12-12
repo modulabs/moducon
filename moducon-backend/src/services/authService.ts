@@ -224,3 +224,68 @@ export const getSignatureByUserId = async (userId: string) => {
     created_at: signature.createdAt.toISOString(),
   };
 };
+
+// 현장 등록
+export interface RegisterInput {
+  name: string;
+  phone_last4: string;
+  email?: string;
+  organization?: string;
+}
+
+export const register = async (input: RegisterInput): Promise<LoginResult | { error: string }> => {
+  // 중복 사용자 확인
+  const existingUser = await prisma.user.findUnique({
+    where: {
+      unique_user: {
+        name: input.name,
+        phoneLast4: input.phone_last4,
+      },
+    },
+  });
+
+  if (existingUser) {
+    logger.warn(`Registration failed: User already exists (${input.name}, ${input.phone_last4})`);
+    return { error: 'USER_ALREADY_EXISTS' };
+  }
+
+  // 새 사용자 생성
+  const user = await prisma.user.create({
+    data: {
+      name: input.name,
+      phoneLast4: input.phone_last4,
+      email: input.email || null,
+      organization: input.organization || null,
+      registrationType: 'onsite',
+      lastLogin: new Date(),
+    },
+  });
+
+  // JWT 토큰 생성
+  const token = generateToken({
+    userId: user.id,
+    name: user.name,
+  });
+
+  // 세션 저장
+  await prisma.authSession.create({
+    data: {
+      userId: user.id,
+      token,
+      expiresAt: getTokenExpiry(),
+    },
+  });
+
+  logger.info(`New user registered (onsite): ${user.name} (${user.id})`);
+
+  return {
+    token,
+    user: {
+      id: user.id,
+      name: user.name,
+      phone_last4: user.phoneLast4,
+      registration_type: user.registrationType,
+      has_signature: false,
+    },
+  };
+};

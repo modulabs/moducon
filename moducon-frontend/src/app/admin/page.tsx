@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { authAPI } from '@/lib/api';
 
 interface Participant {
   id: string;
@@ -14,6 +15,13 @@ interface Participant {
   registered_at: string;
 }
 
+interface RegisterForm {
+  name: string;
+  phone: string;
+  email: string;
+  organization: string;
+}
+
 export default function AdminPage() {
   const router = useRouter();
   const [participants, setParticipants] = useState<Participant[]>([]);
@@ -21,6 +29,16 @@ export default function AdminPage() {
   const [error, setError] = useState<string | null>(null);
   const [selectedParticipant, setSelectedParticipant] = useState<Participant | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+
+  // 현장 등록 상태
+  const [registerForm, setRegisterForm] = useState<RegisterForm>({
+    name: '',
+    phone: '',
+    email: '',
+    organization: '',
+  });
+  const [registerLoading, setRegisterLoading] = useState(false);
+  const [registerResult, setRegisterResult] = useState<{ success: boolean; message: string; userName?: string } | null>(null);
 
   useEffect(() => {
     // 인증 체크
@@ -71,6 +89,42 @@ export default function AdminPage() {
   const handleLogout = () => {
     localStorage.removeItem('admin_token');
     router.push('/admin/login');
+  };
+
+  // 현장 등록 핸들러
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setRegisterLoading(true);
+    setRegisterResult(null);
+
+    try {
+      const result = await authAPI.register({
+        name: registerForm.name,
+        phone: registerForm.phone,
+        email: registerForm.email || undefined,
+        organization: registerForm.organization || undefined,
+      });
+
+      setRegisterResult({
+        success: true,
+        message: '현장 등록이 완료되었습니다',
+        userName: result.user.name,
+      });
+
+      // 폼 초기화
+      setRegisterForm({ name: '', phone: '', email: '', organization: '' });
+
+      // 참가자 목록 새로고침
+      fetchParticipants();
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : '등록에 실패했습니다';
+      setRegisterResult({
+        success: false,
+        message: errorMessage,
+      });
+    } finally {
+      setRegisterLoading(false);
+    }
   };
 
   const filteredParticipants = participants.filter(
@@ -147,6 +201,12 @@ export default function AdminPage() {
               className="px-6 py-3 rounded-none border-b-2 border-transparent data-[state=active]:border-gray-900 data-[state=active]:bg-transparent"
             >
               상세
+            </TabsTrigger>
+            <TabsTrigger
+              value="register"
+              className="px-6 py-3 rounded-none border-b-2 border-transparent data-[state=active]:border-gray-900 data-[state=active]:bg-transparent"
+            >
+              현장등록
             </TabsTrigger>
           </TabsList>
 
@@ -292,6 +352,96 @@ export default function AdminPage() {
                   </tbody>
                 </table>
               </div>
+            </div>
+          </TabsContent>
+
+          {/* 현장등록 탭 */}
+          <TabsContent value="register" className="mt-0">
+            <div className="bg-white rounded border border-gray-300 p-6 max-w-xl">
+              <h2 className="text-xl font-bold text-gray-900 mb-6 border-b border-gray-300 pb-3">
+                현장 등록
+              </h2>
+
+              <form onSubmit={handleRegister} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    이름 <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={registerForm.name}
+                    onChange={(e) => setRegisterForm({ ...registerForm, name: e.target.value })}
+                    placeholder="홍길동"
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 rounded focus:ring-2 focus:ring-gray-400 focus:border-transparent text-gray-900"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    전화번호 <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="tel"
+                    value={registerForm.phone}
+                    onChange={(e) => setRegisterForm({ ...registerForm, phone: e.target.value })}
+                    placeholder="010-1234-5678"
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 rounded focus:ring-2 focus:ring-gray-400 focus:border-transparent text-gray-900"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    소속
+                  </label>
+                  <input
+                    type="text"
+                    value={registerForm.organization}
+                    onChange={(e) => setRegisterForm({ ...registerForm, organization: e.target.value })}
+                    placeholder="모두의연구소"
+                    className="w-full px-4 py-3 border border-gray-300 rounded focus:ring-2 focus:ring-gray-400 focus:border-transparent text-gray-900"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    이메일
+                  </label>
+                  <input
+                    type="email"
+                    value={registerForm.email}
+                    onChange={(e) => setRegisterForm({ ...registerForm, email: e.target.value })}
+                    placeholder="example@email.com"
+                    className="w-full px-4 py-3 border border-gray-300 rounded focus:ring-2 focus:ring-gray-400 focus:border-transparent text-gray-900"
+                  />
+                </div>
+
+                {/* 결과 메시지 */}
+                {registerResult && (
+                  <div
+                    className={`p-4 rounded ${
+                      registerResult.success
+                        ? 'bg-green-50 border border-green-300 text-green-800'
+                        : 'bg-red-50 border border-red-300 text-red-800'
+                    }`}
+                  >
+                    {registerResult.success ? (
+                      <p>✅ <strong>{registerResult.userName}</strong>님 등록 완료!</p>
+                    ) : (
+                      <p>❌ {registerResult.message}</p>
+                    )}
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={registerLoading || !registerForm.name || !registerForm.phone}
+                  className="w-full px-4 py-3 bg-gray-900 text-white rounded hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition font-medium"
+                >
+                  {registerLoading ? '등록 중...' : '현장 등록'}
+                </button>
+              </form>
             </div>
           </TabsContent>
         </Tabs>

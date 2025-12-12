@@ -145,3 +145,34 @@ export const getSignature = async (req: Request, res: Response) => {
     errorResponse(res, 'Failed to get signature', 500, 'GET_SIGNATURE_FAILED');
   }
 };
+
+// 현장 등록
+export const register = async (req: Request, res: Response) => {
+  try {
+    const { name, phone_last4, email, organization } = req.body;
+
+    // 입력 검증
+    if (!name || !phone_last4) {
+      return errorResponse(res, '이름과 전화번호 뒷 4자리는 필수입니다', 400, 'INVALID_INPUT');
+    }
+
+    if (phone_last4.length !== 4 || !/^\d{4}$/.test(phone_last4)) {
+      return errorResponse(res, '전화번호 뒷 4자리는 숫자 4자리여야 합니다', 400, 'INVALID_PHONE');
+    }
+
+    // 등록 시도
+    const result = await authService.register({ name, phone_last4, email, organization });
+
+    if ('error' in result) {
+      if (result.error === 'USER_ALREADY_EXISTS') {
+        return errorResponse(res, '이미 등록된 사용자입니다. 로그인을 시도해주세요.', 409, 'USER_ALREADY_EXISTS');
+      }
+      return errorResponse(res, '등록에 실패했습니다', 500, result.error);
+    }
+
+    successResponse(res, result, '현장 등록이 완료되었습니다');
+  } catch (error) {
+    logger.error('Register error:', error);
+    errorResponse(res, '현장 등록에 실패했습니다', 500, 'REGISTER_FAILED');
+  }
+};

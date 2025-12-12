@@ -60,6 +60,12 @@ export const authAPI = {
       body: JSON.stringify({ name, phone_last4 }),
     }),
 
+  register: (data: { name: string; phone: string; email?: string; organization?: string }) =>
+    apiCall<{ token: string; user: User }>('/api/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
   saveSignature: (signatureData: string) =>
     apiCall<{ signature_url: string }>('/api/auth/signature', {
       method: 'POST',
