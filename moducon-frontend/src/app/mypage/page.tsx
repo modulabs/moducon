@@ -20,6 +20,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import Link from 'next/link';
+import SurveyPopup from '@/components/SurveyPopup';
 
 // 마이페이지 데이터 타입
 interface MypageData {
@@ -208,6 +209,9 @@ export default function MyPage() {
 
   return (
     <div className="min-h-[100dvh] pb-24 bg-gradient-to-br from-gray-50 via-orange-50/30 to-pink-50/20">
+      {/* 만족도 조사 팝업 */}
+      <SurveyPopup />
+
       {/* 프로필 카드 */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
