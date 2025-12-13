@@ -6,12 +6,19 @@ import { X, MessageSquareHeart, MapPin } from 'lucide-react';
 const SURVEY_URL = 'https://forms.gle/xAja9Y5pyuhE3U4GA';
 const POPUP_INTERVAL = 60 * 60 * 1000; // 1시간
 const STORAGE_KEY = 'moducon_survey_popup_last';
+const SURVEY_DONE_KEY = 'moducon_survey_done';
 
 export default function SurveyPopup() {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     const checkAndShowPopup = () => {
+      // 이미 설문 참여한 사람은 스킵
+      const surveyDone = localStorage.getItem(SURVEY_DONE_KEY);
+      if (surveyDone === 'true') {
+        return;
+      }
+
       const lastShown = localStorage.getItem(STORAGE_KEY);
       const now = Date.now();
 
@@ -37,6 +44,7 @@ export default function SurveyPopup() {
   };
 
   const handleSurveyClick = () => {
+    localStorage.setItem(SURVEY_DONE_KEY, 'true');
     window.open(SURVEY_URL, '_blank');
     setIsVisible(false);
   };
