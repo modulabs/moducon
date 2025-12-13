@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import { motion } from 'motion/react';
-import { User, LogOut, RefreshCw, Heart, CheckCircle, Trophy, HelpCircle, ChevronRight } from 'lucide-react';
+import { User, LogOut, RefreshCw, Heart, CheckCircle, Trophy, HelpCircle, ChevronRight, Ticket } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -30,6 +30,7 @@ interface MypageData {
     signatureData: string | null;
     registrationType: string;
     registeredAt: string;
+    lotteryNumber: number | null;
   };
   checkins: {
     total: number;
@@ -280,6 +281,38 @@ export default function MyPage() {
           </CardContent>
         </Card>
       </motion.div>
+
+      {/* 추첨권 카드 */}
+      {data.user.lotteryNumber && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.1 }}
+          className="px-4 mt-4"
+        >
+          <Card className="bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 overflow-hidden border-0 shadow-lg">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-white/30 flex items-center justify-center">
+                    <Ticket className="w-5 h-5 text-amber-900" />
+                  </div>
+                  <div>
+                    <p className="text-amber-900/70 text-xs font-medium">경품 추첨권</p>
+                    <p className="text-amber-900 text-sm">서명 완료자 대상</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-amber-900/70 text-xs">번호</p>
+                  <p className="text-3xl font-bold text-amber-900 tabular-nums">
+                    {String(data.user.lotteryNumber).padStart(4, '0')}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
 
       {/* 탭 네비게이션 */}
       <div className="px-4 mt-6">
