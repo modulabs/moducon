@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import { motion } from 'motion/react';
-import { User, LogOut, RefreshCw, Heart, CheckCircle, Trophy, HelpCircle, ChevronRight, Ticket } from 'lucide-react';
+import { User, LogOut, RefreshCw, Heart, CheckCircle, Trophy, HelpCircle, ChevronRight, Ticket, MessageSquareHeart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -317,6 +317,38 @@ export default function MyPage() {
           </Card>
         </motion.div>
       )}
+
+      {/* 만족도 조사 링크 */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.15 }}
+        className="px-4 mt-4"
+      >
+        <a
+          href="https://forms.gle/xAja9Y5pyuhE3U4GA"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block"
+        >
+          <Card className="bg-gradient-to-r from-pink-500 to-rose-500 overflow-hidden border-0 shadow-lg hover:shadow-xl transition-shadow">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-white/30 flex items-center justify-center">
+                    <MessageSquareHeart className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-white/80 text-xs font-medium">만족도 조사</p>
+                    <p className="text-white text-sm font-semibold">모두콘 피드백 남기기</p>
+                  </div>
+                </div>
+                <ChevronRight className="w-5 h-5 text-white/80" />
+              </div>
+            </CardContent>
+          </Card>
+        </a>
+      </motion.div>
 
       {/* 탭 네비게이션 */}
       <div className="px-4 mt-6">
