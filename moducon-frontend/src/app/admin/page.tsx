@@ -151,6 +151,12 @@ export default function AdminPage() {
           </div>
           <div className="flex items-center gap-3">
             <Link
+              href="/admin/lottery"
+              className="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition"
+            >
+              경품 추첨
+            </Link>
+            <Link
               href="/admin/sessions"
               className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition"
             >
