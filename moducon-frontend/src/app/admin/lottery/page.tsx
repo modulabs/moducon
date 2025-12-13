@@ -1,40 +1,42 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 interface Participant {
   id: string;
   name: string;
-  phoneLast4: string;
-  lotteryNumber: number;
-  lotteryWon: boolean;
-}
-
-interface LotteryStats {
-  total: number;
-  remaining: number;
-  won: number;
+  phone_last4: string;
+  lottery_number: number;
+  lottery_won: boolean;
+  registered_at: string;
 }
 
 interface Winner {
   id: string;
   name: string;
-  phoneLast4: string;
-  lotteryNumber: number;
+  phone_last4: string;
+  lottery_number: number;
+}
+
+interface Stats {
+  total_participants: number;
+  winners: number;
 }
 
 export default function AdminLotteryPage() {
   const router = useRouter();
   const [participants, setParticipants] = useState<Participant[]>([]);
-  const [stats, setStats] = useState<LotteryStats>({ total: 0, remaining: 0, won: 0 });
+  const [winners, setWinners] = useState<Winner[]>([]);
+  const [stats, setStats] = useState<Stats>({ total_participants: 0, winners: 0 });
   const [loading, setLoading] = useState(true);
   const [drawing, setDrawing] = useState(false);
   const [currentWinner, setCurrentWinner] = useState<Winner | null>(null);
-  const [showAnimation, setShowAnimation] = useState(false);
-  const [animatingNumber, setAnimatingNumber] = useState<number | null>(null);
-  const [winners, setWinners] = useState<Winner[]>([]);
+  const [showResult, setShowResult] = useState(false);
+  const [slotNumbers, setSlotNumbers] = useState<number[]>([0, 0, 0, 0]);
+  const [drawCount, setDrawCount] = useState(1);
+  const slotRef = useRef<NodeJS.Timeout | null>(null);
 
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -46,30 +48,28 @@ export default function AdminLotteryPage() {
     }
   }, [router]);
 
-  const fetchParticipants = useCallback(async () => {
+  const getHeaders = () => {
     const adminToken = localStorage.getItem('admin_token');
-    if (!adminToken) return;
+    const userToken = localStorage.getItem('moducon_token');
+    return {
+      'Authorization': userToken ? `Bearer ${userToken}` : '',
+      'x-admin-token': adminToken || '',
+      'Content-Type': 'application/json',
+    };
+  };
 
+  // 참가자 목록 조회
+  const fetchParticipants = useCallback(async () => {
     setLoading(true);
     try {
       const response = await fetch(`${API_BASE}/api/admin/lottery/participants`, {
-        headers: { 'x-admin-token': adminToken },
+        headers: getHeaders(),
       });
 
       if (response.ok) {
         const data = await response.json();
         setParticipants(data.data.participants || []);
-        setStats(data.data.stats || { total: 0, remaining: 0, won: 0 });
-        // 당첨자 목록 추출
-        const wonList = (data.data.participants || [])
-          .filter((p: Participant) => p.lotteryWon)
-          .map((p: Participant) => ({
-            id: p.id,
-            name: p.name,
-            phoneLast4: p.phoneLast4,
-            lotteryNumber: p.lotteryNumber,
-          }));
-        setWinners(wonList);
+        setStats(data.data.stats || { total_participants: 0, winners: 0 });
       }
     } catch (err) {
       console.error('참가자 로딩 실패:', err);
@@ -78,102 +78,141 @@ export default function AdminLotteryPage() {
     }
   }, [API_BASE]);
 
-  useEffect(() => {
-    fetchParticipants();
-  }, [fetchParticipants]);
-
-  const handleDraw = async () => {
-    const adminToken = localStorage.getItem('admin_token');
-    if (!adminToken) return;
-
-    setDrawing(true);
-    setShowAnimation(true);
-    setCurrentWinner(null);
-
-    // 애니메이션: 번호 빠르게 바꾸기
-    const eligible = participants.filter(p => !p.lotteryWon);
-    if (eligible.length === 0) {
-      alert('추첨 가능한 대상자가 없습니다.');
-      setDrawing(false);
-      setShowAnimation(false);
-      return;
-    }
-
-    let animationCount = 0;
-    const maxAnimations = 20;
-    const animationInterval = setInterval(() => {
-      const randomIdx = Math.floor(Math.random() * eligible.length);
-      setAnimatingNumber(eligible[randomIdx].lotteryNumber);
-      animationCount++;
-
-      if (animationCount >= maxAnimations) {
-        clearInterval(animationInterval);
-        // 실제 추첨 API 호출
-        performDraw(adminToken);
-      }
-    }, 100);
-  };
-
-  const performDraw = async (adminToken: string) => {
+  // 당첨자 목록 조회
+  const fetchWinners = useCallback(async () => {
     try {
-      const response = await fetch(`${API_BASE}/api/admin/lottery/draw`, {
-        method: 'POST',
-        headers: {
-          'x-admin-token': adminToken,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ excludeWinners: true }),
+      const response = await fetch(`${API_BASE}/api/admin/lottery/winners`, {
+        headers: getHeaders(),
       });
 
       if (response.ok) {
         const data = await response.json();
-        const winner = data.data.winner;
-        setAnimatingNumber(winner.lotteryNumber);
+        setWinners(data.data.winners || []);
+      }
+    } catch (err) {
+      console.error('당첨자 로딩 실패:', err);
+    }
+  }, [API_BASE]);
 
+  useEffect(() => {
+    fetchParticipants();
+    fetchWinners();
+  }, [fetchParticipants, fetchWinners]);
+
+  // 슬롯 머신 애니메이션
+  const startSlotAnimation = (finalNumber: number, duration: number = 3000) => {
+    const startTime = Date.now();
+    const finalDigits = String(finalNumber).padStart(4, '0').split('').map(Number);
+
+    const animate = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+
+      // easeOutQuint for smooth deceleration
+      const easeProgress = 1 - Math.pow(1 - progress, 5);
+
+      if (progress < 1) {
+        // 진행 중: 랜덤 숫자 표시 (점점 느려짐)
+        const shouldUpdate = Math.random() > progress * 0.8;
+        if (shouldUpdate) {
+          setSlotNumbers(prev => prev.map((_, i) => {
+            // 뒷자리부터 먼저 멈춤
+            const stopThreshold = 0.4 + (i * 0.15);
+            if (progress > stopThreshold) {
+              return finalDigits[i];
+            }
+            return Math.floor(Math.random() * 10);
+          }));
+        }
+        slotRef.current = setTimeout(animate, 50 + (progress * 100));
+      } else {
+        // 완료: 최종 숫자
+        setSlotNumbers(finalDigits);
+      }
+    };
+
+    animate();
+  };
+
+  // 추첨 실행
+  const handleDraw = async () => {
+    const remaining = stats.total_participants - stats.winners;
+    if (remaining === 0) {
+      alert('추첨 가능한 대상자가 없습니다.');
+      return;
+    }
+
+    setDrawing(true);
+    setShowResult(false);
+    setCurrentWinner(null);
+
+    // 슬롯 애니메이션 시작 (임시 숫자)
+    setSlotNumbers([0, 0, 0, 0]);
+
+    // 빠른 숫자 변경 시작
+    const quickSpin = setInterval(() => {
+      setSlotNumbers(prev => prev.map(() => Math.floor(Math.random() * 10)));
+    }, 50);
+
+    try {
+      const response = await fetch(`${API_BASE}/api/admin/lottery/draw`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify({ count: drawCount }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        const winner = data.data.winners[0];
+
+        // 빠른 스핀 멈추고 최종 애니메이션
+        clearInterval(quickSpin);
+        startSlotAnimation(winner.lottery_number, 2500);
+
+        // 결과 표시
         setTimeout(() => {
           setCurrentWinner(winner);
-          setWinners(prev => [...prev, winner]);
+          setShowResult(true);
+          setWinners(prev => [winner, ...prev]);
           setStats(prev => ({
             ...prev,
-            remaining: prev.remaining - 1,
-            won: prev.won + 1,
+            winners: prev.winners + 1,
           }));
           setParticipants(prev =>
             prev.map(p =>
-              p.id === winner.id ? { ...p, lotteryWon: true } : p
+              p.id === winner.id ? { ...p, lottery_won: true } : p
             )
           );
-          setShowAnimation(false);
-        }, 500);
+        }, 2800);
       } else {
-        const data = await response.json();
-        alert(data.error?.message || '추첨에 실패했습니다.');
-        setShowAnimation(false);
+        clearInterval(quickSpin);
+        alert(data.message || '추첨에 실패했습니다.');
       }
     } catch (err) {
+      clearInterval(quickSpin);
       console.error('추첨 실패:', err);
       alert('추첨에 실패했습니다.');
-      setShowAnimation(false);
     } finally {
-      setDrawing(false);
+      setTimeout(() => setDrawing(false), 3000);
     }
   };
 
+  // 초기화
   const handleReset = async () => {
-    if (!confirm('모든 당첨 기록을 초기화하시겠습니까?')) return;
-
-    const adminToken = localStorage.getItem('admin_token');
-    if (!adminToken) return;
+    if (!confirm('모든 당첨 기록을 초기화하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) return;
 
     try {
       const response = await fetch(`${API_BASE}/api/admin/lottery/reset`, {
         method: 'POST',
-        headers: { 'x-admin-token': adminToken },
+        headers: getHeaders(),
       });
 
       if (response.ok) {
         setWinners([]);
         setCurrentWinner(null);
+        setShowResult(false);
+        setSlotNumbers([0, 0, 0, 0]);
         fetchParticipants();
       }
     } catch (err) {
@@ -181,29 +220,39 @@ export default function AdminLotteryPage() {
     }
   };
 
+  const remaining = stats.total_participants - stats.winners;
+
   if (loading) {
     return (
-      <div className="min-h-[100dvh] bg-gray-900 flex items-center justify-center">
-        <div className="text-white">로딩 중...</div>
+      <div className="min-h-[100dvh] bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 flex items-center justify-center">
+        <div className="text-white text-xl">로딩 중...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-[100dvh] bg-gray-900 text-white">
+    <div className="min-h-[100dvh] bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 text-white overflow-hidden">
+      {/* 배경 효과 */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-pink-500/20 rounded-full blur-3xl" />
+      </div>
+
       {/* 헤더 */}
-      <div className="bg-gray-800 border-b border-gray-700">
+      <div className="relative bg-black/30 backdrop-blur-sm border-b border-white/10">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Link href="/admin" className="text-gray-400 hover:text-white text-sm">
+              <Link href="/admin" className="text-gray-400 hover:text-white text-sm transition">
                 ← 관리자
               </Link>
-              <h1 className="text-xl font-bold">경품 추첨</h1>
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-amber-400 to-yellow-300 bg-clip-text text-transparent">
+                🎰 경품 추첨
+              </h1>
             </div>
             <button
               onClick={handleReset}
-              className="px-3 py-1 text-sm text-gray-400 hover:text-red-400 transition"
+              className="px-4 py-2 text-sm text-gray-400 hover:text-red-400 border border-gray-700 rounded-lg hover:border-red-400/50 transition"
             >
               초기화
             </button>
@@ -211,53 +260,53 @@ export default function AdminLotteryPage() {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
-        {/* 통계 */}
+      <div className="relative container mx-auto px-4 py-8">
+        {/* 통계 카드 */}
         <div className="grid grid-cols-3 gap-4 mb-8">
-          <div className="bg-gray-800 rounded-lg p-4 text-center">
-            <div className="text-3xl font-bold text-amber-400">{stats.total}</div>
+          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 text-center border border-white/10">
+            <div className="text-4xl font-bold text-amber-400 mb-1">{stats.total_participants}</div>
             <div className="text-sm text-gray-400">전체 대상</div>
           </div>
-          <div className="bg-gray-800 rounded-lg p-4 text-center">
-            <div className="text-3xl font-bold text-green-400">{stats.remaining}</div>
-            <div className="text-sm text-gray-400">미당첨</div>
+          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 text-center border border-white/10">
+            <div className="text-4xl font-bold text-emerald-400 mb-1">{remaining}</div>
+            <div className="text-sm text-gray-400">남은 인원</div>
           </div>
-          <div className="bg-gray-800 rounded-lg p-4 text-center">
-            <div className="text-3xl font-bold text-pink-400">{stats.won}</div>
+          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 text-center border border-white/10">
+            <div className="text-4xl font-bold text-pink-400 mb-1">{stats.winners}</div>
             <div className="text-sm text-gray-400">당첨자</div>
           </div>
         </div>
 
-        {/* 추첨 영역 */}
-        <div className="bg-gradient-to-br from-amber-500 via-yellow-500 to-amber-600 rounded-2xl p-8 mb-8 text-center">
-          {showAnimation ? (
-            <div>
-              <p className="text-amber-900/70 text-sm mb-2">추첨 중...</p>
-              <div className="text-7xl font-bold text-amber-900 tabular-nums animate-pulse">
-                {String(animatingNumber || 0).padStart(4, '0')}
+        {/* 슬롯 머신 */}
+        <div className="bg-gradient-to-b from-amber-500/20 to-amber-600/10 rounded-3xl p-8 mb-8 border-2 border-amber-500/30 shadow-2xl shadow-amber-500/10">
+          <div className="text-center mb-6">
+            <span className="text-amber-400/80 text-sm font-medium">추첨 번호</span>
+          </div>
+
+          {/* 슬롯 숫자 */}
+          <div className="flex justify-center gap-3 mb-8">
+            {slotNumbers.map((num, idx) => (
+              <div
+                key={idx}
+                className={`w-20 h-28 bg-gradient-to-b from-gray-800 to-gray-900 rounded-xl flex items-center justify-center border-2 border-amber-500/50 shadow-lg shadow-black/50 ${
+                  drawing ? 'animate-pulse' : ''
+                }`}
+              >
+                <span className={`text-5xl font-bold tabular-nums transition-all duration-100 ${
+                  showResult ? 'text-amber-400 scale-110' : 'text-white'
+                }`}>
+                  {num}
+                </span>
               </div>
-            </div>
-          ) : currentWinner ? (
-            <div>
-              <p className="text-amber-900/70 text-sm mb-2">당첨자</p>
-              <div className="text-7xl font-bold text-amber-900 tabular-nums mb-4">
-                {String(currentWinner.lotteryNumber).padStart(4, '0')}
-              </div>
-              <div className="bg-white/30 rounded-lg px-6 py-3 inline-block">
-                <p className="text-xl font-bold text-amber-900">
-                  {currentWinner.name}
-                </p>
-                <p className="text-amber-900/70">
-                  전화번호 끝자리: {currentWinner.phoneLast4}
-                </p>
-              </div>
-            </div>
-          ) : (
-            <div>
-              <p className="text-amber-900/70 text-sm mb-2">추첨 번호</p>
-              <div className="text-7xl font-bold text-amber-900/30 tabular-nums">
-                ----
-              </div>
+            ))}
+          </div>
+
+          {/* 당첨자 정보 */}
+          {showResult && currentWinner && (
+            <div className="bg-gradient-to-r from-amber-500 to-yellow-500 rounded-2xl p-6 text-center animate-bounce-once">
+              <div className="text-amber-900 text-sm font-medium mb-2">🎉 축하합니다! 🎉</div>
+              <div className="text-3xl font-bold text-amber-900 mb-1">{currentWinner.name}</div>
+              <div className="text-amber-900/70">전화번호 끝자리: {currentWinner.phone_last4}</div>
             </div>
           )}
         </div>
@@ -266,30 +315,58 @@ export default function AdminLotteryPage() {
         <div className="text-center mb-8">
           <button
             onClick={handleDraw}
-            disabled={drawing || stats.remaining === 0}
-            className="px-12 py-4 bg-gradient-to-r from-pink-500 to-rose-500 text-white text-xl font-bold rounded-full hover:from-pink-600 hover:to-rose-600 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+            disabled={drawing || remaining === 0}
+            className={`px-16 py-5 text-2xl font-bold rounded-full transition-all transform hover:scale-105 active:scale-95 shadow-2xl ${
+              drawing
+                ? 'bg-gray-600 cursor-wait'
+                : remaining === 0
+                ? 'bg-gray-600 cursor-not-allowed'
+                : 'bg-gradient-to-r from-pink-500 via-red-500 to-pink-500 hover:from-pink-600 hover:via-red-600 hover:to-pink-600 shadow-pink-500/30'
+            }`}
           >
-            {drawing ? '추첨 중...' : stats.remaining === 0 ? '추첨 완료' : '추첨하기'}
+            {drawing ? (
+              <span className="flex items-center gap-3">
+                <span className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin" />
+                추첨 중...
+              </span>
+            ) : remaining === 0 ? (
+              '추첨 완료'
+            ) : (
+              '🎲 추첨하기'
+            )}
           </button>
         </div>
 
         {/* 당첨자 목록 */}
         {winners.length > 0 && (
-          <div className="bg-gray-800 rounded-lg overflow-hidden">
-            <div className="px-4 py-3 border-b border-gray-700">
-              <h2 className="font-semibold">당첨자 목록 ({winners.length}명)</h2>
+          <div className="bg-white/5 backdrop-blur-sm rounded-2xl overflow-hidden border border-white/10">
+            <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between">
+              <h2 className="text-lg font-semibold flex items-center gap-2">
+                <span className="text-2xl">🏆</span>
+                당첨자 목록
+              </h2>
+              <span className="text-gray-400 text-sm">{winners.length}명</span>
             </div>
-            <div className="divide-y divide-gray-700">
+            <div className="divide-y divide-white/5 max-h-80 overflow-y-auto">
               {winners.map((winner, idx) => (
-                <div key={winner.id} className="px-4 py-3 flex items-center justify-between">
+                <div
+                  key={winner.id}
+                  className={`px-6 py-4 flex items-center justify-between ${
+                    idx === 0 && showResult ? 'bg-amber-500/10' : ''
+                  }`}
+                >
                   <div className="flex items-center gap-4">
-                    <span className="text-gray-500 text-sm w-6">{idx + 1}</span>
-                    <span className="font-mono text-amber-400 font-bold">
-                      {String(winner.lotteryNumber).padStart(4, '0')}
+                    <span className="w-8 h-8 bg-gradient-to-br from-amber-400 to-yellow-500 rounded-full flex items-center justify-center text-amber-900 font-bold text-sm">
+                      {idx + 1}
                     </span>
-                    <span>{winner.name}</span>
+                    <div>
+                      <span className="font-mono text-amber-400 font-bold text-lg mr-3">
+                        {String(winner.lottery_number).padStart(4, '0')}
+                      </span>
+                      <span className="text-white">{winner.name}</span>
+                    </div>
                   </div>
-                  <span className="text-gray-500 text-sm">{winner.phoneLast4}</span>
+                  <span className="text-gray-500 text-sm font-mono">{winner.phone_last4}</span>
                 </div>
               ))}
             </div>
@@ -298,34 +375,34 @@ export default function AdminLotteryPage() {
 
         {/* 전체 참가자 (접기) */}
         <details className="mt-8">
-          <summary className="cursor-pointer text-gray-400 hover:text-white text-sm mb-4">
-            전체 참가자 목록 보기 ({stats.total}명)
+          <summary className="cursor-pointer text-gray-400 hover:text-white text-sm mb-4 transition">
+            전체 참가자 목록 보기 ({stats.total_participants}명)
           </summary>
-          <div className="bg-gray-800 rounded-lg overflow-hidden max-h-96 overflow-y-auto">
+          <div className="bg-white/5 backdrop-blur-sm rounded-2xl overflow-hidden border border-white/10 max-h-96 overflow-y-auto">
             <table className="w-full text-sm">
-              <thead className="bg-gray-700 sticky top-0">
+              <thead className="bg-white/10 sticky top-0">
                 <tr>
-                  <th className="px-4 py-2 text-left">번호</th>
-                  <th className="px-4 py-2 text-left">이름</th>
-                  <th className="px-4 py-2 text-left">전화번호</th>
-                  <th className="px-4 py-2 text-center">상태</th>
+                  <th className="px-4 py-3 text-left text-gray-400">번호</th>
+                  <th className="px-4 py-3 text-left text-gray-400">이름</th>
+                  <th className="px-4 py-3 text-left text-gray-400">전화번호</th>
+                  <th className="px-4 py-3 text-center text-gray-400">상태</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-700">
+              <tbody className="divide-y divide-white/5">
                 {participants.map(p => (
-                  <tr key={p.id} className={p.lotteryWon ? 'bg-pink-900/20' : ''}>
-                    <td className="px-4 py-2 font-mono text-amber-400">
-                      {String(p.lotteryNumber).padStart(4, '0')}
+                  <tr key={p.id} className={p.lottery_won ? 'bg-amber-500/10' : ''}>
+                    <td className="px-4 py-3 font-mono text-amber-400">
+                      {String(p.lottery_number).padStart(4, '0')}
                     </td>
-                    <td className="px-4 py-2">{p.name}</td>
-                    <td className="px-4 py-2 text-gray-400">{p.phoneLast4}</td>
-                    <td className="px-4 py-2 text-center">
-                      {p.lotteryWon ? (
-                        <span className="px-2 py-0.5 bg-pink-500/20 text-pink-400 text-xs rounded">
-                          당첨
+                    <td className="px-4 py-3">{p.name}</td>
+                    <td className="px-4 py-3 text-gray-400 font-mono">{p.phone_last4}</td>
+                    <td className="px-4 py-3 text-center">
+                      {p.lottery_won ? (
+                        <span className="px-2 py-1 bg-amber-500/20 text-amber-400 text-xs rounded-full">
+                          🎉 당첨
                         </span>
                       ) : (
-                        <span className="text-gray-500 text-xs">-</span>
+                        <span className="text-gray-600">-</span>
                       )}
                     </td>
                   </tr>
@@ -335,6 +412,17 @@ export default function AdminLotteryPage() {
           </div>
         </details>
       </div>
+
+      {/* CSS 애니메이션 */}
+      <style jsx>{`
+        @keyframes bounce-once {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-10px); }
+        }
+        .animate-bounce-once {
+          animation: bounce-once 0.5s ease-out;
+        }
+      `}</style>
     </div>
   );
 }
