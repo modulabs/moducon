@@ -123,6 +123,13 @@ export default function MyPage() {
         headers: { 'Authorization': `Bearer ${token}` },
       });
 
+      // JWT 만료 시 로그아웃 처리 후 로그인 페이지로 이동
+      if (response.status === 401) {
+        logout();
+        router.push('/login?expired=true&redirect=/mypage');
+        return;
+      }
+
       if (!response.ok) {
         throw new Error('데이터를 불러올 수 없습니다.');
       }
@@ -139,7 +146,7 @@ export default function MyPage() {
     } finally {
       setLoading(false);
     }
-  }, [API_BASE, token]);
+  }, [API_BASE, token, logout, router]);
 
   useEffect(() => {
     if (!isHydrated) return;

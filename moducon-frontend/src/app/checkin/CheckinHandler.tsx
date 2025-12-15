@@ -91,6 +91,14 @@ export default function CheckinHandler() {
         return { success: true, message: data.message || '체크인 완료!' };
       }
 
+      // JWT 만료 시 로그인 페이지로 리다이렉트
+      if (response.status === 401) {
+        authStore.logout();
+        const currentUrl = window.location.href;
+        window.location.href = `/login?expired=true&redirect=${encodeURIComponent(currentUrl)}`;
+        return { success: false, message: '인증이 만료되었습니다. 다시 로그인해주세요.' };
+      }
+
       if (response.status === 409) {
         return { success: true, message: '이미 체크인 완료된 곳입니다.', isDuplicate: true };
       }

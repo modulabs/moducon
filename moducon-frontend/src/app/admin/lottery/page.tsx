@@ -315,10 +315,12 @@ export default function AdminLotteryPage() {
         <div className="text-center mb-8">
           <button
             onClick={handleDraw}
-            disabled={drawing || remaining === 0}
+            disabled={drawing || remaining === 0 || stats.total_participants === 0}
             className={`px-16 py-5 text-2xl font-bold rounded-full transition-all transform hover:scale-105 active:scale-95 shadow-2xl ${
               drawing
                 ? 'bg-gray-600 cursor-wait'
+                : stats.total_participants === 0
+                ? 'bg-gray-600 cursor-not-allowed'
                 : remaining === 0
                 ? 'bg-gray-600 cursor-not-allowed'
                 : 'bg-gradient-to-r from-pink-500 via-red-500 to-pink-500 hover:from-pink-600 hover:via-red-600 hover:to-pink-600 shadow-pink-500/30'
@@ -329,6 +331,8 @@ export default function AdminLotteryPage() {
                 <span className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin" />
                 추첨 중...
               </span>
+            ) : stats.total_participants === 0 ? (
+              '대상자 없음'
             ) : remaining === 0 ? (
               '추첨 완료'
             ) : (

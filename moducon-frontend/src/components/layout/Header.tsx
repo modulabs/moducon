@@ -42,7 +42,7 @@ export function Header() {
           </Link>
         </div>
 
-        {/* 오른쪽: 프로필 (로그인 시만) */}
+        {/* 오른쪽: 프로필 또는 로그인 버튼 */}
         {user ? (
           <Link
             href="/mypage"
@@ -53,7 +53,12 @@ export function Header() {
             </span>
           </Link>
         ) : (
-          <div className="w-9 h-9" /> // 빈 공간으로 균형 맞춤
+          <Link
+            href="/login"
+            className="px-3 py-1.5 rounded-full bg-white/20 hover:bg-white/30 text-white text-sm font-medium transition-colors border border-white/50"
+          >
+            로그인
+          </Link>
         )}
       </div>
     </header>

@@ -20,7 +20,7 @@ interface FavoritesData {
 
 export function QuestProgress() {
   const router = useRouter();
-  const { isAuthenticated, isHydrated, token } = useAuthStore();
+  const { isAuthenticated, isHydrated, token, logout } = useAuthStore();
   const [stats, setStats] = useState<ActivityStats | null>(null);
   const [favorites, setFavorites] = useState<FavoritesData | null>(null);
   const [loading, setLoading] = useState(false);
@@ -40,6 +40,12 @@ export function QuestProgress() {
           headers: { 'Authorization': `Bearer ${token}` },
         });
 
+        // JWT 만료 시 로그아웃 처리
+        if (response.status === 401) {
+          logout();
+          return;
+        }
+
         if (!response.ok) {
           throw new Error('Failed to fetch');
         }
@@ -58,7 +64,7 @@ export function QuestProgress() {
     };
 
     fetchData();
-  }, [isHydrated, isAuthenticated, token, API_BASE]);
+  }, [isHydrated, isAuthenticated, token, API_BASE, logout]);
 
   const handleClick = () => {
     if (isAuthenticated) {
