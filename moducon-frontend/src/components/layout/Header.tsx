@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
-import { Home } from 'lucide-react';
+import { Home, LogIn } from 'lucide-react';
 
 export function Header() {
   const pathname = usePathname();
@@ -55,9 +55,9 @@ export function Header() {
         ) : (
           <Link
             href="/login"
-            className="px-3 py-1.5 rounded-full bg-white/20 hover:bg-white/30 text-white text-sm font-medium transition-colors border border-white/50"
+            className="w-9 h-9 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors border border-white/50"
           >
-            로그인
+            <LogIn className="w-5 h-5 text-white" />
           </Link>
         )}
       </div>
