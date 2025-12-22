@@ -153,6 +153,56 @@ export default function HomePage() {
         </div>
       </motion.div>
 
+      {/* Contributors */}
+      <div className="px-4 mb-6">
+        <h2 className="text-xl text-transparent bg-clip-text bg-gradient-to-r from-[#FF6B9D] to-[#FF8B5A] mb-4">
+          🙌 만든 사람들
+        </h2>
+        <div className="bg-white rounded-2xl p-5 shadow-lg border border-orange-100">
+          <div className="mb-4">
+            <p className="text-xs text-gray-500 mb-2">Powered by</p>
+            <div className="flex flex-wrap gap-2">
+              <span className="px-3 py-1 bg-gradient-to-r from-purple-500 to-indigo-500 text-white text-xs rounded-full">Claude Code</span>
+              <span className="px-3 py-1 bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-xs rounded-full">Antigravity</span>
+              <span className="px-3 py-1 bg-gradient-to-r from-pink-500 to-rose-500 text-white text-xs rounded-full">Figma Make</span>
+            </div>
+          </div>
+          <div className="border-t border-gray-100 pt-4">
+            <p className="text-xs text-gray-500 mb-3">Contributors</p>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between items-center">
+                <span className="font-medium text-gray-800">박수빈</span>
+                <span className="text-xs text-gray-500">프론트엔드, UX/UI</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="font-medium text-gray-800">강신우</span>
+                <span className="text-xs text-gray-500">백엔드, DB설계, QR & QnA 로직</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="font-medium text-gray-800">조성진</span>
+                <span className="text-xs text-gray-500">사용자 서명 이펙트</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="font-medium text-gray-800">김현</span>
+                <span className="text-xs text-gray-500">퀴즈 설계</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="font-medium text-gray-800">홍민지</span>
+                <span className="text-xs text-gray-500">지도 기능</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="font-medium text-gray-800">신현길</span>
+                <span className="text-xs text-gray-500">개인 식별 방법</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="font-medium text-gray-800">조해창</span>
+                <span className="text-xs text-gray-500">나머지 잔업</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Live Status */}
       <div className="px-4 mb-6 relative">
         <div className="absolute -top-10 -right-4 w-24 h-24 z-10">
@@ -275,6 +325,7 @@ export default function HomePage() {
         </h2>
         <DigitalBadge />
       </div>
+
     </div>
   );
 }
